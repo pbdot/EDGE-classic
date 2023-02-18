@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.12..3.20)
 
+project(
+  edge-classic
+  LANGUAGES CXX
+  VERSION 0.1.0
+)
+
+# Whether to use ES2 rendering context, required by WebGL
+set(EDGE_GL_ES2 ON CACHE BOOL "Set to ON to use OpenGL ES2 rendering backend")
+
 add_subdirectory(source_files/ajbsp)
 add_subdirectory(source_files/coal)
 add_subdirectory(source_files/crsid)
@@ -9,18 +18,16 @@ add_subdirectory(source_files/ec_voxelib)
 add_subdirectory(source_files/epi)
 add_subdirectory(source_files/fmmidi)
 add_subdirectory(source_files/fluidlite)
-add_subdirectory(source_files/glad)
+if (NOT EDGE_GL_ES2)
+	add_subdirectory(source_files/glad)
+else()
+	add_subdirectory(source_files/gl4es)
+endif()
 add_subdirectory(source_files/libgme)
 add_subdirectory(source_files/libxmp)
 add_subdirectory(source_files/libymfm)
 add_subdirectory(source_files/miniz)
 add_subdirectory(source_files/ymfmidi)
-
-project(
-  edge-classic
-  LANGUAGES CXX
-  VERSION 0.1.0
-)
 
 set(CMAKE_MODULE_PATH cmake)
 if(WIN32 AND NOT MSYS)
