@@ -214,6 +214,8 @@ void RGL_CheckExtensions(void)
 		}		
 	}
 
+#ifndef EDGE_GL_ES2
+
 	// Check for various extensions
 	if (GLAD_GL_VERSION_1_3 || GLAD_GL_ARB_multitexture)
 	{ /* OK */ }
@@ -269,6 +271,8 @@ void RGL_CheckExtensions(void)
 		if (bug->enable & PFT_SKY)        r_dumbsky = 0;
 		if (bug->enable & PFT_MULTI_TEX)  r_dumbmulti = 0;
 	}
+
+#endif
 }
 
 //

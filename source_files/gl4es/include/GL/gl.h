@@ -27,7 +27,8 @@
 #ifndef __gl_h_
 #define __gl_h_
 
-#if defined(__EMSCRIPTEN__) || defined(__APPLE__)
+// edge: Adding _WIN32 here for static library
+#if defined(__EMSCRIPTEN__) || defined(__APPLE__) || defined(_WIN32)
 #define USE_MGL_NAMESPACE    1
 #define GL_GLEXT_PROTOTYPES  1
 #define MANGLE(x)            gl4es_gl##x
@@ -61,7 +62,8 @@
 #  if (defined(_MSC_VER) || defined(__MINGW32__)) && defined(BUILD_GL32) /* tag specify we're building mesa as a DLL */
 #    define GLAPI __declspec(dllexport)
 #  elif (defined(_MSC_VER) || defined(__MINGW32__)) && defined(_DLL) /* tag specifying we're building for DLL runtime support */
-#    define GLAPI __declspec(dllimport)
+#    define GLAPI extern  // edge: using extern for static lib
+//#    define GLAPI __declspec(dllimport)
 #  else /* for use with static link lib build of Win32 edition only */
 #    define GLAPI extern
 #  endif /* _STATIC_MESA support */
