@@ -22,10 +22,8 @@
 #include "sound_types.h"
 #include "str_util.h"
 
-#ifndef EDGE_MINIMAL_SOUND
 #include "gme.h"
-#include "xmp.h"
-#endif
+#include "m4p.h"
 
 namespace epi
 {
@@ -105,16 +103,16 @@ sound_format_e Sound_DetectFormat(byte *data, int song_len)
 	}
 
 	// Moving on to more specialized or less reliable detections
-#ifndef EDGE_MINIMAL_SOUND
+
 	if (!std::string(gme_identify_header(data)).empty())
 	{
 		return FMT_GME;
 	}
 
-	if (xmp_test_module_from_memory(data, song_len, NULL) == 0)
-		return FMT_XMP;
-		
-#endif
+	if (m4p_TestFromData(data, song_len))
+	{
+		return FMT_M4P;
+	}
 
 	if ((data[0] == 'I' && data[1] == 'D' && data[2] == '3') ||
 		(data[0] == 0xFF && (data[1] >> 4 & 0xF == 0xF)))
@@ -156,6 +154,7 @@ sound_format_e Sound_FilenameToFormat(const std::filesystem::path& filename)
 	if (ext == ".sid" || ext == ".psid")
 		return FMT_SID;
 
+	// Test MUS vs EA-MIDI MUS ?
 	if (ext == ".mus")
 		return FMT_MUS;
 
@@ -163,15 +162,8 @@ sound_format_e Sound_FilenameToFormat(const std::filesystem::path& filename)
 		ext == ".rmi" || ext == ".rmid")
 		return FMT_MIDI;
 
-	if (ext == ".mod" || ext == ".m15" || ext == ".flx" || ext == ".wow" || ext == ".dbm" ||
-		ext == ".digi" || ext == ".emod" || ext == ".med" || ext == ".mtn" || ext == ".okt" ||
-		ext == ".sfx" || ext == ".mgt" || ext == ".669" || ext == ".far" || ext == ".fnk" ||
-		ext == ".imf" || ext == ".it" || ext == ".liq" || ext == ".mdl" || ext == ".mtm" || 
-		ext == ".ptm" || ext == ".rtm" || ext == ".s3m" || ext == ".stm" || ext == ".ult" ||
-		ext == ".xm" || ext == ".amf" || ext == ".gdm" || ext == ".stx" || ext == ".abk" ||
-		ext == ".psm" || ext == ".j2b" || ext == ".mfp" || ext == ".smp" || ext == ".mmdc" ||
-		ext == ".stim" || ext == ".umx")
-		return FMT_XMP;
+	if (ext == ".mod" || ext == ".s3m" || ext == ".xm" || ext == ".it")
+		return FMT_M4P;
 
 	if (ext == ".vgm" || ext == ".vgz")
 		return FMT_VGM;
