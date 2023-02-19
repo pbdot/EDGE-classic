@@ -1705,7 +1705,12 @@ void E_Main(int argc, const char **argv)
 #ifndef EDGE_WEB
 		while (! (app_state & APP_STATE_PENDING_QUIT))
 		{
-			E_DoomTick();
+			// We always do this once here, although the engine may
+			// makes in own calls to keep on top of the event processing
+			I_ControlGetEvents(); 
+
+			if (app_state & APP_STATE_ACTIVE)
+				E_Tick();			
 		}
 #else
 		return;

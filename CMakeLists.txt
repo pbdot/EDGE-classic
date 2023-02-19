@@ -1,39 +1,46 @@
 cmake_minimum_required(VERSION 3.12..3.20)
 
-#WIN32 is intended for detecting that running on windows and not setting compiler settings
-#fix this up, primarily in the cases where need to add "AND NOT EMSCRIPTEN"
+set (EDGE_INCLUDE_DIRECTORIES "")
+set (EDGE_LINK_LIBRARIES "")
+set (EDGE_SOURCE_FILES "")
 
 if (EMSCRIPTEN)
-	set(EDGE_GL_ES2 ON)
-	set(EDGE_MINIMAL_SOUND ON)
-
-	# https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
-
-	set(EDGE_EMSC_COMMON_FLAGS "-sUSE_SDL=2")
-	set(EDGE_EMSC_COMPILER_FLAGS "-DEDGE_WEB=1")
-	set(EDGE_EMSC_LINKER_FLAGS "-sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=256Mb -sERROR_ON_UNDEFINED_SYMBOLS=1 -sMAX_WEBGL_VERSION=2 -sFULL_ES2=1 --preload-file=C:/Dev/fixme@/")
-	
-	if (CMAKE_BUILD_TYPE STREQUAL "Debug")			
-		set(EDGE_EMSC_COMPILER_FLAGS "${EDGE_EMSC_COMPILER_FLAGS} -O0 -gsource-map")
-
-		# SAFE_HEAP currently has alignment issues, see github issue				
-		set(EDGE_EMSC_LINKER_FLAGS "${EDGE_EMSC_LINKER_FLAGS} -sASSERTIONS=1 -g4 --source-map-base=/")		
-	else()
-		set(EDGE_EMSC_COMMON_FLAGS "${EDGE_EMSC_COMMON_FLAGS} -flto")
-		set(EDGE_EMSC_COMPILER_FLAGS "${EDGE_EMSC_COMPILER_FLAGS} -O3")
-		set(EDGE_EMSC_LINKER_FLAGS "${EDGE_EMSC_LINKER_FLAGS} -sASYNCIFY=1")
-	endif()
-
-	message("${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_COMPILER_FLAGS}")
-	message("${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_LINKER_FLAGS}")
-
-	add_compile_options("SHELL: ${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_COMPILER_FLAGS}")
-	add_link_options("SHELL: ${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_LINKER_FLAGS}")
-
+	include("cmake/EdgeWeb.cmake")
 endif()
 
-if(EDGE_MINIMAL_SOUND)
-	add_definitions("-DEDGE_MINIMAL_SOUND")
+if (NOT EDGE_GL_ES2)
+	set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES} source_files/glad/include/glad)
+	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} glad)
+	add_subdirectory(source_files/glad)
+else()
+	add_compile_options(-DEDGE_GL_ES2)
+	set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES} source_files/gl4es/include source_files/gl4es/include/GL)
+	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} gl4es)
+	add_subdirectory(source_files/gl4es)
+endif()
+
+if (NOT EDGE_MINIMAL_SOUND)
+	set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES}
+		source_files/libgme/gme
+		source_files/libxmp
+		source_files/crsid
+		source_files/minimp3)
+
+	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
+		source_files/edge/s_flac.cc
+		source_files/edge/s_sid.cc
+		source_files/edge/s_vgm.cc
+		source_files/edge/s_mp3.cc
+		source_files/edge/s_gme.cc
+		source_files/edge/s_xmp.cc)
+
+	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} libxmp gme crsid)
+
+	add_subdirectory(source_files/crsid)
+	add_subdirectory(source_files/libxmp)
+	add_subdirectory(source_files/libgme)
+else()
+	add_compile_options(-DEDGE_MINIMAL_SOUND)
 endif()
 
 add_subdirectory(source_files/ajbsp)
@@ -42,24 +49,11 @@ add_subdirectory(source_files/ddf)
 add_subdirectory(source_files/dehacked)
 add_subdirectory(source_files/ec_voxelib)
 add_subdirectory(source_files/epi)
-add_subdirectory(source_files/miniz)
-
-if (NOT EDGE_GL_ES2)
-	add_subdirectory(source_files/glad)
-else()
-	add_subdirectory(source_files/gl4es)
-endif()
-
+add_subdirectory(source_files/fmmidi)
 add_subdirectory(source_files/fluidlite)
 add_subdirectory(source_files/libymfm)
+add_subdirectory(source_files/miniz)
 add_subdirectory(source_files/ymfmidi)
-add_subdirectory(source_files/fmmidi)
-
-if (NOT EDGE_MINIMAL_SOUND)
-	add_subdirectory(source_files/crsid)
-	add_subdirectory(source_files/libgme)
-	add_subdirectory(source_files/libxmp)
-endif()
 
 project(
   edge-classic
@@ -67,20 +61,42 @@ project(
   VERSION 0.1.0
 )
 
-set(CMAKE_MODULE_PATH cmake)
-if(WIN32 AND NOT MSYS)
-  set(SDL2_DIR "${CMAKE_SOURCE_DIR}/source_files/sdl2")
+if (NOT EMSCRIPTEN)
+	set(CMAKE_MODULE_PATH cmake)
+	if(MSVC OR MINGW)
+		set(SDL2_DIR "${CMAKE_SOURCE_DIR}/source_files/sdl2")
+  	endif()
+	if (NOT EDGE_GL_ES2)
+		find_package(OpenGL REQUIRED)
+		set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} ${OPENGL_LIBRARIES})
+	endif()
+	find_package(SDL2 REQUIRED)
+	set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} ${SDL2_LIBRARIES})
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-O2 -Wall")
-if(WIN32 AND NOT MSYS AND NOT MINGW)
+
+if (NOT MSVC AND NOT EMSCRIPTEN)
+	set(CMAKE_CXX_FLAGS "-O2 -Wall")
+endif()
+
+if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /EHs")
   set(CMAKE_EXE_LINKER_FLAGS "/SUBSYSTEM:WINDOWS")
+  set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES} source_files/sdl2/include)
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-strict-aliasing")
 endif()
+
+if (MSVC OR MINGW OR MSYS)
+	add_compile_options(-DWIN32)
+	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} source_files/edge/w32_res.rc)
+	set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} wsock32)
+else()
+	add_compile_options(-DUNIX)
+endif()
+
 if(MSYS)
   set(CMAKE_EXE_LINKER_FLAGS "-static -mwindows")
 endif()
@@ -93,7 +109,8 @@ if(APPLE OR ${CMAKE_SYSTEM} MATCHES "BSD")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I /usr/local/include")
 endif()
 
-set (EDGE_SOURCE_FILES
+
+set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
 	source_files/edge/i_main.cc
 	source_files/edge/i_ctrl.cc
 	source_files/edge/i_video.cc
@@ -202,69 +219,40 @@ set (EDGE_SOURCE_FILES
 	source_files/edge/umapinfo.cc
 )
 
-if (NOT EDGE_MINIMAL_SOUND)
-	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
-		source_files/edge/s_flac.cc
-		source_files/edge/s_sid.cc
-		source_files/edge/s_vgm.cc
-		source_files/edge/s_mp3.cc		
-		source_files/edge/s_gme.cc
-		source_files/edge/s_xmp.cc
-	)
-endif()
+set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES}
+	source_files/ajbsp
+	source_files/coal
+	source_files/ddf
+	source_files/dehacked
+	source_files/dr_libs
+	source_files/ec_voxelib
+	source_files/epi
+	source_files/fluidlite/include
+	source_files/fmmidi
+	source_files/libymfm
+	source_files/minivorbis
+	source_files/miniz
+	source_files/stb
+	source_files/ymfmidi
+)
 
-if (WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
-	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} 
-		source_files/edge/w32_res.rc)
-endif()
+set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES}
+	edge_ajbsp
+	edge_coal
+	edge_ddf
+	edge_deh
+	edge_epi
+	ec_voxelib
+	fmmidi
+	fluidlite
+	miniz
+	libymfm
+	ymfmidi
+)
 
 add_executable(edge-classic ${EDGE_SOURCE_FILES})
-
-find_package(SDL2 REQUIRED)
-if (NOT EDGE_GL_ES2)
-	find_package(OpenGL REQUIRED)
-endif()
-
-target_include_directories(edge-classic PRIVATE source_files/ajbsp)
-target_include_directories(edge-classic PRIVATE source_files/coal)
-target_include_directories(edge-classic PRIVATE source_files/ddf)
-target_include_directories(edge-classic PRIVATE source_files/dehacked)
-target_include_directories(edge-classic PRIVATE source_files/ec_voxelib)
-target_include_directories(edge-classic PRIVATE source_files/epi)
-target_include_directories(edge-classic PRIVATE source_files/miniz)
-target_include_directories(edge-classic PRIVATE source_files/stb)
-
-if(NOT EDGE_GL_ES2)
-	target_include_directories(edge-classic PRIVATE source_files/glad/include/glad)
-else()
-	target_compile_definitions(edge-classic PRIVATE EDGE_GL_ES2)
-	target_include_directories(edge-classic PRIVATE source_files/gl4es/include)
-	target_include_directories(edge-classic PRIVATE source_files/gl4es/include/GL)
-endif()
-
-if (NOT EDGE_MINIMAL_SOUND)
-	target_include_directories(edge-classic PRIVATE source_files/libgme/gme)
-	target_include_directories(edge-classic PRIVATE source_files/libxmp)
-	target_include_directories(edge-classic PRIVATE source_files/crsid)
-	target_include_directories(edge-classic PRIVATE source_files/minimp3)
-endif()
-
-target_include_directories(edge-classic PRIVATE source_files/fluidlite/include)
-target_include_directories(edge-classic PRIVATE source_files/libymfm)
-target_include_directories(edge-classic PRIVATE source_files/ymfmidi)
-target_include_directories(edge-classic PRIVATE source_files/fmmidi)
-target_include_directories(edge-classic PRIVATE source_files/dr_libs)
-target_include_directories(edge-classic PRIVATE source_files/minivorbis)
-
-if(WIN32 AND NOT MSYS AND NOT MINGW AND NOT EMSCRIPTEN)
-  target_include_directories(edge-classic PRIVATE source_files/sdl2/include)
-endif()
-
-if(WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
-  target_compile_definitions(edge-classic PRIVATE WIN32)
-else()
-  target_compile_definitions(edge-classic PRIVATE UNIX)
-endif()
+target_include_directories(edge-classic PRIVATE ${EDGE_INCLUDE_DIRECTORIES})
+target_link_libraries(edge-classic PRIVATE ${EDGE_LINK_LIBRARIES})
 
 # Copies executable to local install directory after build
 add_custom_command(
@@ -275,7 +263,7 @@ COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:edge-classic>"
 )
 
 # Copy appropriate SDL2.dll to local install directory when built with MSVC
-if(WIN32 AND NOT MSYS AND NOT MINGW AND NOT EMSCRIPTEN)
+if(WIN32 AND NOT MSYS AND NOT MINGW)
   if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
     add_custom_command(
 	TARGET edge-classic
@@ -292,7 +280,7 @@ if(WIN32 AND NOT MSYS AND NOT MINGW AND NOT EMSCRIPTEN)
 	)
   endif ()
 # Copy appropriate SDL2.dll to local install directory when built with MSYS2
-elseif(MSYS AND NOT EMSCRIPTEN)
+elseif(MSYS)
 	if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
 	add_custom_command(
 	TARGET edge-classic
@@ -315,35 +303,3 @@ elseif(MSYS AND NOT EMSCRIPTEN)
 	)
 	endif ()
 endif()
-
-set(EDGE_LIBRARIES
-	edge_ajbsp
-	edge_coal
-	edge_ddf
-	edge_deh
-	edge_epi	
-	ec_voxelib	
-	miniz
-	fluidlite
-	libymfm
-	ymfmidi
-	fmmidi
-	${SDL2_LIBRARIES}	
-)
-
-if (NOT EDGE_MINIMAL_SOUND)
-	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} libxmp gme crsid)
-endif()
-
-if (NOT EDGE_GL_ES2)
-	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} glad ${OPENGL_LIBRARIES})
-else()
-	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} gl4es)
-endif()
-
-if(WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
-	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} wsock32)
-endif()
-
-target_link_libraries( edge-classic PRIVATE ${EDGE_LIBRARIES})
-
