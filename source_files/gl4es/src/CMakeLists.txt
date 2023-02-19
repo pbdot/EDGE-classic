@@ -165,7 +165,7 @@ else()
     list(APPEND GL_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/glx/hardext.c
     )
-    message(STATUS "Not on Linux: building without GLX support.")
+    #message(STATUS "Not on Linux: building without GLX support.")
 endif()
 
 if(AMIGAOS4)
@@ -197,7 +197,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         set_target_properties(OPENGL32 PROPERTIES IMPORT_PREFIX "OPEN")
     endif()
 elseif(STATICLIB)
-    add_library(GL STATIC ${GL_SRC})
+    add_library(gl4es STATIC ${GL_SRC})
 else()
     add_library(GL SHARED ${GL_SRC})
     

@@ -1,27 +1,56 @@
 cmake_minimum_required(VERSION 3.12..3.20)
 
-# Whether to use ES2 rendering context, required by WebGL
-set(EDGE_GL_ES2 ON CACHE BOOL "Set to ON to use OpenGL ES2 rendering backend")
+#WIN32 is intended for detecting that running on windows and not setting compiler settings
+#fix this up, primarily in the cases where need to add "AND NOT EMSCRIPTEN"
+
+if (EMSCRIPTEN)
+	set(EDGE_GL_ES2 ON)
+	set(EDGE_MINIMAL_SOUND ON)
+	add_definitions("-DEDGE_WEB -sUSE_SDL=2 -gsource-map")
+	add_definitions("-O0")
+
+	add_link_options("SHELL:-sWASM=1")
+	add_link_options("SHELL:-sFULL_ES2=1")
+	add_link_options("SHELL:-sINITIAL_MEMORY=512Mb")
+	add_link_options("SHELL:-sALLOW_MEMORY_GROWTH")
+	add_link_options("SHELL:-sASYNCIFY")
+	# FIXME: this needs to be in the build folder 
+	add_link_options("SHELL:--preload-file C:/Dev/fixme@/")
+
+	# add_link_options("SHELL:-sSAFE_HEAP=1")
+	add_link_options("SHELL:-sASSERTIONS=1")
+	add_link_options("SHELL:-g4")
+	add_link_options("SHELL:--source-map-base /")
+endif()
+
+if(EDGE_MINIMAL_SOUND)
+	add_definitions("-DEDGE_MINIMAL_SOUND")
+endif()
 
 add_subdirectory(source_files/ajbsp)
 add_subdirectory(source_files/coal)
-add_subdirectory(source_files/crsid)
 add_subdirectory(source_files/ddf)
 add_subdirectory(source_files/dehacked)
 add_subdirectory(source_files/ec_voxelib)
 add_subdirectory(source_files/epi)
-add_subdirectory(source_files/fmmidi)
-add_subdirectory(source_files/fluidlite)
+add_subdirectory(source_files/miniz)
+
 if (NOT EDGE_GL_ES2)
 	add_subdirectory(source_files/glad)
 else()
 	add_subdirectory(source_files/gl4es)
 endif()
-add_subdirectory(source_files/libgme)
-add_subdirectory(source_files/libxmp)
+
+add_subdirectory(source_files/fluidlite)
 add_subdirectory(source_files/libymfm)
-add_subdirectory(source_files/miniz)
 add_subdirectory(source_files/ymfmidi)
+add_subdirectory(source_files/fmmidi)
+
+if (NOT EDGE_MINIMAL_SOUND)
+	add_subdirectory(source_files/crsid)
+	add_subdirectory(source_files/libgme)
+	add_subdirectory(source_files/libxmp)
+endif()
 
 project(
   edge-classic
@@ -55,162 +84,177 @@ if(APPLE OR ${CMAKE_SYSTEM} MATCHES "BSD")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I /usr/local/include")
 endif()
 
-add_executable(
-  edge-classic
-	source_files/edge/i_main.cc     
-	source_files/edge/i_ctrl.cc     
-	source_files/edge/i_video.cc    
-	source_files/edge/i_sound.cc    
-	source_files/edge/i_net.cc      
-	source_files/edge/am_map.cc     
-	source_files/edge/bot_nav.cc     
-	source_files/edge/bot_think.cc      
-	source_files/edge/con_con.cc    
-	source_files/edge/con_main.cc   
-	source_files/edge/con_var.cc    
-	source_files/edge/e_input.cc    
-	source_files/edge/e_main.cc     
-	source_files/edge/e_player.cc   
-	source_files/edge/f_finale.cc   
-	source_files/edge/f_interm.cc   
-	source_files/edge/g_game.cc     
-	source_files/edge/hu_draw.cc    
-	source_files/edge/hu_font.cc    
-	source_files/edge/hu_stuff.cc   
+set (EDGE_SOURCE_FILES
+	source_files/edge/i_main.cc
+	source_files/edge/i_ctrl.cc
+	source_files/edge/i_video.cc
+	source_files/edge/i_sound.cc
+	source_files/edge/i_net.cc
+	source_files/edge/am_map.cc
+	source_files/edge/bot_nav.cc
+	source_files/edge/bot_think.cc
+	source_files/edge/con_con.cc
+	source_files/edge/con_main.cc
+	source_files/edge/con_var.cc
+	source_files/edge/e_input.cc
+	source_files/edge/e_main.cc
+	source_files/edge/e_player.cc
+	source_files/edge/f_finale.cc
+	source_files/edge/f_interm.cc
+	source_files/edge/g_game.cc
+	source_files/edge/hu_draw.cc
+	source_files/edge/hu_font.cc
+	source_files/edge/hu_stuff.cc
 	source_files/edge/hu_style.cc
-	source_files/edge/i_system.cc 
-	source_files/edge/l_ajbsp.cc    
-	source_files/edge/l_deh.cc      
-	source_files/edge/m_argv.cc     
-	source_files/edge/m_bbox.cc     
-	source_files/edge/m_cheat.cc    
-	source_files/edge/m_math.cc     
-	source_files/edge/m_menu.cc     
-	source_files/edge/m_misc.cc     
-	source_files/edge/m_option.cc   
-	source_files/edge/m_netgame.cc  
-	source_files/edge/m_random.cc   
-	source_files/edge/n_bcast.cc    
-	source_files/edge/n_reliable.cc 
-	source_files/edge/n_network.cc  
-	source_files/edge/p_action.cc   
-	source_files/edge/p_blockmap.cc 
-	source_files/edge/p_enemy.cc    
-	source_files/edge/p_inter.cc    
-	source_files/edge/p_lights.cc   
-	source_files/edge/p_map.cc      
-	source_files/edge/p_maputl.cc   
-	source_files/edge/p_mobj.cc     
-	source_files/edge/p_plane.cc    
-	source_files/edge/p_setup.cc    
-	source_files/edge/p_sight.cc    
-	source_files/edge/p_spec.cc     
-	source_files/edge/p_switch.cc   
-	source_files/edge/p_tick.cc     
-	source_files/edge/p_user.cc     
-	source_files/edge/p_forces.cc   
-	source_files/edge/p_telept.cc   
-	source_files/edge/p_weapon.cc   
-	source_files/edge/rad_act.cc    
-	source_files/edge/rad_pars.cc   
-	source_files/edge/rad_trig.cc   
-	source_files/edge/r_draw.cc     
-	source_files/edge/r_shader.cc   
-	source_files/edge/r_render.cc   
-	source_files/edge/r_effects.cc  
-	source_files/edge/r_main.cc     
-	source_files/edge/r_occlude.cc   
-	source_files/edge/r_things.cc   
-	source_files/edge/r_units.cc    
-	source_files/edge/r_wipe.cc     
-	source_files/edge/r_misc.cc     
-	source_files/edge/r_sky.cc      
-	source_files/edge/r_colormap.cc 
+	source_files/edge/i_system.cc
+	source_files/edge/l_ajbsp.cc
+	source_files/edge/l_deh.cc
+	source_files/edge/m_argv.cc
+	source_files/edge/m_bbox.cc
+	source_files/edge/m_cheat.cc
+	source_files/edge/m_math.cc
+	source_files/edge/m_menu.cc
+	source_files/edge/m_misc.cc
+	source_files/edge/m_option.cc
+	source_files/edge/m_netgame.cc
+	source_files/edge/m_random.cc
+	source_files/edge/n_bcast.cc
+	source_files/edge/n_reliable.cc
+	source_files/edge/n_network.cc
+	source_files/edge/p_action.cc
+	source_files/edge/p_blockmap.cc
+	source_files/edge/p_enemy.cc
+	source_files/edge/p_inter.cc
+	source_files/edge/p_lights.cc
+	source_files/edge/p_map.cc
+	source_files/edge/p_maputl.cc
+	source_files/edge/p_mobj.cc
+	source_files/edge/p_plane.cc
+	source_files/edge/p_setup.cc
+	source_files/edge/p_sight.cc
+	source_files/edge/p_spec.cc
+	source_files/edge/p_switch.cc
+	source_files/edge/p_tick.cc
+	source_files/edge/p_user.cc
+	source_files/edge/p_forces.cc
+	source_files/edge/p_telept.cc
+	source_files/edge/p_weapon.cc
+	source_files/edge/rad_act.cc
+	source_files/edge/rad_pars.cc
+	source_files/edge/rad_trig.cc
+	source_files/edge/r_draw.cc
+	source_files/edge/r_shader.cc
+	source_files/edge/r_render.cc
+	source_files/edge/r_effects.cc
+	source_files/edge/r_main.cc
+	source_files/edge/r_occlude.cc
+	source_files/edge/r_things.cc
+	source_files/edge/r_units.cc
+	source_files/edge/r_wipe.cc
+	source_files/edge/r_misc.cc
+	source_files/edge/r_sky.cc
+	source_files/edge/r_colormap.cc
 	source_files/edge/r_modes.cc
-	source_files/edge/r_mdl.cc    
+	source_files/edge/r_mdl.cc
 	source_files/edge/r_md2.cc
-	source_files/edge/r_voxel.cc     
-	source_files/edge/r_image.cc    
-	source_files/edge/r_doomtex.cc  
+	source_files/edge/r_voxel.cc
+	source_files/edge/r_image.cc
+	source_files/edge/r_doomtex.cc
 	source_files/edge/r_texgl.cc
-	source_files/edge/s_blit.cc     
-	source_files/edge/s_cache.cc    
-	source_files/edge/s_sound.cc 
-	source_files/edge/s_mp3.cc   
-	source_files/edge/s_music.cc    
-	source_files/edge/s_ogg.cc      
+	source_files/edge/s_blit.cc
+	source_files/edge/s_cache.cc
+	source_files/edge/s_sound.cc
+	source_files/edge/s_music.cc
+	source_files/edge/s_ogg.cc
 	source_files/edge/s_fluid.cc
-	source_files/edge/s_gme.cc
-	source_files/edge/s_xmp.cc
 	source_files/edge/s_opl.cc
-	source_files/edge/s_sid.cc
-	source_files/edge/s_vgm.cc
 	source_files/edge/s_wav.cc
-	source_files/edge/s_flac.cc 
 	source_files/edge/s_fmm.cc
-	source_files/edge/sv_chunk.cc   
-	source_files/edge/sv_glob.cc    
-	source_files/edge/sv_level.cc   
-	source_files/edge/sv_load.cc    
-	source_files/edge/sv_main.cc    
-	source_files/edge/sv_misc.cc    
-	source_files/edge/sv_mobj.cc    
-	source_files/edge/sv_play.cc    
-	source_files/edge/sv_save.cc    
+	source_files/edge/sv_chunk.cc
+	source_files/edge/sv_glob.cc
+	source_files/edge/sv_level.cc
+	source_files/edge/sv_load.cc
+	source_files/edge/sv_main.cc
+	source_files/edge/sv_misc.cc
+	source_files/edge/sv_mobj.cc
+	source_files/edge/sv_play.cc
+	source_files/edge/sv_save.cc
 	source_files/edge/w_files.cc
 	source_files/edge/w_flat.cc
 	source_files/edge/w_model.cc
 	source_files/edge/w_pk3.cc
 	source_files/edge/w_sprite.cc
 	source_files/edge/w_texture.cc
-	source_files/edge/w_wad.cc 
-	source_files/edge/vm_coal.cc    
-	source_files/edge/vm_hud.cc     
-	source_files/edge/vm_player.cc  
-	source_files/edge/scanner.cc     
-	source_files/edge/umapinfo.cc  
-	source_files/edge/w32_res.rc # I think this is ok to leave in regardless of OS (silently ignored on *nix?)
+	source_files/edge/w_wad.cc
+	source_files/edge/vm_coal.cc
+	source_files/edge/vm_hud.cc
+	source_files/edge/vm_player.cc
+	source_files/edge/scanner.cc
+	source_files/edge/umapinfo.cc
 )
 
+if (NOT EDGE_MINIMAL_SOUND)
+	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
+		source_files/edge/s_flac.cc
+		source_files/edge/s_sid.cc
+		source_files/edge/s_vgm.cc
+		source_files/edge/s_mp3.cc		
+		source_files/edge/s_gme.cc
+		source_files/edge/s_xmp.cc
+	)
+endif()
+
+if (WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
+	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} 
+		source_files/edge/w32_res.rc)
+endif()
+
+add_executable(edge-classic ${EDGE_SOURCE_FILES})
+
 find_package(SDL2 REQUIRED)
-find_package(OpenGL REQUIRED)
+if (NOT EDGE_GL_ES2)
+	find_package(OpenGL REQUIRED)
+endif()
 
 target_include_directories(edge-classic PRIVATE source_files/ajbsp)
 target_include_directories(edge-classic PRIVATE source_files/coal)
-target_include_directories(edge-classic PRIVATE source_files/crsid)
 target_include_directories(edge-classic PRIVATE source_files/ddf)
 target_include_directories(edge-classic PRIVATE source_files/dehacked)
-target_include_directories(edge-classic PRIVATE source_files/dr_libs)
 target_include_directories(edge-classic PRIVATE source_files/ec_voxelib)
 target_include_directories(edge-classic PRIVATE source_files/epi)
-target_include_directories(edge-classic PRIVATE source_files/fluidlite/include)
-target_include_directories(edge-classic PRIVATE source_files/fmmidi)
+target_include_directories(edge-classic PRIVATE source_files/miniz)
+target_include_directories(edge-classic PRIVATE source_files/stb)
+
 if(NOT EDGE_GL_ES2)
 	target_include_directories(edge-classic PRIVATE source_files/glad/include/glad)
 else()
+	target_compile_definitions(edge-classic PRIVATE EDGE_GL_ES2)
 	target_include_directories(edge-classic PRIVATE source_files/gl4es/include)
 	target_include_directories(edge-classic PRIVATE source_files/gl4es/include/GL)
 endif()
-target_include_directories(edge-classic PRIVATE source_files/libgme/gme)
+
+if (NOT EDGE_MINIMAL_SOUND)
+	target_include_directories(edge-classic PRIVATE source_files/libgme/gme)
+	target_include_directories(edge-classic PRIVATE source_files/libxmp)
+	target_include_directories(edge-classic PRIVATE source_files/crsid)
+	target_include_directories(edge-classic PRIVATE source_files/minimp3)
+endif()
+
+target_include_directories(edge-classic PRIVATE source_files/fluidlite/include)
 target_include_directories(edge-classic PRIVATE source_files/libymfm)
-target_include_directories(edge-classic PRIVATE source_files/libxmp)
-target_include_directories(edge-classic PRIVATE source_files/minimp3)
+target_include_directories(edge-classic PRIVATE source_files/ymfmidi)
+target_include_directories(edge-classic PRIVATE source_files/fmmidi)
+target_include_directories(edge-classic PRIVATE source_files/dr_libs)
 target_include_directories(edge-classic PRIVATE source_files/minivorbis)
-target_include_directories(edge-classic PRIVATE source_files/miniz)
-if(WIN32 AND NOT MSYS AND NOT MINGW)
+
+if(WIN32 AND NOT MSYS AND NOT MINGW AND NOT EMSCRIPTEN)
   target_include_directories(edge-classic PRIVATE source_files/sdl2/include)
 endif()
-target_include_directories(edge-classic PRIVATE source_files/stb)
-target_include_directories(edge-classic PRIVATE source_files/ymfmidi)
 
-if(WIN32 OR MSYS OR MINGW)
+if(WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
   target_compile_definitions(edge-classic PRIVATE WIN32)
 else()
   target_compile_definitions(edge-classic PRIVATE UNIX)
-endif()
-
-if (EDGE_GL_ES2)
-	add_definitions(-DEDGE_GL_ES2)
 endif()
 
 # Copies executable to local install directory after build
@@ -222,7 +266,7 @@ COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:edge-classic>"
 )
 
 # Copy appropriate SDL2.dll to local install directory when built with MSVC
-if(WIN32 AND NOT MSYS AND NOT MINGW)
+if(WIN32 AND NOT MSYS AND NOT MINGW AND NOT EMSCRIPTEN)
   if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
     add_custom_command(
 	TARGET edge-classic
@@ -239,7 +283,7 @@ if(WIN32 AND NOT MSYS AND NOT MINGW)
 	)
   endif ()
 # Copy appropriate SDL2.dll to local install directory when built with MSYS2
-elseif(MSYS)
+elseif(MSYS AND NOT EMSCRIPTEN)
 	if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
 	add_custom_command(
 	TARGET edge-classic
@@ -268,18 +312,19 @@ set(EDGE_LIBRARIES
 	edge_coal
 	edge_ddf
 	edge_deh
-	edge_epi
-	crsid
-	ec_voxelib
-	fmmidi
-	fluidlite
-	gme
+	edge_epi	
+	ec_voxelib	
 	miniz
-	libxmp
+	fluidlite
 	libymfm
 	ymfmidi
-	${SDL2_LIBRARIES}
+	fmmidi
+	${SDL2_LIBRARIES}	
 )
+
+if (NOT EDGE_MINIMAL_SOUND)
+	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} libxmp gme crsid)
+endif()
 
 if (NOT EDGE_GL_ES2)
 	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} glad ${OPENGL_LIBRARIES})
@@ -287,7 +332,7 @@ else()
 	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} gl4es)
 endif()
 
-if(WIN32 OR MSYS OR MINGW)
+if(WIN32 OR MSYS OR MINGW AND NOT EMSCRIPTEN)
 	set(EDGE_LIBRARIES ${EDGE_LIBRARIES} wsock32)
 endif()
 

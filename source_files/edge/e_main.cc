@@ -1670,7 +1670,6 @@ static void E_InitialState(void)
 	G_DeferredNewGame(params);
 }
 
-
 //
 // ---- MAIN ----
 //
@@ -1703,16 +1702,14 @@ void E_Main(int argc, const char **argv)
 		I_Printf("EDGE-Classic v" EDGEVERSTR " initialisation complete.\n");
 
 		I_Debugf("- Entering game loop...\n");
-
+#ifndef EDGE_WEB
 		while (! (app_state & APP_STATE_PENDING_QUIT))
 		{
-			// We always do this once here, although the engine may
-			// makes in own calls to keep on top of the event processing
-			I_ControlGetEvents(); 
-
-			if (app_state & APP_STATE_ACTIVE)
-				E_Tick();
+			E_DoomTick();
 		}
+#else
+		return;
+#endif		
 	}
 	catch(const std::exception& e)
 	{

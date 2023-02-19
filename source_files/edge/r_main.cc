@@ -290,7 +290,9 @@ void RGL_SoftInit(void)
 	glDisable(GL_STENCIL_TEST);
 
 	glDisable(GL_LINE_SMOOTH);
+#ifndef EDGE_WEB	
 	glDisable(GL_POLYGON_SMOOTH);
+#endif
 
 	if (var_dithering)
 		glEnable(GL_DITHER);

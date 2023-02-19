@@ -22,8 +22,10 @@
 #include "sound_types.h"
 #include "str_util.h"
 
+#ifndef EDGE_MINIMAL_SOUND
 #include "gme.h"
 #include "xmp.h"
+#endif
 
 namespace epi
 {
@@ -103,7 +105,7 @@ sound_format_e Sound_DetectFormat(byte *data, int song_len)
 	}
 
 	// Moving on to more specialized or less reliable detections
-
+#ifndef EDGE_MINIMAL_SOUND
 	if (!std::string(gme_identify_header(data)).empty())
 	{
 		return FMT_GME;
@@ -111,6 +113,8 @@ sound_format_e Sound_DetectFormat(byte *data, int song_len)
 
 	if (xmp_test_module_from_memory(data, song_len, NULL) == 0)
 		return FMT_XMP;
+		
+#endif
 
 	if ((data[0] == 'I' && data[1] == 'D' && data[2] == '3') ||
 		(data[0] == 0xFF && (data[1] >> 4 & 0xF == 0xF)))

@@ -107,10 +107,12 @@ static bool Load_OGG(epi::sound_data_c *buf, const byte *lump, int length)
 	return S_LoadOGGSound(buf, lump, length);
 }
 
+#ifndef EDGE_MINIMAL_SOUND
 static bool Load_MP3(epi::sound_data_c *buf, const byte *lump, int length)
 {
 	return S_LoadMP3Sound(buf, lump, length);
 }
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -232,10 +234,6 @@ static bool DoCacheLoad(sfxdef_c *def, epi::sound_data_c *buf)
 			OK = Load_OGG(buf, data, length);
 			break;
 
-		case epi::FMT_MP3:
-			OK = Load_MP3(buf, data, length);
-			break;
-
 		case epi::FMT_SPK:
 			OK = Load_WAV(buf, data, length, true);
 			break;
@@ -243,6 +241,12 @@ static bool DoCacheLoad(sfxdef_c *def, epi::sound_data_c *buf)
 		case epi::FMT_DOOM:
 			OK = Load_DOOM(buf, data, length);
 			break;
+
+#ifndef EDGE_MINIMAL_SOUND
+		case epi::FMT_MP3:
+			OK = Load_MP3(buf, data, length);
+			break;
+#endif
 
 		default:
 			OK = false;

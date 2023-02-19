@@ -5,10 +5,12 @@ project(
   VERSION 1.1.5
 )
 
-include(CheckSymbolExists)
-check_symbol_exists(backtrace "execinfo.h" HAS_BACKTRACE)
-if (HAS_BACKTRACE)
-    add_definitions(-DHAS_BACKTRACE)
+if (EMSCRIPTEN)
+    set(NOX11 ON)
+    set(NO_GBM ON)
+    set(NO_EGL ON)
+    set(STATICLIB ON)
+    set(NO_INIT_CONSTRUCTOR ON)
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Windows" OR CMAKE_SYSTEM_NAME MATCHES "MSYS")

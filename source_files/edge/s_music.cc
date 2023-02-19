@@ -185,6 +185,31 @@ void S_ChangeMusic(int entrynum, bool loop)
 			music_player = S_PlayOGGMusic(F, volume, loop);
 			break;
 
+		// IMF writes raw OPL registers, so must use the OPL player unconditionally
+		case epi::FMT_IMF:
+			delete F;
+			music_player = S_PlayOPL(data, length, volume, loop, play->type);
+			break;
+
+		case epi::FMT_MIDI:
+		case epi::FMT_MUS:
+		case epi::FMT_WAV: // RIFF MIDI has the same header as WAV
+			delete F;
+			if (var_midi_player == 0)
+			{
+				music_player = S_PlayFluid(data, length, volume, loop);
+			}
+			else if (var_midi_player == 1)
+			{
+				music_player = S_PlayOPL(data, length, volume, loop, play->type);
+			}
+			else
+			{
+				music_player = S_PlayFMM(data, length, volume, loop);
+			}
+			break;
+
+#ifndef EDGE_MINIMAL_SOUND
 		case epi::FMT_MP3:
 			// rewind the file
 			F->Seek(0, epi::file_c::SEEKPOINT_START);
@@ -216,30 +241,7 @@ void S_ChangeMusic(int entrynum, bool loop)
 			delete F;
 			music_player = S_PlaySIDMusic(data, length, volume, loop);
 			break;
-
-		// IMF writes raw OPL registers, so must use the OPL player unconditionally
-		case epi::FMT_IMF:
-			delete F;
-			music_player = S_PlayOPL(data, length, volume, loop, play->type);
-			break;
-
-		case epi::FMT_MIDI:
-		case epi::FMT_MUS:
-		case epi::FMT_WAV: // RIFF MIDI has the same header as WAV
-			delete F;
-			if (var_midi_player == 0)
-			{
-				music_player = S_PlayFluid(data, length, volume, loop);
-			}
-			else if (var_midi_player == 1)
-			{
-				music_player = S_PlayOPL(data, length, volume, loop, play->type);
-			}
-			else
-			{
-				music_player = S_PlayFMM(data, length, volume, loop);
-			}
-			break;
+#endif
 
 		default:
 			delete F;
