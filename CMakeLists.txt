@@ -6,21 +6,30 @@ cmake_minimum_required(VERSION 3.12..3.20)
 if (EMSCRIPTEN)
 	set(EDGE_GL_ES2 ON)
 	set(EDGE_MINIMAL_SOUND ON)
-	add_definitions("-DEDGE_WEB -sUSE_SDL=2 -gsource-map")
-	add_definitions("-O0")
 
-	add_link_options("SHELL:-sWASM=1")
-	add_link_options("SHELL:-sFULL_ES2=1")
-	add_link_options("SHELL:-sINITIAL_MEMORY=512Mb")
-	add_link_options("SHELL:-sALLOW_MEMORY_GROWTH")
-	add_link_options("SHELL:-sASYNCIFY")
-	# FIXME: this needs to be in the build folder 
-	add_link_options("SHELL:--preload-file C:/Dev/fixme@/")
+	# https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
 
-	# add_link_options("SHELL:-sSAFE_HEAP=1")
-	add_link_options("SHELL:-sASSERTIONS=1")
-	add_link_options("SHELL:-g4")
-	add_link_options("SHELL:--source-map-base /")
+	set(EDGE_EMSC_COMMON_FLAGS "-sUSE_SDL=2")
+	set(EDGE_EMSC_COMPILER_FLAGS "-DEDGE_WEB=1")
+	set(EDGE_EMSC_LINKER_FLAGS "-sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=256Mb -sERROR_ON_UNDEFINED_SYMBOLS=1 -sMAX_WEBGL_VERSION=2 -sFULL_ES2=1 --preload-file=C:/Dev/fixme@/")
+	
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")			
+		set(EDGE_EMSC_COMPILER_FLAGS "${EDGE_EMSC_COMPILER_FLAGS} -O0 -gsource-map")
+
+		# SAFE_HEAP currently has alignment issues, see github issue				
+		set(EDGE_EMSC_LINKER_FLAGS "${EDGE_EMSC_LINKER_FLAGS} -sASSERTIONS=1 -g4 --source-map-base=/")		
+	else()
+		set(EDGE_EMSC_COMMON_FLAGS "${EDGE_EMSC_COMMON_FLAGS} -flto")
+		set(EDGE_EMSC_COMPILER_FLAGS "${EDGE_EMSC_COMPILER_FLAGS} -O3")
+		set(EDGE_EMSC_LINKER_FLAGS "${EDGE_EMSC_LINKER_FLAGS} -sASYNCIFY=1")
+	endif()
+
+	message("${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_COMPILER_FLAGS}")
+	message("${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_LINKER_FLAGS}")
+
+	add_compile_options("SHELL: ${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_COMPILER_FLAGS}")
+	add_link_options("SHELL: ${EDGE_EMSC_COMMON_FLAGS} ${EDGE_EMSC_LINKER_FLAGS}")
+
 endif()
 
 if(EDGE_MINIMAL_SOUND)
