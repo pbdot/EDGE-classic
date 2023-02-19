@@ -2,7 +2,7 @@
 # https://github.com/emscripten-core/emscripten/blob/main/src/settings.js
 
 set(EDGE_GL_ES2 ON)
-set(EDGE_MINIMAL_SOUND ON)
+# set(EDGE_MINIMAL_SOUND ON)
 
 set(EDGE_EMSC_COMMON_FLAGS "-sUSE_SDL=2")
 set(EDGE_EMSC_COMPILER_FLAGS "-DEDGE_WEB=1")

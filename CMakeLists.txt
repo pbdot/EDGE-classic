@@ -19,39 +19,18 @@ else()
 	add_subdirectory(source_files/gl4es)
 endif()
 
-if (NOT EDGE_MINIMAL_SOUND)
-	set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES}
-		source_files/libgme/gme
-		source_files/libxmp
-		source_files/crsid
-		source_files/minimp3)
-
-	set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
-		source_files/edge/s_flac.cc
-		source_files/edge/s_sid.cc
-		source_files/edge/s_vgm.cc
-		source_files/edge/s_mp3.cc
-		source_files/edge/s_gme.cc
-		source_files/edge/s_xmp.cc)
-
-	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} libxmp gme crsid)
-
-	add_subdirectory(source_files/crsid)
-	add_subdirectory(source_files/libxmp)
-	add_subdirectory(source_files/libgme)
-else()
-	add_compile_options(-DEDGE_MINIMAL_SOUND)
-endif()
-
 add_subdirectory(source_files/ajbsp)
 add_subdirectory(source_files/coal)
+add_subdirectory(source_files/crsid)
 add_subdirectory(source_files/ddf)
 add_subdirectory(source_files/dehacked)
 add_subdirectory(source_files/ec_voxelib)
 add_subdirectory(source_files/epi)
 add_subdirectory(source_files/fmmidi)
 add_subdirectory(source_files/fluidlite)
+add_subdirectory(source_files/libgme)
 add_subdirectory(source_files/libymfm)
+add_subdirectory(source_files/m4p)
 add_subdirectory(source_files/miniz)
 add_subdirectory(source_files/ymfmidi)
 
@@ -70,9 +49,10 @@ if (NOT EMSCRIPTEN)
 		find_package(OpenGL REQUIRED)
 		set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} ${OPENGL_LIBRARIES})
 	endif()
-	find_package(SDL2 REQUIRED)
-	set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} ${SDL2_LIBRARIES})
 endif()
+
+find_package(SDL2 REQUIRED)
+set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} ${SDL2_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -187,15 +167,21 @@ set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
 	source_files/edge/r_image.cc
 	source_files/edge/r_doomtex.cc
 	source_files/edge/r_texgl.cc
-	source_files/edge/s_blit.cc
-	source_files/edge/s_cache.cc
-	source_files/edge/s_sound.cc
-	source_files/edge/s_music.cc
-	source_files/edge/s_ogg.cc
+	source_files/edge/s_blit.cc     
+	source_files/edge/s_cache.cc    
+	source_files/edge/s_sound.cc 
+	source_files/edge/s_mp3.cc   
+	source_files/edge/s_music.cc    
+	source_files/edge/s_ogg.cc      
 	source_files/edge/s_fluid.cc
+	source_files/edge/s_gme.cc
+	source_files/edge/s_m4p.cc
 	source_files/edge/s_opl.cc
+	source_files/edge/s_sid.cc
+	source_files/edge/s_vgm.cc
 	source_files/edge/s_wav.cc
-	source_files/edge/s_fmm.cc
+	source_files/edge/s_flac.cc 
+	source_files/edge/s_fmm.cc	
 	source_files/edge/sv_chunk.cc
 	source_files/edge/sv_glob.cc
 	source_files/edge/sv_level.cc
@@ -222,6 +208,7 @@ set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES}
 set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES}
 	source_files/ajbsp
 	source_files/coal
+	source_files/crsid
 	source_files/ddf
 	source_files/dehacked
 	source_files/dr_libs
@@ -229,7 +216,10 @@ set(EDGE_INCLUDE_DIRECTORIES ${EDGE_INCLUDE_DIRECTORIES}
 	source_files/epi
 	source_files/fluidlite/include
 	source_files/fmmidi
+	source_files/libgme/gme
 	source_files/libymfm
+	source_files/m4p
+	source_files/minimp3
 	source_files/minivorbis
 	source_files/miniz
 	source_files/stb
@@ -242,9 +232,12 @@ set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES}
 	edge_ddf
 	edge_deh
 	edge_epi
+	crsid
 	ec_voxelib
 	fmmidi
 	fluidlite
+	gme
+	m4p
 	miniz
 	libymfm
 	ymfmidi

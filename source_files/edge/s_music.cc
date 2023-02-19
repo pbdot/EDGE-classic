@@ -209,7 +209,6 @@ void S_ChangeMusic(int entrynum, bool loop)
 			}
 			break;
 
-#ifndef EDGE_MINIMAL_SOUND
 		case epi::FMT_MP3:
 			// rewind the file
 			F->Seek(0, epi::file_c::SEEKPOINT_START);
@@ -241,8 +240,7 @@ void S_ChangeMusic(int entrynum, bool loop)
 			delete F;
 			music_player = S_PlaySIDMusic(data, length, volume, loop);
 			break;
-#endif
-
+			
 		default:
 			delete F;
 			delete data;
