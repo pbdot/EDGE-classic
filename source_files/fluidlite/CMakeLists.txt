@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
-project(fluidlite)
 
 add_library(fluidlite
     src/fluid_chan.c
@@ -21,6 +18,5 @@ add_library(fluidlite
     src/fluid_voice.c
 )
 
-target_include_directories(fluidlite PRIVATE src)
-target_include_directories(fluidlite PRIVATE include)
-target_include_directories(fluidlite PUBLIC ../minivorbis)
+target_include_directories(fluidlite PRIVATE src include)
+target_include_directories(fluidlite PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ../minivorbis)

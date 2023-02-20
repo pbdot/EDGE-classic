@@ -1,6 +1,4 @@
 # CMake project definition file.
-project(libgme)
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 include (CheckCXXCompilerFlag)
 include (CTest)

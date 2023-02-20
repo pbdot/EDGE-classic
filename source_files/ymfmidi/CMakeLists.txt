@@ -1,11 +1,4 @@
-project(
-  ymfmidi
-  LANGUAGES CXX
-  VERSION 0.1.0
-)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_library(ymfmidi
   patches.cpp
   patchnames.cpp
@@ -13,3 +6,4 @@ add_library(ymfmidi
 )
 
 target_include_directories(ymfmidi PRIVATE ../libymfm)
+target_include_directories(ymfmidi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

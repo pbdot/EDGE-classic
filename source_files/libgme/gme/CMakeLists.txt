@@ -122,7 +122,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 # Add library to be compiled.
 add_library(gme ${libgme_SRCS})
 
-
+target_include_directories(gme PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # The version is the release.  The "soversion" is the API version.  As long
 # as only build fixes are performed (i.e. no backwards-incompatible changes

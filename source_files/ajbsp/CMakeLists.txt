@@ -1,11 +1,11 @@
 # AJBSP CMake Script
-cmake_minimum_required(VERSION 3.2.2)
 
-project(edge_ajbsp)
+if (NOT MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fwrapv -fno-exceptions -fno-rtti")
+endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-O2 -fno-strict-aliasing -fwrapv -fno-exceptions -fno-rtti")
+
+
 
 add_library(
 	edge_ajbsp
@@ -16,3 +16,5 @@ add_library(
 	lib_util.cc
 	w_wad.cc
 )
+
+target_include_directories(edge_ajbsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

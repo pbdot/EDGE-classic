@@ -1,17 +1,3 @@
-project(
-  libymfm
-  LANGUAGES CXX
-  VERSION 0.1.0
-)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-O2 -Wall")
-if(WIN32 AND NOT MSYS AND NOT MINGW)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /EHs")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-strict-aliasing")
-endif()
 
 add_library(
   libymfm
@@ -26,3 +12,5 @@ add_library(
   ymfm_pcm.cpp
   ymfm_ssg.cpp
 )
+
+target_include_directories(libymfm PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

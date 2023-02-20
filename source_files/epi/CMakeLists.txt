@@ -1,17 +1,3 @@
-project(
-  edge_epi
-  LANGUAGES CXX
-  VERSION 0.1.0
-)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "-O2 -Wall")
-if(WIN32 AND NOT MSYS AND NOT MINGW)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast /EHs")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -fno-strict-aliasing")
-endif()
 
 add_library(
   edge_epi
@@ -38,6 +24,5 @@ add_library(
   str_lexer.cc
   str_util.cc
 )
-target_include_directories(edge_epi PRIVATE ../stb)
-target_include_directories(edge_epi PRIVATE ../libgme/gme)
-target_include_directories(edge_epi PRIVATE ../m4p)
+target_include_directories(edge_epi PRIVATE ../stb ../libgme/gme ../m4p)
+target_include_directories(edge_epi PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

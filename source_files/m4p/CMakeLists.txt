@@ -1,12 +1,3 @@
-cmake_minimum_required(VERSION 3.2.2)
-
-project(
-  m4p
-  LANGUAGES C
-  VERSION 0.1.0
-)
-
-set(CMAKE_CC_FLAGS "-O2 -Wall")
 
 add_library(
   m4p
@@ -28,3 +19,5 @@ add_library(
   pmplay.c
   snd_masm.c
 )
+
+target_include_directories(m4p PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
