@@ -26,16 +26,42 @@
     <div style="padding-top: 24px; padding-bottom: 24px; text-align: center;">
         <a href="https://edge-classic.github.io/"><img src="logo.png" width="320px" /></a>
     </div>
-    <div style="width: 100%; text-align: center">
+    <div id="loading" style="width: 100%; text-align: center; display: none">
+        <h2 style="color: white;">Loading...</h2>
+    </div>
+    <div id="writing" style="width: 100%; text-align: center; display: none">
+        <h2 style="color: white;">Writing...please do not leave webpage</h2>
+    </div>
+    <div id="play" style="width: 100%; text-align: center; display: none">
+        <button onclick="document.getElementById('canvas-container').style.display = 'block'; document.getElementById('play').style.display = 'none';" >Play</button>
+    </div>
+    <div id="canvas-container" style="width: 100%; text-align: center; display: none">
         <canvas class="game" id="canvas" width="1280px" height="720px" oncontextmenu="event.preventDefault()"></canvas>
     </div>
     <div style="padding-top: 4px; padding-bottom: 8px; text-align: center;">
-        <a style="color: white;" href="https://edge-classic.github.io/"><h4>https://edge-classic.github.io</h4></a>
+        <a style="color: white;" href="https://edge-classic.github.io/">
+            <h4>https://edge-classic.github.io</h4>
+        </a>
     </div>
 
     <script type="text/javascript">
         var Module = {
-            arguments: ["-windowed", "-width", "1280", "-height", "720","-iwad", "DOOM2.WAD"],
+            edgePostInit: () => {
+                document.getElementById('loading').style.display = "none";
+                document.getElementById('play').style.display = "block";
+            },
+            preEdgeSyncFS: () => {    
+                console.log("Pre-Sync");
+                document.getElementById('writing').style.display = "block";
+            },
+            postEdgeSyncFS: () => {     
+                console.log("Post-Sync");           
+                document.getElementById('writing').style.display = "none";
+            },
+            arguments: ["-windowed", "-width", "1280", "-height", "720", "-iwad", "DOOM2.WAD"],
+            preInit: () => {
+                document.getElementById('loading').style.display = "block";
+            },
             preRun: [],
             postRun: [],
             print: (function () {

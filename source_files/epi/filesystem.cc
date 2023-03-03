@@ -166,6 +166,26 @@ bool FS_Rename(const char *oldname, const char *newname)
 	return true;
 }
 
+#ifdef EDGE_WEB
+
+void FS_Sync(bool populate)
+{
+	EM_ASM_
+		(
+			{
+				if (Module.preEdgeSyncFS) {
+					Module.preEdgeSyncFS();
+				}
+				FS.syncfs(function (err) {
+					if (Module.postEdgeSyncFS) {
+						Module.postEdgeSyncFS();
+					}					
+				});			
+			}
+		);
+	#endif
+}
+
 } // namespace epi
 
 //--- editor settings ---

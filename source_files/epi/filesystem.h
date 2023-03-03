@@ -68,6 +68,13 @@ bool FS_Copy(std::filesystem::path src, std::filesystem::path dest);
 bool FS_Delete(std::filesystem::path name);
 bool FS_Rename(const char *oldname, const char *newname);
 
+#ifdef EDGE_WEB
+void FS_Sync(bool populate = false);
+#else
+#define FS_Sync()
+#define FS_Sync(a)
+#endif
+
 } // namespace epi
 
 #endif /*__EPI_FILESYSTEM_H__*/

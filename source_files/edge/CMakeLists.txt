@@ -2,8 +2,7 @@
 # edge
 ##########################################
 
-set (EDGE_SOURCE_FILES
-  i_main.cc
+set (EDGE_SOURCE_FILES  
   i_ctrl.cc
   i_video.cc
   i_sound.cc
@@ -134,6 +133,12 @@ set (EDGE_LINK_LIBRARIES
   libymfm
   ymfmidi
 )
+
+if (EMSCRIPTEN)
+  set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} i_web.cc)
+else()
+  set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} i_main.cc)
+endif()
 
 if (MSVC OR MINGW OR MSYS)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} w32_res.rc)

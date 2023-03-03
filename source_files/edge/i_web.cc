@@ -1,9 +1,9 @@
 //----------------------------------------------------------------------------
 //  EDGE Main
 //----------------------------------------------------------------------------
-// 
+//
 //  Copyright (c) 1999-2009  The EDGE Team.
-// 
+//
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
 //  as published by the Free Software Foundation; either version 2
@@ -28,27 +28,51 @@
 
 std::filesystem::path exe_path = ".";
 
+void E_WebTick(void)
+{
+	// We always do this once here, although the engine may
+	// makes in own calls to keep on top of the event processing
+	I_ControlGetEvents();
+
+	if (app_state & APP_STATE_ACTIVE)
+		E_Tick();
+}
+
 extern "C" {
 
-int main(int argc, char *argv[])
-{
+void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv) {
+
+	emscripten_set_main_loop(E_WebTick, 0, 0);
+
 	if (SDL_Init(0) < 0)
 		I_Error("Couldn't init SDL!!\n%s\n", SDL_GetError());
 
 	exe_path = UTFSTR(SDL_GetBasePath());
 
-#ifdef _WIN32
-	// -AJA- change current dir to match executable
-	epi::FS_SetCurrDir(exe_path);
-#endif
+	E_Main(argc, argv);
+	
+	EM_ASM_({
+		if (Module.edgePostInit) {
+			Module.edgePostInit();
+		}
+	});
 
-	// Run EDGE. it never returns
-	E_Main(argc, (const char **) argv);
+}
+
+int main(int argc, char *argv[])
+{
+	EM_ASM_({
+		var dir = "/home/web_user/edge-classic";
+		FS.mkdirTree(dir);
+		FS.mount(IDBFS, {}, dir);
+		FS.syncfs(true, function (err) {
+			Module._I_WebMain($0, $1);
+		});
+		}, argc, argv);
 
 	return 0;
 }
 
-} // extern "C"
+}
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+
