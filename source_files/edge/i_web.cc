@@ -40,7 +40,8 @@ void E_WebTick(void)
 
 extern "C" {
 
-void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv) {
+void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv) 
+{
 
 	emscripten_set_main_loop(E_WebTick, 0, 0);
 
@@ -63,7 +64,11 @@ int main(int argc, char *argv[])
 {
 	EM_ASM_({
 		var dir = "/home/web_user/edge-classic";
-		FS.mkdirTree(dir);
+		if (!FS.analyzePath(dir).exists) 
+		{
+			FS.mkdirTree(dir);
+		}
+		
 		FS.mount(IDBFS, {}, dir);
 		FS.syncfs(true, function (err) {
 			Module._I_WebMain($0, $1);
