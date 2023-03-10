@@ -5,7 +5,8 @@ set(EDGE_GL_ES2 ON)
 
 set(EDGE_EMSC_COMMON_FLAGS "-sUSE_SDL=2")
 set(EDGE_EMSC_COMPILER_FLAGS "-DEDGE_WEB=1")
-set(EDGE_EMSC_LINKER_FLAGS "-sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=256Mb -sERROR_ON_UNDEFINED_SYMBOLS=1 -sMAX_WEBGL_VERSION=2 -sFULL_ES2=1 -lidbfs.js")
+# @todo: -s 'EXPORT_NAME=\"createModule\"' <--- this causes an issue with the file packager, which also has an export name
+set(EDGE_EMSC_LINKER_FLAGS "-sENVIRONMENT=web -sWASM=1 -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=256Mb -sERROR_ON_UNDEFINED_SYMBOLS=1 -sMAX_WEBGL_VERSION=2 -sFULL_ES2=1 -lidbfs.js -sMODULARIZE=1 --pre-js=C:/Dev/edge-classic-site/src/edge-classic-data.js")
 
 # Enable sourcemap support
 set(EDGE_EMSC_LINKER_FLAGS "${EDGE_EMSC_LINKER_FLAGS} -gsource-map --source-map-base=/")

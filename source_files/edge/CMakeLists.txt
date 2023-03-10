@@ -203,7 +203,7 @@ if (NOT EMSCRIPTEN)
   )
 else()
   set (SOURCE_DIR "${CMAKE_SOURCE_DIR}/build/source_files/edge")
-  set (DEST_DIR "${CMAKE_SOURCE_DIR}/web/site")
+  set (DEST_DIR "C:/Dev/edge-classic-site/src")
 
   add_custom_command(
   TARGET edge-classic
@@ -217,7 +217,7 @@ else()
   
   add_custom_command(
   TARGET edge-classic
-  POST_BUILD
+  PRE_BUILD
   COMMAND python ${EMPACKAGER} ${DEST_DIR}/edge-classic.data --preload 
     ${CMAKE_SOURCE_DIR}/web/preload@/ 
     ${CMAKE_SOURCE_DIR}/edge-defs.wad@/edge-defs.wad
@@ -227,6 +227,7 @@ else()
     ${CMAKE_SOURCE_DIR}/soundfont@/soundfont
     --js-output=${DEST_DIR}/edge-classic-data.js 
     --use-preload-cache
+    --no-node
   )  
 
 endif()
