@@ -220,6 +220,7 @@ else()
   PRE_BUILD
   COMMAND python ${EMPACKAGER} ${DEST_DIR}/edge-classic.data --preload 
     ${CMAKE_SOURCE_DIR}/web/preload@/ 
+    ${CMAKE_SOURCE_DIR}/edge_base@/edge_base
     ${CMAKE_SOURCE_DIR}/edge-defs.wad@/edge-defs.wad
     ${CMAKE_SOURCE_DIR}/soundfont@/soundfont
     --js-output=${DEST_DIR}/edge-classic-data.js 
