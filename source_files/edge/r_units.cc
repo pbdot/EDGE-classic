@@ -95,6 +95,10 @@ static std::vector<local_gl_unit_t *> local_unit_map;
 
 static int cur_vert;
 static int cur_unit;
+static int cur_polygon_offset = 0;
+static vec3_t cur_vertex_normal = {0, 0, 0};
+static GLfloat cur_vertex_color[4] = {0, 0, 0, 0};
+static vec2_t cur_vertex_texc[2] = {{0, 0}, {0, 0}};
 
 static bool batch_sort;
 
@@ -134,7 +138,7 @@ void RGL_StartUnits(bool sort_em)
 {
 	cur_vert = cur_unit = 0;
 
-	batch_sort = sort_em;
+	batch_sort = true;
 
 	local_unit_map.resize(MAX_L_UNIT);
 }
@@ -301,18 +305,39 @@ static void EnableCustomEnv(GLuint env, bool enable)
 static inline void RGL_SendRawVector(const local_gl_vert_t *V)
 {
 	if (r_colormaterial.d || ! r_colorlighting.d)
-		glColor4fv(V->rgba);
+	{
+		if (V->rgba[0] != cur_vertex_color[0] || 
+			V->rgba[1] != cur_vertex_color[1] ||		
+			V->rgba[2] != cur_vertex_color[2] ||
+			V->rgba[3] != cur_vertex_color[3])
+		{	
+			*cur_vertex_color = *V->rgba;
+			glColor4fv(V->rgba);
+		}		
+	}
 	else
 	{
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, V->rgba);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, V->rgba);
 	}
 
-	myMultiTexCoord2f(GL_TEXTURE0, V->texc[0].x, V->texc[0].y);
-	myMultiTexCoord2f(GL_TEXTURE1, V->texc[1].x, V->texc[1].y);
+	if (V->texc[1].x != cur_vertex_texc[1].x || V->texc[1].y != cur_vertex_texc[1].y)
+	{
+		cur_vertex_texc[1] = V->texc[1];
+		myMultiTexCoord2f(GL_TEXTURE0, V->texc[0].x, V->texc[0].y);
+		myMultiTexCoord2f(GL_TEXTURE1, V->texc[1].x, V->texc[1].y);
+	}
+	else
+	{		
+		glTexCoord2f(V->texc[0].x, V->texc[0].y);
+	}
 
-	glNormal3f(V->normal.x, V->normal.y, V->normal.z);
-
+	if (V->normal.x != cur_vertex_normal.x || V->normal.y != cur_vertex_normal.y || V->normal.z != cur_vertex_normal.z)
+	{
+		cur_vertex_normal = V->normal;
+		glNormal3f(V->normal.x, V->normal.y, V->normal.z);
+	}
+	
 	// I don't think we need glEdgeFlag anymore; from what I've read this only
 	// matters if we switch glPolygonMode away from GL_FILL - Dasho
 	//glEdgeFlag(V->edge);
@@ -372,7 +397,12 @@ void RGL_DrawUnits(void)
 
 	glAlphaFunc(GL_GREATER, 0);
 
-	glPolygonOffset(0, 0);
+	if (cur_polygon_offset != 0)
+	{
+		cur_polygon_offset = 0;
+		glPolygonOffset(0, 0);
+	}
+	
 
 	if (r_fogofwar.d || r_culling.d)
 	{
@@ -475,7 +505,11 @@ void RGL_DrawUnits(void)
 			active_pass = unit->pass;
 
 			RGL_BatchShape(0);
-			glPolygonOffset(0, -active_pass);
+			if (cur_polygon_offset != -active_pass)
+			{
+				cur_polygon_offset = -active_pass;
+				glPolygonOffset(0, -active_pass);
+			}
 		}
 
 		if ((active_blending ^ unit->blending) & (BL_Masked | BL_Less))
@@ -652,7 +686,15 @@ void RGL_DrawUnits(void)
 	// all done
 	cur_vert = cur_unit = 0;
 
-	glPolygonOffset(0, 0);
+	if (cur_polygon_offset != 0)
+	{
+		cur_polygon_offset = 0;
+		glPolygonOffset(0, 0);
+	}
+
+	memset(cur_vertex_texc, 0, sizeof(cur_vertex_texc));
+	memset(cur_vertex_color, 0, sizeof(cur_vertex_color));
+	cur_vertex_normal = {0, 0, 0};
 
 	for (int t=1; t >=0; t--)
 	{
