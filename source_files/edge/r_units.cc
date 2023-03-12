@@ -96,9 +96,6 @@ static std::vector<local_gl_unit_t *> local_unit_map;
 static int cur_vert;
 static int cur_unit;
 static int cur_polygon_offset = 0;
-static vec3_t cur_vertex_normal = {0, 0, 0};
-static GLfloat cur_vertex_color[4] = {0, 0, 0, 0};
-static vec2_t cur_vertex_texc[2] = {{0, 0}, {0, 0}};
 
 static bool batch_sort;
 
@@ -302,41 +299,30 @@ static void EnableCustomEnv(GLuint env, bool enable)
 	}
 }
 
-static inline void RGL_SendRawVector(const local_gl_vert_t *V)
+static inline void RGL_SendRawVector(const local_gl_vert_t *V, local_gl_unit_t* unit)
 {
 	if (r_colormaterial.d || ! r_colorlighting.d)
 	{
-		if (V->rgba[0] != cur_vertex_color[0] || 
-			V->rgba[1] != cur_vertex_color[1] ||		
-			V->rgba[2] != cur_vertex_color[2] ||
-			V->rgba[3] != cur_vertex_color[3])
-		{	
-			*cur_vertex_color = *V->rgba;
-			glColor4fv(V->rgba);
-		}		
+		glColor4fv(V->rgba);
 	}
 	else
 	{
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, V->rgba);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, V->rgba);
-	}
+	}	
 
-	if (V->texc[1].x != cur_vertex_texc[1].x || V->texc[1].y != cur_vertex_texc[1].y)
+	if (unit->tex[1])
 	{
-		cur_vertex_texc[1] = V->texc[1];
+		// very expensive under GL4ES		
 		myMultiTexCoord2f(GL_TEXTURE0, V->texc[0].x, V->texc[0].y);
 		myMultiTexCoord2f(GL_TEXTURE1, V->texc[1].x, V->texc[1].y);
 	}
 	else
-	{		
+	{
 		glTexCoord2f(V->texc[0].x, V->texc[0].y);
 	}
 
-	if (V->normal.x != cur_vertex_normal.x || V->normal.y != cur_vertex_normal.y || V->normal.z != cur_vertex_normal.z)
-	{
-		cur_vertex_normal = V->normal;
-		glNormal3f(V->normal.x, V->normal.y, V->normal.z);
-	}
+	glNormal3f(V->normal.x, V->normal.y, V->normal.z);
 	
 	// I don't think we need glEdgeFlag anymore; from what I've read this only
 	// matters if we switch glPolygonMode away from GL_FILL - Dasho
@@ -643,9 +629,9 @@ void RGL_DrawUnits(void)
 			RGL_BatchShape(GL_TRIANGLES);
 			for (int v_idx = 2; v_idx < unit->count; v_idx++)
 			{
-				RGL_SendRawVector(local_verts + unit->first);
-				RGL_SendRawVector(local_verts + unit->first + v_idx - 1);
-				RGL_SendRawVector(local_verts + unit->first + v_idx);
+				RGL_SendRawVector(local_verts + unit->first, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx - 1, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx, unit);
 			}
 		}
 		else if (unit->shape == GL_QUADS)
@@ -653,12 +639,12 @@ void RGL_DrawUnits(void)
 			RGL_BatchShape(GL_TRIANGLES);
 			for (int v_idx = 0; v_idx + 3 < unit->count; v_idx += 4)
 			{
-				RGL_SendRawVector(local_verts + unit->first + v_idx);
-				RGL_SendRawVector(local_verts + unit->first + v_idx + 1);
-				RGL_SendRawVector(local_verts + unit->first + v_idx + 2);
-				RGL_SendRawVector(local_verts + unit->first + v_idx);
-				RGL_SendRawVector(local_verts + unit->first + v_idx + 2);
-				RGL_SendRawVector(local_verts + unit->first + v_idx + 3);
+				RGL_SendRawVector(local_verts + unit->first + v_idx, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx + 1, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx + 2, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx + 2, unit);
+				RGL_SendRawVector(local_verts + unit->first + v_idx + 3, unit);
 			}
 		}
 		else
@@ -666,7 +652,7 @@ void RGL_DrawUnits(void)
 			RGL_BatchShape(unit->shape);
 			for (int v_idx = 0; v_idx < unit->count; v_idx++)
 			{
-				RGL_SendRawVector(local_verts + unit->first + v_idx);
+				RGL_SendRawVector(local_verts + unit->first + v_idx, unit);
 			}
 		}
 		
@@ -691,10 +677,6 @@ void RGL_DrawUnits(void)
 		cur_polygon_offset = 0;
 		glPolygonOffset(0, 0);
 	}
-
-	memset(cur_vertex_texc, 0, sizeof(cur_vertex_texc));
-	memset(cur_vertex_color, 0, sizeof(cur_vertex_color));
-	cur_vertex_normal = {0, 0, 0};
 
 	for (int t=1; t >=0; t--)
 	{
