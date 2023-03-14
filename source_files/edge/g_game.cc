@@ -960,6 +960,8 @@ static bool G_SaveGameToFile(std::filesystem::path filename, const char *descrip
 	SV_FinishSave();
 	SV_CloseWriteFile();
 
+	epi::FS_Sync();
+
 	return true; //OK
 }
 
