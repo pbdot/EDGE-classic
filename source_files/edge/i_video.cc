@@ -266,9 +266,15 @@ static bool I_CreateWindow(scrmode_c *mode)
 	std::string temp_title = TITLE;
 	temp_title.append(" ").append(EDGEVERSTR);
 
+#if EDGE_WEB
+	int resizeable = SDL_WINDOW_RESIZABLE;
+#else 
+	int resizeable = 0;
+#endif	
+
 	my_vis = SDL_CreateWindow(temp_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mode->width, mode->height,
 		SDL_WINDOW_OPENGL | (mode->display_mode == mode->SCR_BORDERLESS ? (SDL_WINDOW_FULLSCREEN_DESKTOP) :
-		(mode->display_mode == mode->SCR_FULLSCREEN ? SDL_WINDOW_FULLSCREEN : 0)));
+		(mode->display_mode == mode->SCR_FULLSCREEN ? SDL_WINDOW_FULLSCREEN : 0)) | resizeable);
 
 	if (my_vis == NULL)
 	{
