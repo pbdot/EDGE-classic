@@ -24,6 +24,8 @@
 #include "dm_defs.h"
 #include "m_argv.h"
 #include "e_main.h"
+#include "r_modes.h"
+#include "i_video.h"
 #include "version.h"
 
 #include <emscripten/html5.h>
@@ -46,20 +48,62 @@ void E_WebTick(void)
 extern "C" {
 
 static EM_BOOL I_WebHandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
-{	
+{
 	if (changeEvent->isActive)
 	{
 		SDL_ShowCursor(SDL_FALSE);
 	}
 	else
 	{
-		SDL_ShowCursor(SDL_TRUE);
+		SDL_ShowCursor(SDL_TRUE);		
 	}
-	
+
     return 0;
 }
 
-void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv) 
+static EM_BOOL I_WebWindowResizedCallback(int eventType, const void *reserved, void *userData){
+
+	double width, height;
+	emscripten_get_element_css_size("canvas", &width, &height);
+
+	printf("window fullscreen resized %i %i\n",(int)width, (int)height);
+
+	SDL_SetWindowSize(my_vis, width, height);
+	SCREENWIDTH  = (int)width;
+	SCREENHEIGHT = (int)height;
+	SCREENBITS   = 24;
+	DISPLAYMODE  = 0;
+	I_DeterminePixelAspect();
+
+	EM_ASM_({
+		console.log(Module.onFullscreen);
+		if (Module.onFullscreen) {
+			Module.onFullscreen();
+		}
+	});
+
+
+	return true;
+}
+
+void EMSCRIPTEN_KEEPALIVE I_WebSetFullscreen(int fullscreen)
+{
+	if (fullscreen) {
+		EmscriptenFullscreenStrategy strategy;
+		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+		strategy.canvasResizedCallback = I_WebWindowResizedCallback;
+		emscripten_enter_soft_fullscreen("canvas", &strategy);
+	} 
+	else
+	{
+		emscripten_exit_soft_fullscreen();
+	}
+
+
+}
+
+void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv)
 {
 
 	emscripten_set_main_loop(E_WebTick, 0, 0);
@@ -72,7 +116,7 @@ void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv)
 	exe_path = UTFSTR(SDL_GetBasePath());
 
 	E_Main(argc, argv);
-	
+
 	EM_ASM_({
 		if (Module.edgePostInit) {
 			Module.edgePostInit();
@@ -98,12 +142,12 @@ int main(int argc, char *argv[])
 		}
 
 		const homeDir = args[homeIndex + 1];
-		
-		if (!FS.analyzePath(homeDir).exists) 
+
+		if (!FS.analyzePath(homeDir).exists)
 		{
 			FS.mkdirTree(homeDir);
 		}
-		
+
 		FS.mount(IDBFS, {}, homeDir);
 		FS.syncfs(true, function (err) {
 			if (err) {
