@@ -26,6 +26,11 @@
 #include "e_main.h"
 #include "version.h"
 
+#include <emscripten/html5.h>
+
+// Event reference
+// https://github.com/emscripten-ports/SDL2/blob/master/src/video/emscripten/SDL_emscriptenevents.c
+
 std::filesystem::path exe_path = ".";
 
 void E_WebTick(void)
@@ -40,10 +45,26 @@ void E_WebTick(void)
 
 extern "C" {
 
+static EM_BOOL I_WebHandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
+{	
+	if (changeEvent->isActive)
+	{
+		SDL_ShowCursor(SDL_FALSE);
+	}
+	else
+	{
+		SDL_ShowCursor(SDL_TRUE);
+	}
+	
+    return 0;
+}
+
 void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv) 
 {
 
 	emscripten_set_main_loop(E_WebTick, 0, 0);
+
+	emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, nullptr, 0, I_WebHandlePointerLockChange);
 
 	if (SDL_Init(0) < 0)
 		I_Error("Couldn't init SDL!!\n%s\n", SDL_GetError());

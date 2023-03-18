@@ -90,6 +90,12 @@ static struct { int w, h; } possible_modes[] =
 
 void I_GrabCursor(bool enable)
 {
+
+#ifdef EDGE_WEB
+	// On web, cursor lock is exclusively handled by selecting canvas
+	return;
+#endif
+
 	if (! my_vis || graphics_shutdown)
 		return;
 
