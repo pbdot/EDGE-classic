@@ -75,6 +75,8 @@ static EM_BOOL I_WebWindowResizedCallback(int eventType, const void *reserved, v
 	DISPLAYMODE  = 0;
 	I_DeterminePixelAspect();
 
+	R_SoftInitResolution();
+
 	EM_ASM_({
 		console.log(Module.onFullscreen);
 		if (Module.onFullscreen) {
