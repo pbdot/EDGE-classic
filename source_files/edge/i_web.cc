@@ -23,6 +23,7 @@
 
 #include "dm_defs.h"
 #include "m_argv.h"
+#include "m_menu.h"
 #include "e_main.h"
 #include "r_modes.h"
 #include "i_video.h"
@@ -35,8 +36,44 @@
 
 std::filesystem::path exe_path = ".";
 
+static int web_deferred_screen_width = -1;
+static int web_deferred_screen_height = -1;
+static int web_deferred_menu = -1;
+
+static void I_WebSyncScreenSize(int width, int height)
+{
+	SDL_SetWindowSize(my_vis, width, height);
+	SCREENWIDTH  = (int)width;
+	SCREENHEIGHT = (int)height;
+	SCREENBITS   = 24;
+	DISPLAYMODE  = 0;
+	I_DeterminePixelAspect();
+
+	R_SoftInitResolution();
+}
+
 void E_WebTick(void)
 {
+	if (web_deferred_screen_width != -1)
+	{
+		I_WebSyncScreenSize(web_deferred_screen_width, web_deferred_screen_height);
+		web_deferred_screen_width = web_deferred_screen_height = -1;
+	}
+
+	if (web_deferred_menu != -1)
+	{
+		if (web_deferred_menu)
+		{		
+			M_StartControlPanel();
+		}
+		else
+		{
+			M_ClearMenus();			
+		}
+
+		web_deferred_menu = -1;
+	}
+
 	// We always do this once here, although the engine may
 	// makes in own calls to keep on top of the event processing
 	I_ControlGetEvents();
@@ -68,14 +105,7 @@ static EM_BOOL I_WebWindowResizedCallback(int eventType, const void *reserved, v
 
 	printf("window fullscreen resized %i %i\n",(int)width, (int)height);
 
-	SDL_SetWindowSize(my_vis, width, height);
-	SCREENWIDTH  = (int)width;
-	SCREENHEIGHT = (int)height;
-	SCREENBITS   = 24;
-	DISPLAYMODE  = 0;
-	I_DeterminePixelAspect();
-
-	R_SoftInitResolution();
+	I_WebSyncScreenSize(width, height);
 
 	EM_ASM_({
 		console.log(Module.onFullscreen);
@@ -83,7 +113,6 @@ static EM_BOOL I_WebWindowResizedCallback(int eventType, const void *reserved, v
 			Module.onFullscreen();
 		}
 	});
-
 
 	return true;
 }
@@ -101,8 +130,20 @@ void EMSCRIPTEN_KEEPALIVE I_WebSetFullscreen(int fullscreen)
 	{
 		emscripten_exit_soft_fullscreen();
 	}
+}
 
+void EMSCRIPTEN_KEEPALIVE I_WebOpenGameMenu(int open)
+{
+	web_deferred_menu = open;
+}
 
+void EMSCRIPTEN_KEEPALIVE I_WebSyncScreenSize()
+{
+	double width, height;
+	emscripten_get_element_css_size("canvas", &width, &height);
+
+	web_deferred_screen_width = (int) width;
+	web_deferred_screen_height = (int) height;
 }
 
 void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv)
