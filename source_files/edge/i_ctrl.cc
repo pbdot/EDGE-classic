@@ -510,7 +510,14 @@ void ActiveEventProcess(SDL_Event *sdl_ev)
 				
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
+#ifdef EDGE_WEB		
+			// On web, we don't want clicks coming through when changing pointer lock
+			// Otherwise, menus will be selected, weapons fired, unexpectedly
+			if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
+				HandleMouseButtonEvent(sdl_ev);
+#else
 			HandleMouseButtonEvent(sdl_ev);
+#endif
 			break;
 
 		case SDL_MOUSEWHEEL:

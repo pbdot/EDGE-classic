@@ -107,8 +107,7 @@ static EM_BOOL I_WebWindowResizedCallback(int eventType, const void *reserved, v
 
 	I_WebSyncScreenSize(width, height);
 
-	EM_ASM_({
-		console.log(Module.onFullscreen);
+	EM_ASM_({		
 		if (Module.onFullscreen) {
 			Module.onFullscreen();
 		}
@@ -149,7 +148,9 @@ void EMSCRIPTEN_KEEPALIVE I_WebSyncScreenSize()
 void EMSCRIPTEN_KEEPALIVE I_WebMain(int argc, const char **argv)
 {
 
-	emscripten_set_main_loop(E_WebTick, 0, 0);
+	// Note: We're using the max framerate which feels smoother in testing
+	// Though raises a console error in debug warning about not using requestAnimationFrame 
+	emscripten_set_main_loop(E_WebTick, 70, 0);
 
 	emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, nullptr, 0, I_WebHandlePointerLockChange);
 
