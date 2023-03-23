@@ -489,16 +489,17 @@ void ActiveEventProcess(SDL_Event *sdl_ev)
 			{
 				HandleFocusLost();
 			}
-
+#ifdef EDGE_WEB
 			if (sdl_ev->window.event == SDL_WINDOWEVENT_RESIZED)
 			{
-				printf("window resized %i %i\n", sdl_ev->window.data1, sdl_ev->window.data2);	
+				printf("SDL window resize event %i %i\n", sdl_ev->window.data1, sdl_ev->window.data2);	
 				SCREENWIDTH  = sdl_ev->window.data1;
 				SCREENHEIGHT = sdl_ev->window.data2;
 				SCREENBITS   = 24;
 				DISPLAYMODE  = 0;
 				I_DeterminePixelAspect();				
 			}
+#endif
 
 			break;
 		}
