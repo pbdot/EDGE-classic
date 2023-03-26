@@ -203,7 +203,7 @@ if (NOT EMSCRIPTEN)
   )
 else()
   set (SOURCE_DIR "${CMAKE_SOURCE_DIR}/build/source_files/edge")
-  set (DEST_DIR "C:/Dev/EDGE-classic-webplayer/src")
+  set (DEST_DIR "${CMAKE_SOURCE_DIR}/web/site")
 
   target_link_options(edge-classic PRIVATE "--pre-js=${DEST_DIR}/edge-classic-data.js")
   
