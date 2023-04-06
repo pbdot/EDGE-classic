@@ -114,6 +114,7 @@ set (EDGE_SOURCE_FILES
   vm_player.cc
   scanner.cc
   umapinfo.cc
+  lua_vm.cc
 )
 
 if (EMSCRIPTEN)
@@ -138,6 +139,7 @@ set (EDGE_LINK_LIBRARIES
   miniz
   libymfm
   ymfmidi
+  lua
 )
 
 if (MSVC OR MINGW OR MSYS OR WIN32_CLANG)
@@ -183,6 +185,8 @@ target_include_directories(edge-classic PRIVATE ../minivorbis)
 target_include_directories(edge-classic PRIVATE ../miniz)
 target_include_directories(edge-classic PRIVATE ../stb)
 target_include_directories(edge-classic PRIVATE ../ymfmidi)
+target_include_directories(edge-classic PRIVATE ../lua)
+target_include_directories(edge-classic PRIVATE ../sol)
 if(MSVC OR WIN32_CLANG)
   target_include_directories(edge-classic PRIVATE ../sdl2/include)
 endif()

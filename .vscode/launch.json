@@ -9,7 +9,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/edge-classic",
-            "args": [],
+            "args": [
+                "-warp",
+                "MAP01"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -28,16 +31,29 @@
                 }
             ]
         },
-    {
-        "name": "(Windows) Launch",
-        "type": "cppvsdbg",
-        "request": "launch",
-        "program": "${workspaceFolder}/edge-classic.exe",
-        "args": [],
-        "stopAtEntry": false,
-        "cwd": "${workspaceFolder}",
-        "environment": [],
-        "console": "externalTerminal"
-    }
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/edge-classic.exe",
+            "args": [
+                "-warp",
+                "MAP01"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "lua-local",
+            "request": "launch",
+            "name": "Lua Debug",
+            "program": {
+                "communication": "pipe",
+                "command": "edge-classic"
+            },
+            "cwd": "${workspaceFolder}"
+        }
     ]
 }

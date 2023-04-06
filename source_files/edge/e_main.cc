@@ -605,7 +605,11 @@ void E_Display(void)
 		case GS_LEVEL:
 			R_PaletteStuff();
 
-			VM_RunHud();
+			//VM_RunHud();
+			
+			void LUA_RunHud();
+			LUA_RunHud();
+
 
 			if (need_save_screenshot)
 			{
@@ -1672,6 +1676,9 @@ static void E_Startup(void)
 	M_CheatInit();
 	VM_InitCoal();
 	VM_LoadScripts();
+
+	void LUA_Init();
+	LUA_Init();
 }
 
 
