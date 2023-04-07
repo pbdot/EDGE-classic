@@ -46,7 +46,7 @@ lua_vm_c::lua_vm_c(lua_vm_type_e type)
 
 void lua_vm_c::Call(const std::string& modulename, const std::string& functionname)
 {
-	modules_[modulename]->callbacks_[functionname].as<sol::protected_function>().call();
+	LUA_CheckError(modules_[modulename]->callbacks_[functionname].as<sol::protected_function>().call());
 }
 
 // Lua print replacement
