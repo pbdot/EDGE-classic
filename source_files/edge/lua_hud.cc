@@ -1,19 +1,46 @@
-
-
 #include "hu_draw.h"
 #include "am_map.h"
 #include "e_player.h"
 
 #include "lua_vm.h"
 
-
-
 extern player_t *ui_player_who;
 
 static int ui_hud_automap_flags[2]; // 0 = disabled, 1 = enabled
 static float ui_hud_automap_zoom;
-static player_t *ui_hud_who = NULL;
+static player_t *ui_hud_who = nullptr;
 
+static void hud_render_automap(float x, float y, float w, float h,
+							   sol::variadic_args va)
+{
+	int flags = va.size() > 0 ? va[0] : 0;
+
+	int old_state;
+	float old_zoom;
+
+	AM_GetState(&old_state, &old_zoom);
+
+	int new_state = old_state;
+	new_state &= ~ui_hud_automap_flags[0];
+	new_state |= ui_hud_automap_flags[1];
+
+	float new_zoom = old_zoom;
+	if (ui_hud_automap_zoom > 0.1)
+		new_zoom = ui_hud_automap_zoom;
+
+	AM_SetState(new_state, new_zoom);
+
+	HUD_RenderAutomap(x, y, w, h, ui_hud_who->mo, flags);
+
+	AM_SetState(old_state, old_zoom);
+}
+
+static void hud_render_world(float x, float y, float w, float h,
+							 sol::variadic_args va)
+{
+	int flags = va.size() > 0 ? va[0] : 0;
+	HUD_RenderWorld(x, y, w, h, ui_hud_who->mo, flags);
+}
 
 class lua_hud_module_c : public lua_module_c {
   public:
@@ -45,54 +72,21 @@ class lua_hud_module_c : public lua_module_c {
 
 		hud.set("check_automap", []() { return automapactive; });
 
-		hud.set_function("render_automap", [](float x, float y, float w,
-											  float h, sol::variadic_args va) {
-			int flags = 0;
+		hud.set("render_automap", hud_render_automap);
 
-			if (va.size() > 0) {
-				flags = va[0];
-			}
+		hud.set("render_world", hud_render_world);
 
-			int old_state;
-			float old_zoom;
-
-			AM_GetState(&old_state, &old_zoom);
-
-			int new_state = old_state;
-			new_state &= ~ui_hud_automap_flags[0];
-			new_state |= ui_hud_automap_flags[1];
-
-			float new_zoom = old_zoom;
-			if (ui_hud_automap_zoom > 0.1)
-				new_zoom = ui_hud_automap_zoom;
-
-			AM_SetState(new_state, new_zoom);
-
-			HUD_RenderAutomap(x, y, w, h, ui_hud_who->mo, flags);
-
-			AM_SetState(old_state, old_zoom);
-		});
-
-		hud.set_function("render_world", [](float x, float y, float w, float h,
-											sol::variadic_args va) {
-			int flags = 0;
-
-			if (va.size() > 0) {
-				flags = va[0];
-			}
-
-			HUD_RenderWorld(x, y, w, h, ui_hud_who->mo, flags);
-		});
+		Init("ui.lua");
 
 		// set module
 		state["edge"][name_] = this;
 	}
 
-  private:
+  private:	
+
 	float x_left_ = 0;
 	float x_right_ = 0;
 };
-
 
 void LUA_RunHud()
 {
@@ -105,14 +99,10 @@ void LUA_RunHud()
 	ui_hud_automap_flags[1] = 0;
 	ui_hud_automap_zoom = -1;
 
-	lua_vm_c* ui_vm = lua_vm_c::GetVM(LUA_VM_UI);
-	ui_vm->GetState()["draw_all"]();
+	lua_vm_c *ui_vm = lua_vm_c::GetVM(LUA_VM_UI);
+	ui_vm->Call("hud", "draw_all");	
 
 	HUD_Reset();
 }
 
-
-void LUA_Hud_Init(lua_vm_c* vm)
-{
-    vm->addModule<lua_hud_module_c>();
-}
+void LUA_Hud_Init(lua_vm_c *vm) { vm->addModule<lua_hud_module_c>(); }
