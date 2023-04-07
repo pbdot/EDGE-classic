@@ -115,6 +115,8 @@ set (EDGE_SOURCE_FILES
   scanner.cc
   umapinfo.cc
   lua_vm.cc
+  lua_sys.cc
+  lua_hud.cc
 )
 
 if (EMSCRIPTEN)
