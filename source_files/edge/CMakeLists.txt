@@ -286,6 +286,14 @@ if (NOT EMSCRIPTEN)
   POST_BUILD
   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:edge-classic>"
       "${DEST_DIR}"
+  COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/SDL2.dll"
+      "${DEST_DIR}"
+  COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libgcc_s_dw2-1.dll"
+      "${DEST_DIR}"
+  COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libstdc++-6.dll"
+      "${DEST_DIR}"
+  COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libwinpthread-1.dll"
+      "${DEST_DIR}"
   )
 else()
   set (SOURCE_DIR "${CMAKE_SOURCE_DIR}/build/source_files/edge")
@@ -346,17 +354,5 @@ elseif(MSYS)
 			"${DEST_DIR}"
 	)
 	else ()
-	add_custom_command(
-	TARGET edge-classic
-	POST_BUILD
-	COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/SDL2.dll"
-			"${DEST_DIR}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libgcc_s_dw2-1.dll"
-			"${DEST_DIR}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libstdc++-6.dll"
-			"${DEST_DIR}"
-		COMMAND "${CMAKE_COMMAND}" -E copy "/mingw32/bin/libwinpthread-1.dll"
-			"${DEST_DIR}"
-	)
 	endif ()
 endif()
