@@ -27,8 +27,11 @@
 // -MH- 1998/08/18 Flyup and flydown logic
 //
 
+#include <unordered_map>
+
 #include "i_defs.h"
 #include "i_sdlinc.h"
+#include "str_util.h"
 
 #include "dm_defs.h"
 #include "dm_state.h"
@@ -809,7 +812,7 @@ static specialkey_t special_keys[] =
 	{ KEYD_TRIGGER_LEFT, "Left Trigger" },
 	{ KEYD_TRIGGER_RIGHT, "Right Trigger" },
 
-	// THE END
+// THE ENDi_
     { -1, NULL }
 };
 
@@ -835,6 +838,161 @@ const char *E_GetKeyName(int key)
 	sprintf(buffer, "Key%03d", key);
 
 	return buffer;
+}
+
+static std::unordered_map<std::string, int> button_keys;
+
+static int E_GetKeyForButton(const std::string& name)
+{
+	if (button_keys.size() == 0)
+	{
+		button_keys["b0"] = KEYD_JOY1;
+		button_keys["b1"] = KEYD_JOY2;
+		button_keys["b2"] = KEYD_JOY3;
+		button_keys["b3"] = KEYD_JOY4;
+		button_keys["b4"] = KEYD_JOY5;
+		button_keys["b5"] = KEYD_JOY6;
+		button_keys["b6"] = KEYD_JOY7;
+		button_keys["b7"] = KEYD_JOY8;
+		button_keys["b8"] = KEYD_JOY9;
+		button_keys["b9"] = KEYD_JOY10;
+		button_keys["b10"] = KEYD_JOY11;
+		button_keys["b11"] = KEYD_JOY12;
+		button_keys["b12"] = KEYD_JOY13;
+		button_keys["b13"] = KEYD_JOY14;		
+		button_keys["b14"] = KEYD_JOY15;
+
+		button_keys["righttrigger"] = KEYD_TRIGGER_RIGHT;
+		button_keys["lefttrigger"] = KEYD_TRIGGER_LEFT;
+	}
+
+	const auto itr = button_keys.find(name);
+	if (itr == button_keys.end())
+	{
+		return 0;
+	}
+
+	return itr->second;
+
+}
+
+static bool E_ParseJoystickMapping(const std::string& mapping, int& button, int& axis)
+{
+	button = axis = 0;
+
+	if (mapping[0] == 'b')
+	{
+		button = KEYD_JOY1 + atoi( &mapping[1] );
+		return true;
+	}
+
+	// currently doesn't handle axis swaps
+	if (mapping[0] == '+' || mapping[0] == '-')
+	{
+		return false;
+	}
+
+	if (mapping[0] == 'a')
+	{
+		axis = atoi( &mapping[1] );
+		return true;
+	}
+
+
+	// currently doesn't handle hats
+	if (mapping[0] == 'h')
+	{
+		return false;
+	}
+
+	return false;
+
+}
+
+void E_ApplyDefaultJoystickMappings()
+{
+	const char* I_GetJoystickMappings();
+	const char* data = I_GetJoystickMappings();
+	if (!data)
+	{
+		return;
+	}
+
+	std::vector<std::string> mappings = epi::STR_SepStringVector(std::string(data), ',');
+	if (mappings.size() < 3)
+	{
+		I_Printf("E_ApplyDefaultJoystickMappings: Invalid joystick mappings, skipping");
+		return;
+	}
+
+	I_Printf("E_ApplyDefaultJoystickMappings: Applying mappings for GUID: %i Name: %s", mappings[0].c_str(), mappings[1].c_str());
+		
+	for (size_t i = 2; i < mappings.size(); i++)
+	{
+		std::vector<std::string> key_value = epi::STR_SepStringVector(mappings[i], ':');
+		if (key_value.size() != 2)
+		{
+			continue;
+		}
+		
+		const std::string& key = key_value[0];
+		const std::string& value = key_value[1];
+
+		int button;
+		int axis;
+		if (!E_ParseJoystickMapping(value, button, axis))
+		{
+			continue;
+		}
+
+		if (axis > 5) {
+			continue;
+		}
+
+		// default use		
+		if (key == "a" && button)
+		{
+			key_use = button;
+		}
+
+		// axis
+		// /* " 0 Off/ 1+Turn/2-Turn/3+MLook/4-MLook/5+Forward/6-Forward/7+Strafe/8-Strafe/9+Fly/10-Fly/11Left Trigger/12Right Trigger";*/
+
+		if (key == "leftx")
+		{
+			joy_axis[axis] = 7;
+		}		
+		if (key == "lefty")
+		{
+			joy_axis[axis] = 6;
+		}		
+
+		if (key == "rightx")
+		{
+			joy_axis[axis] = 1;
+		}		
+
+		if (key == "righty")
+		{
+			joy_axis[axis] = 4;
+		}		
+
+		if (key == "righttrigger")
+		{
+			if (axis)
+			{
+				key_fire = KEYD_TRIGGER_RIGHT;
+				joy_axis[axis] = AXIS_RIGHT_TRIGGER;
+			}
+			else if (button)
+			{
+				key_fire = button;
+			}
+			
+		}		
+
+	}
+
 }
 
 

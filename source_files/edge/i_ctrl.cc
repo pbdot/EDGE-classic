@@ -26,6 +26,7 @@
 #include "e_main.h"
 #include "m_argv.h"
 #include "r_modes.h"
+#include "w_files.h"
 
 #include "str_util.h"
 
@@ -55,6 +56,8 @@ static int joy_num_axes;
 static int joy_num_buttons;
 static int joy_num_hats;
 static int joy_num_balls;
+
+static int joy_mappings_loaded = false;
 
 Uint8 last_hat; // Track last dpad input
 
@@ -634,6 +637,68 @@ void I_OpenJoystick(int index)
 	I_Printf("Opened joystick %d : %s\n", cur_joy, name);
 	I_Printf("Axes:%d buttons:%d hats:%d balls:%d\n",
 			 joy_num_axes, joy_num_buttons, joy_num_hats, joy_num_balls);
+}
+
+static void I_InitJoystickMappings()
+{
+
+	if (joy_mappings_loaded)
+	{
+		return;
+	}
+
+	joy_mappings_loaded = true;
+
+	epi::file_c *data = W_OpenPackFile("input/gamecontrollerdb.txt");
+	if (!data)
+	{
+		I_Printf("I_StartupControl: Couldn't initialize joystick mappings\n");
+		return;
+	}
+
+	int length = data->GetLength();
+	if (!length)
+	{
+		I_Printf("I_StartupControl: Zero length joystick mappings\n");
+		return;		
+	}
+
+	const byte* buffer = data->LoadIntoMemory();
+	if (!buffer)
+	{
+		I_Printf("I_StartupControl: Invalid buffer reading joystick mappings\n");
+		return;		
+	}
+
+	SDL_RWops* rwops = SDL_RWFromConstMem(buffer, length);
+
+	int result = SDL_GameControllerAddMappingsFromRW(rwops, 0);
+
+	if (result < 0) {
+		I_Printf("I_StartupControl: Error reading joystick mappings\n");
+	} else 
+	{
+		I_Printf("I_StartupControl: Loaded %i joystick mappings\n");
+	}
+
+	delete[] buffer;
+
+}
+
+const char* I_GetJoystickMappings()
+{
+	if (!joy_info)
+	{
+		return nullptr;
+	}
+
+	I_InitJoystickMappings();
+
+	SDL_JoystickGUID guid = SDL_JoystickGetGUID(joy_info);
+
+	const char* mappings = SDL_GameControllerMappingForGUID(guid);
+
+	return mappings;
 }
 
 

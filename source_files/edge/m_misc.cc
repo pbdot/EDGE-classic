@@ -320,6 +320,9 @@ void M_ResetDefaults(int _dummy, cvar_c *_dummy_cvar)
 
 	CON_ResetAllVars();
 
+	void E_ApplyDefaultJoystickMappings();
+	E_ApplyDefaultJoystickMappings();
+
 	done_first_init = true;
 }
 
