@@ -37,6 +37,18 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "(Mac) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/edge-classic",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
         }
    ]
 }

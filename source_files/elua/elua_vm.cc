@@ -5,6 +5,11 @@ namespace elua
 {
     std::unordered_map<lua_vm_id, lua_vm_c *> lua_vm_c::vms_;
 
+    void lua_vm_c::DoFile(const std::string& filename)
+    {
+        luaL_dofile(state_, filename.c_str());
+    }
+
     lua_vm_c *lua_vm_c::Create(lua_vm_id id)
     {
         SYS_ASSERT(vms_.find(id) == vms_.end());

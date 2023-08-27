@@ -9,3 +9,5 @@ enum lua_vm_edge_t : unsigned int
     LUA_VM_EDGE_DATA,
     LUA_VM__EDGE_MAX
 };
+
+elua::lua_vm_c* LUA_CreateEdgeVM(lua_vm_edge_t vm_type);

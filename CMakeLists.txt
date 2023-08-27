@@ -94,6 +94,7 @@ if(APPLE OR ${CMAKE_SYSTEM} MATCHES "BSD")
 endif()
 
 find_package(SDL2 REQUIRED)
+INCLUDE_DIRECTORIES(${SDL2_INCLUDE_DIR})
 if (NOT EDGE_GL_ES2)
   find_package(OpenGL REQUIRED)
 else()

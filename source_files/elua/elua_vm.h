@@ -3,10 +3,16 @@
 namespace elua
 {
 
-class lua_vm_c
+    class lua_vm_c
     {
     public:
-        static lua_vm_c *Create(lua_vm_id id);
+        lua_State* GetState()
+        {
+            SYS_ASSERT(state_);
+            return state_;
+        }
+
+        void DoFile(const std::string& filename);
 
         template <class T>
         void AddModule()
@@ -18,6 +24,8 @@ class lua_vm_c
 
             modules_[module->name_] = module;
         }
+
+        static lua_vm_c *Create(lua_vm_id id);
 
     private:
         lua_vm_c(lua_vm_id id)
@@ -35,6 +43,5 @@ class lua_vm_c
 
         static std::unordered_map<lua_vm_id, lua_vm_c *> vms_;
     };
-
 
 }

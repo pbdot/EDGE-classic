@@ -111,6 +111,7 @@ set (EDGE_SOURCE_FILES
   w_wad.cc
   lua_edge.cc
   lua_hud.cc
+  lua_sys.cc
   vm_coal.cc
   vm_hud.cc
   vm_player.cc
