@@ -8,20 +8,39 @@ class lua_sys_c : public lua_module_c
 public:
     lua_sys_c(lua_vm_c *vm) : lua_module_c(vm, "sys") {}
 
-    static int Print(lua_State *L, bool debug)
+    static int Print(lua_State *L)
     {
         int n = lua_gettop(L);
-        int i;
-        for (i = 1; i <= n; i++)
+        for (int i = 1; i <= n; i++)
         {
             size_t l;
             const char *s = luaL_tolstring(L, i, &l);
             if (i > 1)
-                debug ? I_Debugf("   ") : I_Printf("   ");
-            debug ? I_Debugf("%s", s) : I_Printf("%s", s);
+            {
+                I_Printf("   ");
+            }
+            I_Printf("%s", s);
             lua_pop(L, 1);
         }
-        debug ? I_Debugf("\n") : I_Printf("\n");
+        I_Printf("\n");
+        return 0;
+    }
+
+    static int DebugPrint(lua_State *L)
+    {
+        int n = lua_gettop(L);
+        for (int i = 1; i <= n; i++)
+        {
+            size_t l;
+            const char *s = luaL_tolstring(L, i, &l);
+            if (i > 1)
+            {
+                I_Debugf("   ");
+            }
+            I_Debugf("%s", s);
+            lua_pop(L, 1);
+        }
+        I_Debugf("\n");
         return 0;
     }
 
@@ -33,6 +52,7 @@ public:
             .beginNamespace("ec")
             .beginNamespace("sys")
             .addFunction("print", Print)
+            .addFunction("debug_print", DebugPrint)
             .endNamespace()
             .endNamespace();
     }

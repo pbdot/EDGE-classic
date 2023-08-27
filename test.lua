@@ -1,1 +1,1 @@
-ec.sys.print("hello");
+ec.sys.print("hello")
