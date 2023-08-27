@@ -1743,6 +1743,8 @@ static void E_Startup(void)
 	M_CheatInit();
 	VM_InitCoal();
 	VM_LoadScripts();
+	void LUA_Init();
+	LUA_Init();
 }
 
 

@@ -109,6 +109,8 @@ set (EDGE_SOURCE_FILES
   w_sprite.cc
   w_texture.cc
   w_wad.cc
+  lua_edge.cc
+  lua_hud.cc
   vm_coal.cc
   vm_hud.cc
   vm_player.cc
@@ -136,6 +138,7 @@ set (EDGE_LINK_LIBRARIES
   m4p
   miniz
   ymfmidi
+  elua
 )
 
 if (WIN32)
