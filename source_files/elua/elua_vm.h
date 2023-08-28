@@ -12,6 +12,7 @@ namespace elua
             return state_;
         }
 
+        luabridge::LuaResult Require(const std::string& path);
         void DoFile(const std::string& filename);
 
         template <class T>
@@ -28,7 +29,7 @@ namespace elua
         static lua_vm_c *Create(lua_vm_id id);
 
     private:
-        lua_vm_c(lua_vm_id id)
+        lua_vm_c(lua_vm_id id) : refRequire_(nullptr)
         {
             id_ = id;
         }
@@ -38,6 +39,7 @@ namespace elua
 
         lua_vm_id id_ = 0xFFFFFFFF;
         lua_State *state_ = nullptr;
+        luabridge::LuaRef refRequire_;
 
         std::unordered_map<std::string, lua_module_c *> modules_;
 

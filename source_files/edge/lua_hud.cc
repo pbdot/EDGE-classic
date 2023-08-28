@@ -1,4 +1,5 @@
 
+
 #include "lua_edge.h"
 
 using namespace elua;
@@ -10,7 +11,7 @@ static lua_vm_c *vm_hud = nullptr;
 class lua_hud_c : public lua_module_c
 {
 public:
-    lua_hud_c(lua_vm_c *vm) : lua_module_c(vm, "hud") {}
+    lua_hud_c(lua_vm_c *vm) : lua_module_c(vm, "hud"), hud_(nullptr) {}
 
     void Open()
     {
@@ -22,8 +23,22 @@ public:
             .addVariable("mapTitle", w_map_title)
             .endNamespace()
             .endNamespace();
+
+        luabridge::LuaResult result = vm_hud->Require("test");
+        hud_ = result[0];
+
+        hud_["say_hello"](hud_, 42);
     }
+
+    luabridge::LuaRef hud_;
 };
+
+void LUA_Hud_Run()
+{
+    // HUD_Reset();
+
+    // HUD_Reset();
+}
 
 void LUA_Hud_Init()
 {
@@ -31,5 +46,5 @@ void LUA_Hud_Init()
     vm_hud = LUA_CreateEdgeVM(LUA_VM_EDGE_HUD);
     vm_hud->AddModule<lua_hud_c>();
 
-    vm_hud->DoFile("test.lua");
+    // vm_hud->DoFile("script/test.lua");
 }

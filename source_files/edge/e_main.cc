@@ -590,6 +590,8 @@ void E_Display(void)
 			R_PaletteStuff();
 
 			VM_RunHud();
+			void LUA_Hud_Run();
+			LUA_Hud_Run();
 
 			if (need_save_screenshot)
 			{

@@ -1,1 +1,0 @@
-ec.sys.print("hello")

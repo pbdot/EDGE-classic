@@ -1,0 +1,10 @@
+
+class Hud
+    new: =>         
+
+    say_hello: (num) =>
+        ec.sys.print("hello world!", package.path, num)
+
+
+return Hud!
+
