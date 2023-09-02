@@ -1,0 +1,10 @@
+{
+    "folders": [
+        {
+            "path": "../"
+        },
+        {
+            "path": "../source_files/elua/elua_base"
+        }
+    ]
+}

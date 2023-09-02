@@ -5,6 +5,7 @@ using namespace elua;
 
 void LUA_Sys_Init(lua_vm_c *vm);
 void LUA_Hud_Init();
+void LUA_Coal_Init();
 
 lua_vm_c* LUA_CreateEdgeVM(lua_vm_edge_t vm_type)
 {
@@ -18,4 +19,5 @@ lua_vm_c* LUA_CreateEdgeVM(lua_vm_edge_t vm_type)
 void LUA_Init()
 {
     LUA_Hud_Init();
+    LUA_Coal_Init();
 }

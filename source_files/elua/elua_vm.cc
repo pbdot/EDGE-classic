@@ -7,7 +7,13 @@ namespace elua
 
     void lua_vm_c::DoFile(const std::string &filename)
     {
-        luaL_dofile(state_, filename.c_str());
+        int ret = luaL_dofile(state_, filename.c_str());
+
+        if (ret != 0)
+        {
+
+            I_Warning("LUA: %s\n", lua_tostring(state_, -1));
+        }
     }
 
     lua_vm_c *lua_vm_c::Create(lua_vm_id id)
@@ -32,7 +38,7 @@ namespace elua
         state_ = luaL_newstate();
         luaL_openlibs(state_);
 
-        int result = luaL_dostring(state_, "package.path = 'C:/Dev/EDGE-classic-pbdot/script/?.lua'");
+        int result = luaL_dostring(state_, "package.path = 'C:/Dev/EDGE-classic-typescript/edge_defs/lua/?.lua'");
         lua_pop(state_, result);
         // luabridge::LuaRef r = luabridge::get<luabridge::LuaRef>(state_, -1).value();
         // std::string poop = r.tostring();

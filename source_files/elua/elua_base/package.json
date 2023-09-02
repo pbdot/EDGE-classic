@@ -1,0 +1,17 @@
+{
+  "name": "elua_base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tstl",
+    "dev": "tstl --watch"
+  },
+  "author": "",
+  "license": "GPL3",
+  "devDependencies": {
+    "lua-types": "^2.13.1",
+    "typescript": "^5.2.2",
+    "typescript-to-lua": "^1.19.0"
+  }
+}

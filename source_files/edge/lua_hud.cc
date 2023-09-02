@@ -24,10 +24,14 @@ public:
             .endNamespace()
             .endNamespace();
 
+        /*
         luabridge::LuaResult result = vm_hud->Require("test");
-        hud_ = result[0];
+        hud_ = result[0]["hud"];
 
         hud_["say_hello"](hud_, 42);
+
+        vm_hud->Require("importtest");
+        */
     }
 
     luabridge::LuaRef hud_;

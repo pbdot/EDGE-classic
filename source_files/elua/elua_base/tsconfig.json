@@ -1,0 +1,21 @@
+{
+    "$schema": "https://raw.githubusercontent.com/TypeScriptToLua/TypeScriptToLua/master/tsconfig-schema.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": [
+            "ESNext"
+        ],
+        "moduleResolution": "Node",
+        "types": [
+            "./types/vector.d.ts",
+            "./types/coal.d.ts",
+            "lua-types/5.4"
+        ],
+        "strict": false,
+        "rootDir": "./src",
+        "outDir": "../../../edge_defs/lua"
+    },
+    "tstl": {
+        "luaTarget": "5.4"
+    }
+}
