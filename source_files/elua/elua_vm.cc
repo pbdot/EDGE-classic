@@ -41,10 +41,10 @@ void lua_vm_c::Open()
                                    {LUA_LOADLIBNAME, luaopen_package}, // todo: remove sandboxing
                                    {LUA_COLIBNAME, luaopen_coroutine},
                                    {LUA_TABLIBNAME, luaopen_table},
-                                   //{LUA_IOLIBNAME, luaopen_io},
-                                   //{LUA_OSLIBNAME, luaopen_os},
+                                   {LUA_IOLIBNAME, luaopen_io},
+                                   {LUA_OSLIBNAME, luaopen_os},
                                    {LUA_STRLIBNAME, luaopen_string},
-                                   //{LUA_MATHLIBNAME, luaopen_math}, // must be opened in vm subclass, due to collisions with COAL compatibility
+                                   {LUA_MATHLIBNAME, luaopen_math}, // must be opened in vm subclass, due to collisions with COAL compatibility
                                    {LUA_UTF8LIBNAME, luaopen_utf8},
                                    {LUA_DBLIBNAME, luaopen_debug},
                                    {NULL, NULL}};
@@ -56,6 +56,8 @@ void lua_vm_c::Open()
         luaL_requiref(state_, lib->name, lib->func, 1);
         lua_pop(state_, 1); /* remove lib */
     }
+
+    DoFile("C:/Dev/EDGE-classic-typescript/edge_defs/lua/init.lua");    
 
     int result = luaL_dostring(
         state_, "package.path = 'C:/Dev/EDGE-classic-typescript/edge_defs/lua/?.lua'");

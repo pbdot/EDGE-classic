@@ -303,8 +303,8 @@ private:
                 "min", +[](double a, double b) { return MIN(a, b); })
             .addFunction(
                 "max", +[](double a, double b) { return MAX(a, b); })
-            .addProperty("pi", &pi, false)
-            .addProperty("e", &evar, false)
+            //.addProperty("pi", &pi, false) <--- already in math
+            //.addProperty("e", &evar, false)
             .endNamespace();
     }
 

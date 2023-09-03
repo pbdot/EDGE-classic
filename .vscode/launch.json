@@ -9,11 +9,11 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/edge-classic.exe",
-            "args": [],
+            "args": ["-warp", "MAP01"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": []
-        },         
+        },
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
@@ -49,6 +49,27 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb"
+        },
+        {
+            "name": "Debug Lua",
+            "type": "lua-local",
+            "request": "launch",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}",
+            "args": ["-warp", "MAP01"],
+            "program": {
+                "communication": "pipe",
+                "command": "${workspaceFolder}/edge-classic",                
+            },
+            "scriptRoots": [
+                "${workspaceFolder}",
+                "./edge_defs/lua"
+            ],
+            "scriptFiles": [
+                "**/*.lua"
+            ],
+            "verbose": true
+         
         }
-   ]
+    ]
 }

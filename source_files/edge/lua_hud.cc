@@ -37,13 +37,6 @@ public:
     luabridge::LuaRef hud_;
 };
 
-void LUA_Hud_Run()
-{
-    // HUD_Reset();
-
-    // HUD_Reset();
-}
-
 void LUA_Hud_Init()
 {
     SYS_ASSERT(!vm_hud);

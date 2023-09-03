@@ -588,8 +588,8 @@ void E_Display(void)
 		case GS_LEVEL:
 			R_PaletteStuff();
 			
-			void LUA_Hud_Run();
-			LUA_Hud_Run();
+			void LUA_Coal_RunHud(void);
+			LUA_Coal_RunHud();
 
 			if (need_save_screenshot)
 			{

@@ -26,14 +26,14 @@ extern cvar_c r_doubleframes;
 extern bool erraticism_active;
 
 extern player_t* lua_ui_player_who;
-static player_t *ui_hud_who = NULL;
-
+static player_t* ui_hud_who = NULL;
 
 static int ui_hud_automap_flags[2]; // 0 = disabled, 1 = enabled
 static float ui_hud_automap_zoom;
 
 // Needed for color functions
 extern epi::image_data_c* ReadAsEpiBlock(image_c* rim);
+extern luabridge::LuaRef LUA_Coal_NewVec3(lua_State* state, double x, double y, double z);
 
 extern epi::image_data_c*
 R_PalettisedToRGB(epi::image_data_c* src, const byte* palette, int opacity);
@@ -68,8 +68,42 @@ void LUA_Coal_OpenHud(lua_State* state)
 {
     hud_state = state;
 
+    luabridge::LuaRef no_color = LUA_Coal_NewVec3(hud_state, -1, -1, -1);
+    luabridge::LuaRef black = LUA_Coal_NewVec3(hud_state, 0, 0, 0);
+    luabridge::LuaRef white = LUA_Coal_NewVec3(hud_state, 255, 255, 255);
+    luabridge::LuaRef red = LUA_Coal_NewVec3(hud_state, 255, 0, 0);
+    luabridge::LuaRef lightred = LUA_Coal_NewVec3(hud_state, 220, 0, 0);
+    luabridge::LuaRef green = LUA_Coal_NewVec3(hud_state, 0, 255, 0);
+    luabridge::LuaRef lightgreen = LUA_Coal_NewVec3(hud_state, 0, 255, 144);
+    luabridge::LuaRef blue = LUA_Coal_NewVec3(hud_state, 0, 0, 220);
+    luabridge::LuaRef lightblue = LUA_Coal_NewVec3(hud_state, 0, 0, 255);
+    luabridge::LuaRef yellow = LUA_Coal_NewVec3(hud_state, 255, 255, 0);
+    luabridge::LuaRef purple = LUA_Coal_NewVec3(hud_state, 255, 0, 255);
+    luabridge::LuaRef cyan = LUA_Coal_NewVec3(hud_state, 0, 255, 255);
+    luabridge::LuaRef orange = LUA_Coal_NewVec3(hud_state, 255, 160, 0);
+    luabridge::LuaRef gray = LUA_Coal_NewVec3(hud_state, 128, 128, 128);
+    luabridge::LuaRef lightgray = LUA_Coal_NewVec3(hud_state, 192, 192, 192);
+
     luabridge::getGlobalNamespace(state)
         .beginNamespace("hud")
+        .addVariable("x_left", 0)
+        .addVariable("x_right", 320)
+        .addVariable("universal_y_adjust", 0)
+        .addVariable("NO_COLOR", &no_color)
+        .addVariable("BLACK", &black)
+        .addVariable("WHITE", &white)
+        .addVariable("RED", &red)
+        .addVariable("LIGHTRED", &lightred)
+        .addVariable("GREEN", &green)
+        .addVariable("LIGHTGREEN", &lightgreen)
+        .addVariable("BLUE", &blue)
+        .addVariable("LIGHTBLUE", &lightblue)
+        .addVariable("YELLOW", &yellow)
+        .addVariable("PURPLE", &purple)
+        .addVariable("CYAN", &cyan)
+        .addVariable("ORANGE", &orange)
+        .addVariable("GRAY", &gray)
+        .addVariable("LIGHTGRAY", &lightgray)
         .addProperty(
             "custom_stbar", +[] { return W_IsLumpInPwad("STBAR") ? true : false; })
         // query functions
@@ -111,6 +145,7 @@ void LUA_Coal_OpenHud(lua_State* state)
                          HUD_SetCoordSys(w, h);
 
                          luabridge::LuaRef hud = luabridge::getGlobal(state, "hud");
+                         SYS_ASSERT(hud.isTable());
                          hud["x_left"] = hud_x_left;
                          hud["x_right"] = hud_x_right;
                      })
@@ -236,7 +271,8 @@ void LUA_Coal_OpenHud(lua_State* state)
             })
         .addFunction(
             "draw_image",
-            +[](float x, float y, const char* name, int noOffset = 0) {
+            +[](float x, float y, const char* name, std::optional<int> noOffsetIn) {
+                int noOffset = noOffsetIn.value_or(0);
                 const image_c* img = W_ImageLookup(name, INS_Graphic);
 
                 if (img)
@@ -249,7 +285,13 @@ void LUA_Coal_OpenHud(lua_State* state)
             })
         .addFunction(
             "stretch_image",
-            +[](float x, float y, float w, float h, const char* name, int noOffset = 0) {
+            +[](float x,
+                float y,
+                float w,
+                float h,
+                const char* name,
+                std::optional<int> noOffsetIn) {
+                int noOffset = noOffsetIn.value_or(0);
                 const image_c* img = W_ImageLookup(name, INS_Graphic);
 
                 if (img)
@@ -262,7 +304,13 @@ void LUA_Coal_OpenHud(lua_State* state)
             })
         .addFunction(
             "scroll_image",
-            +[](float x, float y, const char* name, float sx, float sy, int noOffset = 0) {
+            +[](float x,
+                float y,
+                const char* name,
+                float sx,
+                float sy,
+                std::optional<int> noOffsetIn) {
+                int noOffset = noOffsetIn.value_or(0);
                 const image_c* img = W_ImageLookup(name, INS_Graphic);
 
                 if (img)
@@ -295,12 +343,14 @@ void LUA_Coal_OpenHud(lua_State* state)
             })
         .addFunction(
             "draw_text",
-            +[](float x, float y, const char* str, float size = 0.0f) {
+            +[](float x, float y, const char* str, std::optional<float> sizeIn) {
+                float size = sizeIn.value_or(0.0f);
                 HUD_DrawText(x, y, str, size);
             })
         .addFunction(
             "draw_num2",
-            +[](float x, float y, int len, int num, float size = 0.0f) {
+            +[](float x, float y, int len, int num, std::optional<float> sizeIn) {
+                float size = sizeIn.value_or(0.0f);
                 if (len < 1 || len > 20)
                     I_Error("hud.draw_number: bad field length: %d\n", len);
 
@@ -337,7 +387,8 @@ void LUA_Coal_OpenHud(lua_State* state)
             })
         .addFunction(
             "draw_number",
-            +[](float x, float y, int len, int num, int align_right, float size = 0.0f) {
+            +[](float x, float y, int len, int num, int align_right, std::optional<float> sizeIn) {
+                float size = sizeIn.value_or(0.0f);
                 if (len < 1 || len > 20)
                     I_Error("hud.draw_number: bad field length: %d\n", len);
 
@@ -400,12 +451,13 @@ void LUA_Coal_OpenHud(lua_State* state)
             "screen_aspect", +[]() { return std::ceil(v_pixelaspect.f * 100.0) / 100.0; })
         .addFunction(
             "render_world",
-            +[](float x, float y, float w, float h, int flags = 0) {
-                HUD_RenderWorld(x, y, w, h, ui_hud_who->mo, flags);
+            +[](float x, float y, float w, float h, std::optional<int> flags = 0) {
+                HUD_RenderWorld(x, y, w, h, ui_hud_who->mo, flags.value_or(0));
             })
         .addFunction(
             "render_automap",
-            +[](float x, float y, float w, float h, int flags = 0) {
+            +[](float x, float y, float w, float h, std::optional<int> flagsIn) {
+                int flags = flagsIn.value_or(0);
                 int old_state;
                 float old_zoom;
 
@@ -617,7 +669,7 @@ void LUA_Coal_OpenHud(lua_State* state)
 
                 return 0;
             })
-        
+
         .endNamespace();
 }
 
@@ -682,14 +734,14 @@ void LUA_Coal_RunHud(void)
 void LUA_Coal_SetVector(const char* modulename, const char* name, double x, double y, double z)
 {
     luabridge::LuaRef vec3 = luabridge::getGlobal(hud_state, "vec3");
+    SYS_ASSERT(vec3.isCallable());
     luabridge::LuaRef module = luabridge::getGlobal(hud_state, modulename);
+    SYS_ASSERT(module.isTable());
     module[name] = vec3(x, y, z)[0];
 }
 
-double LUA_Coal_GetFloat(const char *mod_name, const char *var_name)
+double LUA_Coal_GetFloat(const char* mod_name, const char* var_name)
 {
     luabridge::LuaRef module = luabridge::getGlobal(hud_state, mod_name);
     return module[var_name].cast<double>().value();
 }
-
-

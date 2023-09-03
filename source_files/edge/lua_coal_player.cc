@@ -34,11 +34,11 @@ player_t* lua_ui_player_who = nullptr;
 
 // AuxStringReplaceAll("Our_String", std::string("_"), std::string(" "));
 //
-std::string AuxStringReplaceAll(std::string str, const std::string& from, const std::string& to) 
+std::string AuxStringReplaceAll(std::string str, const std::string& from, const std::string& to)
 {
     size_t start_pos = 0;
-    while((start_pos = str.find(from, start_pos)) != std::string::npos) 
-	{
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
         str.replace(start_pos, from.length(), to);
         start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
     }
@@ -47,140 +47,140 @@ std::string AuxStringReplaceAll(std::string str, const std::string& from, const 
 
 // GetMobjBenefits(mobj);
 //
-std::string GetMobjBenefits(mobj_t *obj, bool KillBenefits=false) 
+std::string GetMobjBenefits(mobj_t* obj, bool KillBenefits = false)
 {
-	std::string temp_string;
-	temp_string.clear();
-	benefit_t *list;
-	int temp_num=0;
+    std::string temp_string;
+    temp_string.clear();
+    benefit_t* list;
+    int temp_num = 0;
 
-	if(KillBenefits)
-		list = obj->info->kill_benefits;
-	else
-		list = obj->info->pickup_benefits;
+    if (KillBenefits)
+        list = obj->info->kill_benefits;
+    else
+        list = obj->info->pickup_benefits;
 
-    for (; list != NULL; list=list->next)
-	{
-		switch (list->type)
-		{
-			case BENEFIT_Weapon:  
-				//If it's a weapon all bets are off: we'll want to parse
-				//it differently, not here.
-				temp_string = "WEAPON=1";
-				break;
+    for (; list != NULL; list = list->next)
+    {
+        switch (list->type)
+        {
+        case BENEFIT_Weapon:
+            // If it's a weapon all bets are off: we'll want to parse
+            // it differently, not here.
+            temp_string = "WEAPON=1";
+            break;
 
-			case BENEFIT_Ammo:
-				temp_string += "AMMO" + std::to_string((int)list->sub.type + 1);
-				temp_string += "=" + std::to_string((int)list->amount);
-				break;
+        case BENEFIT_Ammo:
+            temp_string += "AMMO" + std::to_string((int) list->sub.type + 1);
+            temp_string += "=" + std::to_string((int) list->amount);
+            break;
 
-			case BENEFIT_Health: //only benefit without a sub.type so just give it 01
-				temp_string += "HEALTH01=" + std::to_string((int)list->amount);
-				break;
+        case BENEFIT_Health: // only benefit without a sub.type so just give it 01
+            temp_string += "HEALTH01=" + std::to_string((int) list->amount);
+            break;
 
-			case BENEFIT_Armour:
-				temp_string += "ARMOUR" + std::to_string((int)list->sub.type + 1);
-				temp_string += "=" + std::to_string((int)list->amount);
-				break;
-			
-			case BENEFIT_Inventory:
-				temp_string += "INVENTORY";
-				if((list->sub.type + 1) < 10)
-					temp_string += "0";
-				temp_string += std::to_string((int)list->sub.type + 1);
-				temp_string += "=" + std::to_string((int)list->amount);
-				break;
-			
-			case BENEFIT_Counter:
-				temp_string += "COUNTER";
-				if((list->sub.type + 1) < 10)
-					temp_string += "0";
-				temp_string += std::to_string((int)list->sub.type + 1);
-				temp_string += "=" + std::to_string((int)list->amount);
-				break;
+        case BENEFIT_Armour:
+            temp_string += "ARMOUR" + std::to_string((int) list->sub.type + 1);
+            temp_string += "=" + std::to_string((int) list->amount);
+            break;
 
-			case BENEFIT_Key:
-				temp_string += "KEY";
-				temp_num = log2((int)list->sub.type);
-				temp_num ++;
-				temp_string += std::to_string(temp_num);
-				break;
+        case BENEFIT_Inventory:
+            temp_string += "INVENTORY";
+            if ((list->sub.type + 1) < 10)
+                temp_string += "0";
+            temp_string += std::to_string((int) list->sub.type + 1);
+            temp_string += "=" + std::to_string((int) list->amount);
+            break;
 
-			case BENEFIT_Powerup:
-				temp_string += "POWERUP" + std::to_string((int)list->sub.type + 1);
-				break;
-			
-			default: break;
-		}
-	}
-	return temp_string;
+        case BENEFIT_Counter:
+            temp_string += "COUNTER";
+            if ((list->sub.type + 1) < 10)
+                temp_string += "0";
+            temp_string += std::to_string((int) list->sub.type + 1);
+            temp_string += "=" + std::to_string((int) list->amount);
+            break;
+
+        case BENEFIT_Key:
+            temp_string += "KEY";
+            temp_num = log2((int) list->sub.type);
+            temp_num++;
+            temp_string += std::to_string(temp_num);
+            break;
+
+        case BENEFIT_Powerup:
+            temp_string += "POWERUP" + std::to_string((int) list->sub.type + 1);
+            break;
+
+        default:
+            break;
+        }
+    }
+    return temp_string;
 }
 
 // GetQueryInfoFromMobj(mobj, whatinfo)
 //
-std::string GetQueryInfoFromMobj(mobj_t *obj, int whatinfo)
+std::string GetQueryInfoFromMobj(mobj_t* obj, int whatinfo)
 {
-	int temp_num = 0;
-	std::string temp_string;
-	temp_string.clear();
+    int temp_num = 0;
+    std::string temp_string;
+    temp_string.clear();
 
-	switch (whatinfo)
-	{
-		case 1:  //name
-			if (obj)
-			{
-				//try CAST_TITLE first
-				temp_string = language[obj->info->cast_title];
+    switch (whatinfo)
+    {
+    case 1: // name
+        if (obj)
+        {
+            // try CAST_TITLE first
+            temp_string = language[obj->info->cast_title];
 
-				if (temp_string.empty()) //fallback to DDFTHING entry name
-				{
-					temp_string = obj->info->name;
-					temp_string = AuxStringReplaceAll(temp_string, std::string("_"), std::string(" "));
-				}
-			}
-			break;
+            if (temp_string.empty()) // fallback to DDFTHING entry name
+            {
+                temp_string = obj->info->name;
+                temp_string = AuxStringReplaceAll(temp_string, std::string("_"), std::string(" "));
+            }
+        }
+        break;
 
-		case 2: //current health
-			if (obj)
-			{
-				temp_num = obj->health;
-				temp_string = std::to_string(temp_num);
-			}
-			break;
+    case 2: // current health
+        if (obj)
+        {
+            temp_num = obj->health;
+            temp_string = std::to_string(temp_num);
+        }
+        break;
 
-		case 3: //spawn health
-			if (obj)
-			{
-				temp_num = obj->info->spawnhealth;
-				temp_string = std::to_string(temp_num);
-			}
-			break;
+    case 3: // spawn health
+        if (obj)
+        {
+            temp_num = obj->info->spawnhealth;
+            temp_string = std::to_string(temp_num);
+        }
+        break;
 
-		case 4:  //pickup_benefits
-			if (obj)
-			{
-				temp_string = GetMobjBenefits(obj, false);
-			}
-			break;
+    case 4: // pickup_benefits
+        if (obj)
+        {
+            temp_string = GetMobjBenefits(obj, false);
+        }
+        break;
 
-		case 5: //kill_benefits
-			if (obj)
-			{
-				temp_string = GetMobjBenefits(obj,true);
-			}
-			break;
+    case 5: // kill_benefits
+        if (obj)
+        {
+            temp_string = GetMobjBenefits(obj, true);
+        }
+        break;
+    }
 
-	}
+    if (temp_string.empty())
+        return ("");
 
-	if (temp_string.empty())
-		return("");
-
-	return(temp_string.c_str());
+    return (temp_string.c_str());
 }
 
-static void COAL_SetPsprite(player_t * p, int position, int stnum, weapondef_c *info = NULL)
+static void COAL_SetPsprite(player_t* p, int position, int stnum, weapondef_c* info = NULL)
 {
-    pspdef_t *psp = &p->psprites[position];
+    pspdef_t* psp = &p->psprites[position];
 
     if (stnum == S_NULL)
     {
@@ -192,7 +192,7 @@ static void COAL_SetPsprite(player_t * p, int position, int stnum, weapondef_c *
     // state is old? -- Mundo hack for DDF inheritance
     if (info && stnum < info->state_grp.back().first)
     {
-        state_t *st = &states[stnum];
+        state_t* st = &states[stnum];
 
         if (st->label)
         {
@@ -202,11 +202,10 @@ static void COAL_SetPsprite(player_t * p, int position, int stnum, weapondef_c *
         }
     }
 
-    state_t *st = &states[stnum];
+    state_t* st = &states[stnum];
 
     // model interpolation stuff
-    if (psp->state &&
-        (st->flags & SFF_Model) && (psp->state->flags & SFF_Model) &&
+    if (psp->state && (st->flags & SFF_Model) && (psp->state->flags & SFF_Model) &&
         (st->sprite == psp->state->sprite) && st->tics > 1)
     {
         p->weapon_last_frame = psp->state->frame;
@@ -215,16 +214,15 @@ static void COAL_SetPsprite(player_t * p, int position, int stnum, weapondef_c *
         p->weapon_last_frame = -1;
 
     psp->state = st;
-    psp->tics  = st->tics;
-    psp->next_state = (st->nextstate == S_NULL) ? NULL : 
-        (states + st->nextstate);
+    psp->tics = st->tics;
+    psp->next_state = (st->nextstate == S_NULL) ? NULL : (states + st->nextstate);
 
     // call action routine
 
     p->action_psp = position;
 
     if (st->action)
-        (* st->action)(p->mo);
+        (*st->action)(p->mo);
 }
 
 //
@@ -233,9 +231,9 @@ static void COAL_SetPsprite(player_t * p, int position, int stnum, weapondef_c *
 // -AJA- 2004/11/05: This is preferred method, doesn't run any actions,
 //       which (ideally) should only happen during P_MovePsprites().
 //
-void COAL_SetPspriteDeferred(player_t * p, int position, int stnum)
+void COAL_SetPspriteDeferred(player_t* p, int position, int stnum)
 {
-    pspdef_t *psp = &p->psprites[position];
+    pspdef_t* psp = &p->psprites[position];
 
     if (stnum == S_NULL || psp->state == NULL)
     {
@@ -247,104 +245,106 @@ void COAL_SetPspriteDeferred(player_t * p, int position, int stnum)
     psp->next_state = (states + stnum);
 }
 
-
 // GetQueryInfoFromWeapon(mobj, whatinfo, [secattackinfo])
 //
-std::string GetQueryInfoFromWeapon(mobj_t *obj, int whatinfo, bool secattackinfo = false)
+std::string GetQueryInfoFromWeapon(mobj_t* obj, int whatinfo, bool secattackinfo = false)
 {
-	int temp_num = 0;
-	std::string temp_string;
-	temp_string.clear();
+    int temp_num = 0;
+    std::string temp_string;
+    temp_string.clear();
 
-	if (!obj->info->pickup_benefits)
-		return "";
-	if (!obj->info->pickup_benefits->sub.weap)
-		return "";	
-	if (obj->info->pickup_benefits->type != BENEFIT_Weapon)
-		return "";	
+    if (!obj->info->pickup_benefits)
+        return "";
+    if (!obj->info->pickup_benefits->sub.weap)
+        return "";
+    if (obj->info->pickup_benefits->type != BENEFIT_Weapon)
+        return "";
 
-	weapondef_c *objWep = obj->info->pickup_benefits->sub.weap;
-	if (!objWep)
-		return "";
+    weapondef_c* objWep = obj->info->pickup_benefits->sub.weap;
+    if (!objWep)
+        return "";
 
-	int attacknum = 0; //default to primary attack
-	if(secattackinfo)
-		attacknum = 1;
+    int attacknum = 0; // default to primary attack
+    if (secattackinfo)
+        attacknum = 1;
 
-	atkdef_c *objAtck = objWep->attack[attacknum];	
-	if(!objAtck && whatinfo > 2)
-		return ""; //no attack to get info about (only should happen with secondary attacks)
+    atkdef_c* objAtck = objWep->attack[attacknum];
+    if (!objAtck && whatinfo > 2)
+        return ""; // no attack to get info about (only should happen with secondary attacks)
 
-	const damage_c *damtype;
+    const damage_c* damtype;
 
-	float temp_num2;
+    float temp_num2;
 
-	switch (whatinfo)
-	{
-		case 1:  //name
-			temp_string = objWep->name;
-			temp_string = AuxStringReplaceAll(temp_string, std::string("_"), std::string(" "));
-			break;
-		
-		case 2:  //ZOOM_FACTOR
-			temp_num2 = 90.0f / objWep->zoom_fov;
-			temp_string = std::to_string(temp_num2);
-			break;
+    switch (whatinfo)
+    {
+    case 1: // name
+        temp_string = objWep->name;
+        temp_string = AuxStringReplaceAll(temp_string, std::string("_"), std::string(" "));
+        break;
 
-		case 3: //AMMOTYPE
-			temp_num = (objWep->ammo[attacknum]) + 1;
-			temp_string = std::to_string(temp_num);
-			break;
+    case 2: // ZOOM_FACTOR
+        temp_num2 = 90.0f / objWep->zoom_fov;
+        temp_string = std::to_string(temp_num2);
+        break;
 
-		case 4: //AMMOPERSHOT
-			temp_num = objWep->ammopershot[attacknum];
-			temp_string = std::to_string(temp_num);
-			break;
+    case 3: // AMMOTYPE
+        temp_num = (objWep->ammo[attacknum]) + 1;
+        temp_string = std::to_string(temp_num);
+        break;
 
-		case 5:  //CLIPSIZE
-			temp_num = objWep->clip_size[attacknum];
-			temp_string = std::to_string(temp_num);
-			break;
+    case 4: // AMMOPERSHOT
+        temp_num = objWep->ammopershot[attacknum];
+        temp_string = std::to_string(temp_num);
+        break;
 
-		case 6: //DAMAGE Nominal
-			damtype = &objAtck->damage;
-			temp_num = damtype->nominal;
-			temp_string = std::to_string(temp_num);
-			break;
-		
-		case 7: //DAMAGE Max
-			damtype = &objAtck->damage;
-			temp_num = damtype->linear_max;
-			temp_string = std::to_string(temp_num);
-			break;
+    case 5: // CLIPSIZE
+        temp_num = objWep->clip_size[attacknum];
+        temp_string = std::to_string(temp_num);
+        break;
 
-		case 8: //Range
-			temp_num = objAtck->range;
-			temp_string = std::to_string(temp_num);
-			break;
+    case 6: // DAMAGE Nominal
+        damtype = &objAtck->damage;
+        temp_num = damtype->nominal;
+        temp_string = std::to_string(temp_num);
+        break;
 
-		case 9:  //AUTOMATIC
-			if (objWep->autofire[attacknum])
-				temp_string = "1";
-			else
-				temp_string = "0";
-			break;
+    case 7: // DAMAGE Max
+        damtype = &objAtck->damage;
+        temp_num = damtype->linear_max;
+        temp_string = std::to_string(temp_num);
+        break;
 
-	}
+    case 8: // Range
+        temp_num = objAtck->range;
+        temp_string = std::to_string(temp_num);
+        break;
 
-	if (temp_string.empty())
-		return("");
+    case 9: // AUTOMATIC
+        if (objWep->autofire[attacknum])
+            temp_string = "1";
+        else
+            temp_string = "0";
+        break;
+    }
 
-	return(temp_string.c_str());
+    if (temp_string.empty())
+        return ("");
+
+    return (temp_string.c_str());
 }
 
 void LUA_Coal_OpenPlayer(lua_State* state)
 {
     player_state = state;
 
+    luabridge::LuaRef vec3 = luabridge::getGlobal(player_state, "vec3");
+    luabridge::LuaRef inventory_event_handler = vec3(0, 0, 0)[0];
+
     luabridge::getGlobalNamespace(state)
-        .beginNamespace("coal")
         .beginNamespace("player")
+        .addVariable("inventory_event_handler", &inventory_event_handler)
+        .addVariable("STOP_TIME", 10)
         .addFunction(
             "num_players", +[] { return numplayers; })
         .addFunction(
@@ -1206,7 +1206,5 @@ void LUA_Coal_OpenPlayer(lua_State* state)
 
                 return thingcount;
             })
-
-        .endNamespace()
         .endNamespace();
 }

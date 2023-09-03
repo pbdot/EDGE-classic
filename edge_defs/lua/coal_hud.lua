@@ -106,7 +106,7 @@ local function set_face_params()
 
     -- evil grin when player just picked up a weapon
     if (face_state == 2) then
-        face_image = "STFEVL" + pain_digit()
+        face_image = "STFEVL" .. pain_digit()
         face_tic   = sys.gametic + 7
         return
     end
@@ -468,13 +468,13 @@ local function doom_automap()
     end
 
     hud.set_scale(0.75)
-    hud.draw_text(10, 20, "Kills:    " + player.kills() + "/" + player.map_enemies())
+    hud.draw_text(10, 20, "Kills:    " .. player.kills() .. "/" .. player.map_enemies())
 
     if (player.map_secrets() > 0) then
-        hud.draw_text(10, 25, "Secrets: " + player.secrets() + "/" + player.map_secrets())
+        hud.draw_text(10, 25, "Secrets: " .. player.secrets() .. "/" .. player.map_secrets())
     end
     if (player.map_items() > 0) then
-        hud.draw_text(10, 30, "Items:    " + player.items() + "/" + player.map_items())
+        hud.draw_text(10, 30, "Items:    " .. player.items() .. "/" .. player.map_items())
     end
     hud.set_scale(1.0)
 end
@@ -644,7 +644,7 @@ end
 function end_level()
 end
 
-function draw_all()
+function draw_all()    
     hud.coord_sys(320, 200)
 
     if (hud.check_automap()) then
