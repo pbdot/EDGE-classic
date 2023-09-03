@@ -1,9 +1,5 @@
 
 
-import { vec3 } from "./vector"
-
-const sys = coal.sys;
-const math = coal.math;
 
 const v3 = vec3();
 

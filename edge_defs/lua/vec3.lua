@@ -1,3 +1,8 @@
+
+local math = _G.math
+-- COAL compatibility
+if (not math) then math = _G.__math end
+
 local abs = math.abs
 local vec
 local metatable

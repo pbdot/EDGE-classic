@@ -90,7 +90,6 @@
 #include "w_texture.h"
 #include "w_wad.h"
 #include "version.h"
-#include "vm_coal.h"
 
 extern cvar_c r_doubleframes;
 
@@ -588,8 +587,7 @@ void E_Display(void)
 	{
 		case GS_LEVEL:
 			R_PaletteStuff();
-
-			VM_RunHud();
+			
 			void LUA_Hud_Run();
 			LUA_Hud_Run();
 
@@ -1743,10 +1741,10 @@ static void E_Startup(void)
 	S_Init();
 	N_InitNetwork();
 	M_CheatInit();
-	VM_InitCoal();
-	VM_LoadScripts();
 	void LUA_Init();
 	LUA_Init();
+	void LUA_Coal_LoadScripts();
+	LUA_Coal_LoadScripts();
 }
 
 

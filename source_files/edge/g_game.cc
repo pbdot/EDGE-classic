@@ -58,7 +58,6 @@
 #include "version.h"
 #include "w_wad.h"
 #include "f_interm.h"
-#include "vm_coal.h"
 
 extern cvar_c r_doubleframes;
 
@@ -310,7 +309,8 @@ void G_DoLoadLevel(void)
 
 	SpawnInitialPlayers();
 
-	VM_BeginLevel();
+	void LUA_Coal_BeginLevel(void);
+	LUA_Coal_BeginLevel();
 }
 
 
@@ -887,7 +887,8 @@ static void G_DoLoadGame(void)
 
 	V_SetPalette(PALETTE_NORMAL, 0);
 
-	VM_LoadGame(); // Stub for now
+	void LUA_Coal_LoadGame(void);
+	LUA_Coal_LoadGame(); // Stub for now
 }
 
 //
@@ -984,7 +985,8 @@ static bool G_SaveGameToFile(std::filesystem::path filename, const char *descrip
 
 static void G_DoSaveGame(void)
 {
-	VM_SaveGame(); //Stub for now; eventually things like determining if saving is allowed, etc
+	void LUA_Coal_SaveGame(void);
+	LUA_Coal_SaveGame(); //Stub for now; eventually things like determining if saving is allowed, etc
 
 	std::filesystem::path fn(SV_FileName("current", "head"));
 
@@ -1121,7 +1123,8 @@ static void G_DoNewGame(void)
 	delete defer_params;
 	defer_params = NULL;
 
-	VM_NewGame();
+	void LUA_Coal_NewGame(void);
+	LUA_Coal_NewGame();
 
 	// -AJA- 2003/10/09: support for pre-level briefing screen on first map.
 	//       FIXME: kludgy. All this game logic desperately needs rethinking.

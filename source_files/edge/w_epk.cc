@@ -21,7 +21,6 @@
 #include "r_image.h"
 #include "w_files.h"
 #include "w_wad.h"
-#include "vm_coal.h"
 
 // EPI
 #include "epi.h"
@@ -48,6 +47,8 @@
 #include "vwadvfs.h"
 
 static std::string image_dirs[5] = {"flats", "graphics", "skins", "textures", "sprites"};
+
+extern void LUA_Coal_AddScript(int type, std::string& data, const std::string& source);
 
 class pack_entry_c
 {
@@ -932,7 +933,7 @@ static void ProcessCoalAPIInPack(pack_file_c *pack)
 				const byte *raw_data = pack->LoadEntry(dir, entry, length);
 				std::string data((const char *)raw_data);
 				delete[] raw_data;
-				VM_AddScript(0, data, source);
+				//LUA_Coal_AddScript(0, data, source);
 				return; // Should only be present once
 			}
 		}
@@ -948,7 +949,7 @@ static void ProcessCoalHUDInPack(pack_file_c *pack)
 	if (bare_filename.empty())
 		bare_filename = df->name.string();
 
-	std::string source = "coal_hud.ec";
+	std::string source = "coal_hud.lua";
 	source += " in ";
 	source += bare_filename;
 
@@ -957,13 +958,13 @@ static void ProcessCoalHUDInPack(pack_file_c *pack)
 		for (int entry=0; entry < pack->dirs[dir].entries.size(); entry++)
 		{
 			pack_entry_c& ent = pack->dirs[dir].entries[entry];
-			if (epi::PATH_GetFilename(ent.name) == "COAL_HUD.EC" || epi::PATH_GetBasename(ent.name) == "COALHUDS")
+			if (epi::PATH_GetFilename(ent.name) == "COAL_HUD.LUA")
 			{
 				int length = -1;
 				const byte *raw_data = pack->LoadEntry(dir, entry, length);
 				std::string data((const char *)raw_data);
 				delete[] raw_data;
-				VM_AddScript(0, data, source);
+				LUA_Coal_AddScript(0, data, source);
 				return; // Should only be present once
 			}
 		}

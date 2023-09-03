@@ -67,7 +67,6 @@
 #include "l_ajbsp.h"
 #include "m_misc.h"
 #include "r_image.h"
-#include "vm_coal.h"
 #include "w_epk.h"
 #include "w_files.h"
 #include "w_wad.h"
@@ -75,6 +74,8 @@
 
 #include "rad_trig.h"
 #include "p_umapinfo.h" //Lobo 2022
+
+extern void LUA_Coal_AddScript(int type, std::string& data, const std::string& source);
 
 typedef struct
 {
@@ -1068,7 +1069,7 @@ static void ProcessCoalInWad(data_file_c *df)
 		source += " in ";
 		source += bare_filename;
 
-		VM_AddScript(0, data, source);
+		LUA_Coal_AddScript(0, data, source);
 	}
 }
 

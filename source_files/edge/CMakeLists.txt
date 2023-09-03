@@ -115,9 +115,10 @@ set (EDGE_SOURCE_FILES
   lua_coal_api.cc
   lua_coal_hud.cc
   lua_coal_player.cc
-  vm_coal.cc
-  vm_hud.cc
-  vm_player.cc
+  lua_coal_vm.cc
+  #vm_coal.cc
+  #vm_hud.cc
+  #vm_player.cc
 )
 
 if (EMSCRIPTEN)
@@ -127,8 +128,7 @@ else()
 endif()
 
 set (EDGE_LINK_LIBRARIES
-  edge_ajbsp
-  edge_coal
+  edge_ajbsp  
   edge_ddf
   edge_deh
   edge_epi
@@ -171,7 +171,6 @@ endif()
 
 
 target_include_directories(edge-classic PRIVATE ../ajbsp)
-target_include_directories(edge-classic PRIVATE ../coal)
 target_include_directories(edge-classic PRIVATE ../crsid)
 target_include_directories(edge-classic PRIVATE ../ddf)
 target_include_directories(edge-classic PRIVATE ../dehacked)

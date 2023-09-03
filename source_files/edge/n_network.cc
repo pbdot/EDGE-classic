@@ -37,13 +37,7 @@
 #include "m_argv.h"
 #include "m_random.h"
 
-#include "coal.h" // for coal::vm_c
-
 #include "str_util.h"
-
-extern coal::vm_c *ui_vm;
-
-extern void VM_SetFloat(coal::vm_c *vm, const char *mod_name, const char *var_name, double value);
 
 // #define DEBUG_TICS 1
 
@@ -194,8 +188,6 @@ void N_GrabTiccmds(void)
 
 		memcpy(&p->cmd, p->in_cmds + buf, sizeof(ticcmd_t));
 	}
-
-	VM_SetFloat(ui_vm, "sys", "gametic", gametic / (r_doubleframes.d ? 2 : 1));
 
 	gametic++;
 }

@@ -3,6 +3,7 @@
 #include "version.h"
 #include "dm_state.h"
 #include "m_random.h"
+#include "w_wad.h"
 #include "lua_edge.h"
 
 using namespace elua;
@@ -207,9 +208,6 @@ public:
         OpenStrings();
         OpenHud();
         OpenPlayer();
-
-        vm_->DoFile("edge_defs/lua/coal_api.lua");
-
     }
 
 private:
@@ -218,7 +216,6 @@ private:
         lua_State* state = vm_->GetState();
 
         luabridge::getGlobalNamespace(state)
-            .beginNamespace("coal")
             // sys
             .beginNamespace("sys")
             .addFunction("error", SYS_error)
@@ -228,7 +225,6 @@ private:
             .addProperty("TICRATE", &ticrate, false)
             .addProperty(
                 "gametic", +[] { return gametic / (r_doubleframes.d ? 2 : 1); })
-            .endNamespace()
             .endNamespace();
     }
 
@@ -237,7 +233,6 @@ private:
         lua_State* state = vm_->GetState();
 
         luabridge::getGlobalNamespace(state)
-            .beginNamespace("coal")
             .beginNamespace("math")
             .addFunction("rint", MATH_rint)
             .addFunction("floor", MATH_floor)
@@ -308,9 +303,8 @@ private:
                 "min", +[](double a, double b) { return MIN(a, b); })
             .addFunction(
                 "max", +[](double a, double b) { return MAX(a, b); })
-            .addProperty("p1", &pi, false)
+            .addProperty("pi", &pi, false)
             .addProperty("e", &evar, false)
-            .endNamespace()
             .endNamespace();
     }
 
@@ -319,14 +313,11 @@ private:
         lua_State* state = vm_->GetState();
 
         luabridge::getGlobalNamespace(state)
-            .beginNamespace("coal")
-
             .beginNamespace("strings")
             .addFunction("len", STRINGS_len)
             .addFunction("sub", STRINGS_sub)
             .addFunction("tonumber", STRINGS_tonumber)
             .addFunction("find", STRINGS_find)
-            .endNamespace()
             .endNamespace();
     }
 
@@ -340,10 +331,9 @@ private:
     void OpenPlayer()
     {
         lua_State* state = vm_->GetState();
-        void LUA_Coal_OpenPlayer(lua_State* state);
+        void LUA_Coal_OpenPlayer(lua_State * state);
         LUA_Coal_OpenPlayer(state);
     }
-
 };
 
 void LUA_Coal_Init()
@@ -352,9 +342,43 @@ void LUA_Coal_Init()
     vm_lua_coal = LUA_CreateEdgeVM(LUA_VM_EDGE_COAL);
     vm_lua_coal->AddModule<lua_coal_api_c>();
 
-    vm_lua_coal->DoFile("edge_defs/lua/coal_api.lua");
-
-    vm_lua_coal->DoFile("edge_defs/lua/test.lua");
+    vm_lua_coal->DoFile("edge_defs/lua/test2.lua");
 }
 
+class pending_lua_script_c
+{
+public:
+    int type = 0;
+    std::string data = "";
+    std::string source = "";
+};
 
+static std::vector<pending_lua_script_c> unread_scripts;
+
+void LUA_Coal_AddScript(int type, std::string& data, const std::string& source)
+{
+    unread_scripts.push_back(pending_lua_script_c{type, "", source});
+
+    // transfer the caller's data
+    unread_scripts.back().data.swap(data);
+}
+
+void LUA_Coal_LoadScripts()
+{
+    for (auto& info : unread_scripts)
+    {
+        const char* name = info.source.c_str();
+        char* data = (char*) info.data.c_str(); // FIXME make param to CompileFile be a std::string&
+
+        I_Printf("Compiling: %s\n", name);
+
+        vm_lua_coal->DoString(data);
+    }
+
+    unread_scripts.clear();
+
+    if (W_IsLumpInPwad("STBAR"))
+    {
+        luabridge::getGlobal(vm_lua_coal->GetState(), "hud")["custom_stbar"] = true;
+    }
+}

@@ -57,12 +57,7 @@
 
 #include "m_misc.h"  // !!!! model test
 
-#include "coal.h"
-
-extern coal::vm_c *ui_vm;
-
-extern double VM_GetFloat(coal::vm_c *vm, const char *mod_name, const char *var_name);
-
+extern double LUA_Coal_GetFloat(const char *mod_name, const char *var_name);
 extern bool erraticism_active;
 
 #define DEBUG  0
@@ -224,7 +219,9 @@ static void RGL_DrawPSprite(pspdef_t * psp, int which,
 	
 	//Lobo 2022: Apply sprite Y offset, mainly for Heretic weapons.
 	if ((state->flags & SFF_Weapon) && (player->ready_wp >=0))
-		ty1 += VM_GetFloat(ui_vm, "hud", "universal_y_adjust") + player->weapons[player->ready_wp].info->y_adjust;
+	{		
+		ty1 += LUA_Coal_GetFloat("hud", "universal_y_adjust") + player->weapons[player->ready_wp].info->y_adjust;
+	}
 
 	
 	float ty2 = ty1 + h;
@@ -667,7 +664,7 @@ void RGL_DrawWeaponModel(player_t * p)
 
 	float bias = 0.0f;
 
-	bias = VM_GetFloat(ui_vm, "hud", "universal_y_adjust") + p->weapons[p->ready_wp].info->y_adjust;
+	bias = LUA_Coal_GetFloat("hud", "universal_y_adjust") + p->weapons[p->ready_wp].info->y_adjust;
 	bias /= 5;
 	bias += w->model_bias;
 

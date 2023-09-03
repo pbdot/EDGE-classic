@@ -42,13 +42,8 @@
 // Room size test - Dasho
 #include "p_blockmap.h"
 
-#include "coal.h" // for coal::vm_c
 
 extern cvar_c r_doubleframes;
-
-extern coal::vm_c *ui_vm;
-
-extern void VM_SetVector(coal::vm_c *vm, const char *mod_name, const char *var_name, double val_1, double val_2, double val_3);
 
 DEF_CVAR(g_erraticism, "0", CVAR_ARCHIVE)
 
@@ -881,7 +876,9 @@ bool P_PlayerThink(player_t * player, bool extra_tic)
 	player->actiondown[0] = (cmd->extbuttons & EBT_ACTION1) ? true : false;
 	player->actiondown[1] = (cmd->extbuttons & EBT_ACTION2) ? true : false;
 
-	VM_SetVector(ui_vm, "player", "inventory_event_handler", cmd->extbuttons & EBT_INVPREV ? 1 : 0, 
+	void LUA_Coal_SetVector(const char* modulename, const char* name, double x, double y, double z);
+
+	LUA_Coal_SetVector("player", "inventory_event_handler", cmd->extbuttons & EBT_INVPREV ? 1 : 0, 
 		cmd->extbuttons & EBT_INVUSE ? 1 : 0, cmd->extbuttons & EBT_INVNEXT ? 1 : 0);
 
 	// FIXME separate code more cleanly

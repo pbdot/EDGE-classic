@@ -6,5 +6,11 @@
         {
             "path": "../source_files/elua/elua_base"
         }
-    ]
+    ],
+    "settings": {
+        "files.associations": {
+            "xstring": "cpp",
+            "vector": "cpp"
+        }
+    }
 }

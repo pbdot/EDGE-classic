@@ -43,8 +43,6 @@
 
 #include "str_util.h"
 
-#include "vm_coal.h" // For VM_EndLevel()
-
 
 //
 // PLAYER ARRAY
@@ -150,7 +148,8 @@ void G_PlayerFinishLevel(player_t *p, bool keep_cards)
 	p->attacker = NULL; 
 	
 
-	VM_EndLevel();
+	void LUA_Coal_EndLevel(void);
+	LUA_Coal_EndLevel();
 }
 
 //

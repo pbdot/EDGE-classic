@@ -69,10 +69,9 @@ void LUA_Coal_OpenHud(lua_State* state)
     hud_state = state;
 
     luabridge::getGlobalNamespace(state)
-        .beginNamespace("coal")
         .beginNamespace("hud")
         .addProperty(
-            "custom_stbar", +[] { return W_IsLumpInPwad("STBAR") ? 1 : 0; })
+            "custom_stbar", +[] { return W_IsLumpInPwad("STBAR") ? true : false; })
         // query functions
         .addFunction(
             "game_mode",
@@ -100,7 +99,7 @@ void LUA_Coal_OpenHud(lua_State* state)
         .addFunction(
             "which_hud", +[] { return screen_hud; })
         .addFunction(
-            "check_automap", +[] { return automapactive ? 1 : 0; })
+            "check_automap", +[] { return automapactive ? true : false; })
         .addFunction(
             "get_time", +[] { return I_GetTime() / (r_doubleframes.d ? 2 : 1); })
         // set-state functions
@@ -111,9 +110,9 @@ void LUA_Coal_OpenHud(lua_State* state)
 
                          HUD_SetCoordSys(w, h);
 
-                         luabridge::LuaRef coal = luabridge::getGlobal(state, "coal");
-                         coal["hud"]["x_left"] = hud_x_left;
-                         coal["hud"]["x_right"] = hud_x_right;
+                         luabridge::LuaRef hud = luabridge::getGlobal(state, "hud");
+                         hud["x_left"] = hud_x_left;
+                         hud["x_right"] = hud_x_right;
                      })
         .addFunction(
             "text_font",
@@ -618,8 +617,7 @@ void LUA_Coal_OpenHud(lua_State* state)
 
                 return 0;
             })
-
-        .endNamespace()
+        
         .endNamespace();
 }
 
@@ -680,3 +678,18 @@ void LUA_Coal_RunHud(void)
 
     HUD_Reset();
 }
+
+void LUA_Coal_SetVector(const char* modulename, const char* name, double x, double y, double z)
+{
+    luabridge::LuaRef vec3 = luabridge::getGlobal(hud_state, "vec3");
+    luabridge::LuaRef module = luabridge::getGlobal(hud_state, modulename);
+    module[name] = vec3(x, y, z)[0];
+}
+
+double LUA_Coal_GetFloat(const char *mod_name, const char *var_name)
+{
+    luabridge::LuaRef module = luabridge::getGlobal(hud_state, mod_name);
+    return module[var_name].cast<double>().value();
+}
+
+
