@@ -113,6 +113,8 @@ set (EDGE_SOURCE_FILES
   lua_hud.cc
   lua_sys.cc
   lua_coal_api.cc
+  lua_coal_hud.cc
+  lua_coal_player.cc
   vm_coal.cc
   vm_hud.cc
   vm_player.cc

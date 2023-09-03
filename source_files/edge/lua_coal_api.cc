@@ -17,22 +17,21 @@ extern cvar_c r_doubleframes;
 
 // sys.error(str)
 //
-static void SYS_error(const char *message)
+static void SYS_error(const char* message)
 {
-
     I_Error("%s\n", message);
 }
 
 // sys.print(str)
 //
-static void SYS_print(const char *message)
+static void SYS_print(const char* message)
 {
     I_Printf("%s\n", message);
 }
 
 // sys.debug_print(str)
 //
-static void SYS_debug_print(const char *message)
+static void SYS_debug_print(const char* message)
 {
     I_Debugf("%s\n", message);
 }
@@ -41,7 +40,7 @@ static void SYS_debug_print(const char *message)
 //
 static double SYS_edge_version()
 {
-    return (double)edgeversion.f;
+    return (double) edgeversion.f;
 }
 
 //------------------------------------------------------------------------
@@ -116,7 +115,6 @@ static double MATH_atan(double val)
 // math.atan2(x, y)
 static double MATH_atan2(double x, double y)
 {
-
     return atan2(y, x) * 180.0 / M_PI;
 }
 
@@ -135,7 +133,7 @@ static double MATH_log(double val)
 
 // strings.len(s)
 //
-static size_t STRINGS_len(const char *s)
+static size_t STRINGS_len(const char* s)
 {
     return strlen(s);
 }
@@ -144,7 +142,7 @@ static size_t STRINGS_len(const char *s)
 //  strings.find(s,TextToFind)
 //  returns substring position or -1 if not found
 //
-static int STRINGS_find(const char *s1, const char *s2)
+static int STRINGS_find(const char* s1, const char* s2)
 {
     std::string str(s1);
     std::string str2(s2);
@@ -154,7 +152,7 @@ static int STRINGS_find(const char *s1, const char *s2)
 
 // strings.sub(s, start, end)
 //
-static std::string STRINGS_sub(const char *s, int start, int end)
+static std::string STRINGS_sub(const char* s, int start, int end)
 {
     int len = strlen(s);
 
@@ -187,24 +185,32 @@ static std::string STRINGS_sub(const char *s, int start, int end)
 
 // strings.tonumber(s)
 //
-static double STRINGS_tonumber(const char *s)
+static double STRINGS_tonumber(const char* s)
 {
-
     return double(atof(s));
 }
 
-static lua_vm_c *vm_lua_coal = nullptr;
+static lua_vm_c* vm_lua_coal = nullptr;
 static double ticrate = 35.0;
 static double evar = 2.7182818284590452354;
 
 class lua_coal_api_c : public lua_module_c
 {
 public:
-    lua_coal_api_c(lua_vm_c *vm) : lua_module_c(vm, "coal"), hud_(nullptr) {}
+    lua_coal_api_c(lua_vm_c* vm) : lua_module_c(vm, "coal") {}
 
     void Open()
     {
-        lua_State *state = vm_->GetState();
+        OpenSys();
+        OpenMath();
+        OpenStrings();
+        OpenHud();
+    }
+
+private:
+    void OpenSys()
+    {
+        lua_State* state = vm_->GetState();
 
         luabridge::getGlobalNamespace(state)
             .beginNamespace("coal")
@@ -216,10 +222,17 @@ public:
             .addFunction("edge_version", SYS_edge_version)
             .addProperty("TICRATE", &ticrate, false)
             .addProperty(
-                "gametic", +[]
-                           { return gametic / (r_doubleframes.d ? 2 : 1); })
+                "gametic", +[] { return gametic / (r_doubleframes.d ? 2 : 1); })
             .endNamespace()
-            // math
+            .endNamespace();
+    }
+
+    void OpenMath()
+    {
+        lua_State* state = vm_->GetState();
+
+        luabridge::getGlobalNamespace(state)
+            .beginNamespace("coal")
             .beginNamespace("math")
             .addFunction("rint", MATH_rint)
             .addFunction("floor", MATH_floor)
@@ -236,54 +249,72 @@ public:
             .addFunction("log", MATH_log)
             // vec3 extensions
             .addFunction(
-                "getx", +[](luabridge::LuaRef ref)
-                        { SYS_ASSERT(ref.isTable()); 
-                          SYS_ASSERT(ref[1].isNumber());                          
-                          return ref[1].cast<double>().value(); })
+                "getx",
+                +[](luabridge::LuaRef ref) {
+                    SYS_ASSERT(ref.isTable());
+                    SYS_ASSERT(ref[1].isNumber());
+                    return ref[1].cast<double>().value();
+                })
             .addFunction(
-                "gety", +[](luabridge::LuaRef ref)
-                        { SYS_ASSERT(ref.isTable()); 
-                          SYS_ASSERT(ref[2].isNumber());
-                          return ref[2].cast<double>().value(); })
+                "gety",
+                +[](luabridge::LuaRef ref) {
+                    SYS_ASSERT(ref.isTable());
+                    SYS_ASSERT(ref[2].isNumber());
+                    return ref[2].cast<double>().value();
+                })
             .addFunction(
-                "getz", +[](luabridge::LuaRef ref)
-                        { SYS_ASSERT(ref.isTable()); 
-                          SYS_ASSERT(ref[3].isNumber());
-                          return ref[3].cast<double>().value(); })
+                "getz",
+                +[](luabridge::LuaRef ref) {
+                    SYS_ASSERT(ref.isTable());
+                    SYS_ASSERT(ref[3].isNumber());
+                    return ref[3].cast<double>().value();
+                })
             .addFunction(
-                "vlen", +[](luabridge::LuaRef ref)
-                        { SYS_ASSERT(ref.isTable()); 
-                          luabridge::LuaResult result = ref["length"](ref);
-                          return result[0].cast<double>().value(); })
+                "vlen",
+                +[](luabridge::LuaRef ref) {
+                    SYS_ASSERT(ref.isTable());
+                    luabridge::LuaResult result = ref["length"](ref);
+                    return result[0].cast<double>().value();
+                })
 
             .addFunction(
-                "normalize", +[](luabridge::LuaRef ref)
-                             { SYS_ASSERT(ref.isTable());                                
-                               return ref["normalize"](ref)[0]; })
+                "normalize",
+                +[](luabridge::LuaRef ref) {
+                    SYS_ASSERT(ref.isTable());
+                    return ref["normalize"](ref)[0];
+                })
 
             .addFunction(
-                "rand_range", +[](double low, double high)
-                              { return low + (high - low) * MATH_random(); })
+                "rand_range",
+                +[](double low, double high) { return low + (high - low) * MATH_random(); })
 
             .addFunction(
-                "abs", +[](double n)
-                       { if (n < 0) 
-                         {
-                            return 0 - n;
-                         }
-                         return n; })
+                "abs",
+                +[](double n) {
+                    if (n < 0)
+                    {
+                        return 0 - n;
+                    }
+                    return n;
+                })
             .addFunction(
-                "sqrt", +[](double n)
-                        { return sqrt(n); })
+                "sqrt", +[](double n) { return sqrt(n); })
             .addFunction(
-                "min", +[](double a, double b)
-                       { return MIN(a, b); })
+                "min", +[](double a, double b) { return MIN(a, b); })
             .addFunction(
-                "max", +[](double a, double b)
-                       { return MAX(a, b); })
+                "max", +[](double a, double b) { return MAX(a, b); })
             .addProperty("e", &evar, false)
             .endNamespace()
-            // strings
+            .endNamespace();
+    }
+
+    void OpenStrings()
+    {
+        lua_State* state = vm_->GetState();
+
+        luabridge::getGlobalNamespace(state)
+            .beginNamespace("coal")
+
             .beginNamespace("strings")
             .addFunction("len", STRINGS_len)
             .addFunction("sub", STRINGS_sub)
@@ -293,7 +324,12 @@ public:
             .endNamespace();
     }
 
-    luabridge::LuaRef hud_;
+    void OpenHud()
+    {
+        lua_State* state = vm_->GetState();
+        void LUA_Coal_OpenHud(lua_State * state);
+        LUA_Coal_OpenHud(state);
+    }
 };
 
 void LUA_Coal_Init()
@@ -306,3 +342,5 @@ void LUA_Coal_Init()
 
     vm_lua_coal->DoFile("edge_defs/lua/test.lua");
 }
+
+
