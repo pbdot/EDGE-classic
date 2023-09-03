@@ -192,6 +192,7 @@ static double STRINGS_tonumber(const char* s)
 
 static lua_vm_c* vm_lua_coal = nullptr;
 static double ticrate = 35.0;
+static double pi = 3.1415926535897932384;
 static double evar = 2.7182818284590452354;
 
 class lua_coal_api_c : public lua_module_c
@@ -205,6 +206,10 @@ public:
         OpenMath();
         OpenStrings();
         OpenHud();
+        OpenPlayer();
+
+        vm_->DoFile("edge_defs/lua/coal_api.lua");
+
     }
 
 private:
@@ -303,6 +308,7 @@ private:
                 "min", +[](double a, double b) { return MIN(a, b); })
             .addFunction(
                 "max", +[](double a, double b) { return MAX(a, b); })
+            .addProperty("p1", &pi, false)
             .addProperty("e", &evar, false)
             .endNamespace()
             .endNamespace();
@@ -330,6 +336,14 @@ private:
         void LUA_Coal_OpenHud(lua_State * state);
         LUA_Coal_OpenHud(state);
     }
+
+    void OpenPlayer()
+    {
+        lua_State* state = vm_->GetState();
+        void LUA_Coal_OpenPlayer(lua_State* state);
+        LUA_Coal_OpenPlayer(state);
+    }
+
 };
 
 void LUA_Coal_Init()
