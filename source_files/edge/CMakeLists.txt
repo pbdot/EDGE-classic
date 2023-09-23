@@ -114,6 +114,9 @@ set (EDGE_SOURCE_FILES
   ui/ui_backend.cc
   ui/ui_platform.cc
   ui/ui_renderer.cc
+  ui/ui_shell_fileinterface.cc
+  ui/ui_shell.cc
+  ui/ui_platform_extensions.cc
 )
 
 if (EMSCRIPTEN)
@@ -143,7 +146,7 @@ set (EDGE_LINK_LIBRARIES
 
 if (WIN32)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} w32_res.rc)
-  set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} wsock32)
+  set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} wsock32 Shlwapi)
 endif()
 
 add_executable(
