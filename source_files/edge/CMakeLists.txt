@@ -111,6 +111,9 @@ set (EDGE_SOURCE_FILES
   vm_coal.cc
   vm_hud.cc
   vm_player.cc
+  ui/ui_backend.cc
+  ui/ui_platform.cc
+  ui/ui_renderer.cc
 )
 
 if (EMSCRIPTEN)
@@ -133,6 +136,9 @@ set (EDGE_LINK_LIBRARIES
   m4p
   miniz
   ymfmidi
+  RmlUi_Core
+  RmlUi_Debugger
+  RmlUi_Lua
 )
 
 if (WIN32)

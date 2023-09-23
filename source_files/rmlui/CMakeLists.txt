@@ -7,7 +7,7 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/FileList.cmake")
 
 # RmlUi Core Library
 add_library(RmlUi_Core ${Core_HDR_FILES} ${Core_PUB_HDR_FILES} ${MASTER_Core_PUB_HDR_FILES} ${Core_SRC_FILES})
-target_include_directories(RmlUi_Core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include)
+target_include_directories(RmlUi_Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include)
 target_compile_definitions(RmlUi_Core PUBLIC -DRMLUI_STATIC_LIB)
 target_link_libraries(RmlUi_Core PRIVATE RmlUi_FreeType)
 
