@@ -113,10 +113,11 @@ set (EDGE_SOURCE_FILES
   vm_player.cc
   ui/ui_backend.cc
   ui/ui_platform.cc
+  ui/ui_platform_extensions.cc
   ui/ui_renderer.cc
   ui/ui_shell_fileinterface.cc
-  ui/ui_shell.cc
-  ui/ui_platform_extensions.cc
+  ui/ui_shell.cc  
+  ui/ui_demo.cc  
 )
 
 if (EMSCRIPTEN)

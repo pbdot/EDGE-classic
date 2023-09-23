@@ -689,6 +689,9 @@ void E_Display(void)
 			M_ScreenShot(false);
 	}
 
+	void UI_Render();
+	UI_Render();
+
 	I_FinishFrame();  // page flip or blit buffer
 }
 
@@ -1655,6 +1658,10 @@ void E_EngineShutdown(void)
 	P_Shutdown();
 
     S_Shutdown();
+
+	void UI_Shutdown();
+	UI_Shutdown();
+
 	R_Shutdown();
 
 }
@@ -1743,6 +1750,9 @@ static void E_Startup(void)
 	M_CheatInit();
 	VM_InitCoal();
 	VM_LoadScripts();
+
+	int UI_Init();
+	UI_Init();
 }
 
 
