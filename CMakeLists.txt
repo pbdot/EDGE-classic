@@ -106,6 +106,7 @@ else()
 endif()
 
 add_subdirectory(source_files/ajbsp)
+add_subdirectory(source_files/lua)
 add_subdirectory(source_files/coal)
 add_subdirectory(source_files/crsid)
 add_subdirectory(source_files/ddf)
