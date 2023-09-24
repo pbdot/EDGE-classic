@@ -508,7 +508,7 @@ void ActiveEventProcess(SDL_Event *sdl_ev)
 		
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
-			HandleKeyEvent(sdl_ev);
+			//HandleKeyEvent(sdl_ev);
 			break;
 				
 		case SDL_MOUSEBUTTONDOWN:
@@ -519,12 +519,12 @@ void ActiveEventProcess(SDL_Event *sdl_ev)
 			if (SDL_ShowCursor(SDL_QUERY) == SDL_DISABLE)
 				HandleMouseButtonEvent(sdl_ev);
 #else
-			HandleMouseButtonEvent(sdl_ev);
+			//HandleMouseButtonEvent(sdl_ev);
 #endif
 			break;
 
 		case SDL_MOUSEWHEEL:
-			HandleMouseWheelEvent(sdl_ev);
+			//HandleMouseWheelEvent(sdl_ev);
 			break;
 		
 		case SDL_JOYBUTTONDOWN:
@@ -548,7 +548,7 @@ void ActiveEventProcess(SDL_Event *sdl_ev)
 				break;
 			}
 
-			HandleMouseMotionEvent(sdl_ev);
+			//HandleMouseMotionEvent(sdl_ev);
 			break;
 		
 		case SDL_QUIT:
@@ -752,6 +752,9 @@ void I_ControlGetEvents(void)
 
 	while (SDL_PollEvent(&sdl_ev))
 	{
+		void UI_ProcessEvent(SDL_Event &event);
+		UI_ProcessEvent(sdl_ev);
+
 #ifdef DEBUG_KB
 		L_WriteDebug("#I_ControlGetEvents: type=%d\n", sdl_ev.type);
 #endif

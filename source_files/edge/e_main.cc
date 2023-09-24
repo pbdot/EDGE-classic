@@ -193,6 +193,8 @@ DEF_CVAR(ddf_quiet,  "0", CVAR_ARCHIVE)
 
 static const image_c *loading_image = NULL;
 
+static bool engine_shutdown = false;
+
 static void E_TitleDrawer(void);
 
 class startup_progress_c
@@ -1644,6 +1646,13 @@ static void InitDDF(void)
 
 void E_EngineShutdown(void)
 {
+	if (engine_shutdown)
+	{
+		return;
+	}
+
+	engine_shutdown = true;
+
 	N_QuitNetGame();
 
 	S_StopMusic();
@@ -1758,7 +1767,7 @@ static void E_Startup(void)
 
 static void E_Shutdown(void)
 {
-	/* TODO: E_Shutdown */
+	E_EngineShutdown();
 }
 
 

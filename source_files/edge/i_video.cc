@@ -103,7 +103,7 @@ void I_GrabCursor(bool enable)
 
 	if (grab_state && in_grab.d)
 	{
-		SDL_SetRelativeMouseMode(SDL_TRUE);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 	else
 	{
