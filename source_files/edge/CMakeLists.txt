@@ -135,6 +135,10 @@ set (EDGE_LINK_LIBRARIES
   ymfmidi
 )
 
+if (EDGE_ENABLE_PROFILING)
+  set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} TracyClient)
+endif()
+
 if (WIN32)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} w32_res.rc)
   set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} wsock32)
@@ -192,6 +196,9 @@ if (NOT EMSCRIPTEN)
 
   set (DEST_DIR "${CMAKE_SOURCE_DIR}")
   list(APPEND COPY_FILES "$<TARGET_FILE:edge-classic>")
+  if (MSVC)
+    list(APPEND COPY_FILES "$<TARGET_PDB_FILE:edge-classic>")  
+  endif()
 
 else()
 

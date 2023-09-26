@@ -91,6 +91,7 @@
 #include "w_wad.h"
 #include "version.h"
 #include "vm_coal.h"
+#include "edge_profiling.h"
 
 extern cvar_c r_doubleframes;
 
@@ -572,6 +573,8 @@ static bool wipe_gl_active = false;
 
 void E_Display(void)
 {
+	EDGE_ZoneScoped;
+
 	if (nodrawers)
 		return;  // for comparative timing / profiling
 
@@ -1930,6 +1933,8 @@ void E_Idle(void)
 //
 void E_Tick(void)
 {
+	EDGE_ZoneScoped;
+	
 	G_BigStuff();
 
 	// Update display, next frame, with current state.

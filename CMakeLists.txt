@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 option(EDGE_GL_ES2 "Enable GLES2 Rendering Backend" OFF)
 option(EDGE_SANITIZE "Enable code sanitizing" OFF)
+option(EDGE_ENABLE_PROFILING "Enable Profiling" ON)
 
 include("cmake/EDGEClassic.cmake")  
 
@@ -103,6 +104,23 @@ if (NOT EDGE_GL_ES2)
   find_package(OpenGL REQUIRED)
 else()
   add_definitions(-DEDGE_GL_ES2)
+endif()
+
+
+if (EDGE_ENABLE_PROFILING)
+  add_definitions("-DEDGE_ENABLE_PROFILING" "-DTRACY_ENABLE")
+  include(FetchContent)
+  FetchContent_Declare (
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+  )
+  option (TRACY_ON_DEMAND "" OFF)
+  option (TRACY_CALLSTACK "" ON)
+  FetchContent_MakeAvailable (tracy)
+  include_directories(source_files/tracy)
 endif()
 
 add_subdirectory(source_files/ajbsp)

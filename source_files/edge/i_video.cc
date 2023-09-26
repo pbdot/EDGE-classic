@@ -29,6 +29,8 @@
 
 #include "str_util.h"
 
+#include "edge_profiling.h"
+
 SDL_Window *my_vis;
 
 int graphics_shutdown = 0;
@@ -392,6 +394,7 @@ void I_StartFrame(void)
 void I_FinishFrame(void)
 {
 	SDL_GL_SwapWindow(my_vis);
+	EDGE_FrameMark;
 
 	if (in_grab.CheckModified())
 		I_GrabCursor(grab_state);

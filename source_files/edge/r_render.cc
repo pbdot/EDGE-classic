@@ -51,6 +51,7 @@
 #include "n_network.h"  // N_NetUpdate
 
 #include "AlmostEquals.h"
+#include "edge_profiling.h"
 
 #define DEBUG  0
 
@@ -2172,6 +2173,8 @@ static void RGL_WalkMirror(drawsub_c *dsub, seg_t *seg,
 //
 static void RGL_WalkSeg(drawsub_c *dsub, seg_t *seg)
 {
+	EDGE_ZoneScoped;
+	
 	// ignore segs sitting on current mirror
 	if (MIR_SegOnPortal(seg))
 		return;
@@ -2756,6 +2759,8 @@ static inline void AddNewDrawFloor(drawsub_c *dsub, extrafloor_t *ef,
 //
 static void RGL_WalkSubsector(int num)
 {
+	EDGE_ZoneScoped;
+
 	subsector_t *sub = &subsectors[num];
 	sector_t *sector = sub->sector;
 
@@ -3109,6 +3114,8 @@ static void RGL_DrawMirror(drawmirror_c *mir)
 
 static void RGL_DrawSubsector(drawsub_c *dsub, bool mirror_sub)
 {
+	EDGE_ZoneScoped;
+
 	subsector_t *sub = dsub->sub;
 
 #if (DEBUG >= 1)
@@ -3181,6 +3188,8 @@ static void DoWeaponModel(void)
 //
 static void RGL_WalkBSPNode(unsigned int bspnum)
 {
+	EDGE_ZoneScoped;
+
 	node_t *node;
 	int side;
 
@@ -3235,6 +3244,8 @@ static void RGL_WalkBSPNode(unsigned int bspnum)
 //
 static void RGL_RenderTrueBSP(void)
 {
+	EDGE_ZoneScoped;
+
 	// clear extra light on player's weapon
 	rgl_weapon_r = rgl_weapon_g = rgl_weapon_b = 0;
 
@@ -3441,6 +3452,8 @@ static void InitCamera(mobj_t *mo, bool full_height, float expand_w)
 void R_Render(int x, int y, int w, int h, mobj_t *camera,
               bool full_height, float expand_w)
 {
+	EDGE_ZoneScoped;
+
 	viewwindow_x = x;
 	viewwindow_y = y;
 	viewwindow_w = w;

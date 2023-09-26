@@ -40,6 +40,7 @@
 #include "coal.h" // for coal::vm_c
 
 #include "str_util.h"
+#include "edge_profiling.h"
 
 extern coal::vm_c *ui_vm;
 
@@ -102,7 +103,7 @@ void N_InitNetwork(void)
 
 
 static void DoDelay()
-{
+{	
 	if (m_busywait.d)
 		return;
 
@@ -244,6 +245,8 @@ int N_NetUpdate()
 
 int N_TryRunTics()
 {
+	EDGE_ZoneScoped;
+
 	if (singletics)
 	{
 		PreInput();
