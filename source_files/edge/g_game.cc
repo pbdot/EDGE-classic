@@ -58,7 +58,7 @@
 #include "version.h"
 #include "w_wad.h"
 #include "f_interm.h"
-#include "vm_coal.h"
+#include "script/coal/vm_coal.h"
 
 extern cvar_c r_doubleframes;
 

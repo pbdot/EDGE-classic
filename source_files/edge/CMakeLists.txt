@@ -109,9 +109,11 @@ set (EDGE_SOURCE_FILES
   w_sprite.cc
   w_texture.cc
   w_wad.cc
-  vm_coal.cc
-  vm_hud.cc
-  vm_player.cc
+  script/common/script_hud.cc
+  script/common/script_player.cc
+  script/coal/vm_coal.cc
+  script/coal/vm_hud.cc
+  script/coal/vm_player.cc
 )
 
 if (EMSCRIPTEN)
@@ -150,6 +152,8 @@ if(WIN32)
 else()
   target_compile_definitions(edge-classic PRIVATE UNIX)
 endif()
+
+target_include_directories(edge-classic PRIVATE ./)
 
 if (NOT EDGE_GL_ES2)
   target_include_directories(edge-classic PRIVATE ${EDGE_LIBRARY_DIR}/glad/include/glad)

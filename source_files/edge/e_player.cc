@@ -43,7 +43,7 @@
 
 #include "str_util.h"
 
-#include "vm_coal.h" // For VM_EndLevel()
+#include "script/coal/vm_coal.h" // For VM_EndLevel()
 
 //
 // PLAYER ARRAY

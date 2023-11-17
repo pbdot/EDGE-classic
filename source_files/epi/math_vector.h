@@ -159,7 +159,13 @@ class vec3_c
     }
     vec3_c(float nx, float ny, float nz) : x(nx), y(ny), z(nz)
     {
+
     }
+
+    vec3_c(double nx, double ny, double nz) : x((float)nx), y((float)ny), z((float)nz)
+    {
+    }
+    
     vec3_c(const vec3_c &rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
     {
     }

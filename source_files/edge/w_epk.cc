@@ -21,7 +21,7 @@
 #include "r_image.h"
 #include "w_files.h"
 #include "w_wad.h"
-#include "vm_coal.h"
+#include "script/coal/vm_coal.h"
 
 // EPI
 #include "epi.h"

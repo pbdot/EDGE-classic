@@ -67,7 +67,7 @@
 #include "l_ajbsp.h"
 #include "m_misc.h"
 #include "r_image.h"
-#include "vm_coal.h"
+#include "script/coal/vm_coal.h"
 #include "w_epk.h"
 #include "w_files.h"
 #include "w_wad.h"
