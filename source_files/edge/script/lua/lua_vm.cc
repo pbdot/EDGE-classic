@@ -12,7 +12,7 @@ static void LUA_GetRequirePackPath(const char *name, std::string &out)
     out = epi::STR_Format("scripts/lua/%s.lua", require_name.c_str());
 }
 
-static int LUA_PackAndLumpLoader(lua_State *L)
+static int LUA_PackLoader(lua_State *L)
 {
     const char *name = luaL_checkstring(L, 1);
 
@@ -42,7 +42,7 @@ static int LUA_PackAndLumpLoader(lua_State *L)
     return 1;
 }
 
-static int LUA_PackAndLumpSearcher(lua_State *L)
+static int LUA_PackSearcher(lua_State *L)
 {
     const char *name = luaL_checkstring(L, 1);
 
@@ -66,7 +66,7 @@ static int LUA_PackAndLumpSearcher(lua_State *L)
 
     delete file;
 
-    lua_pushcfunction(L, LUA_PackAndLumpLoader);
+    lua_pushcfunction(L, LUA_PackLoader);
     lua_pushstring(L, name);
     return 2;
 }
@@ -82,7 +82,7 @@ static void RegisterGlobal(lua_vm_c *vm, const char *name, const char *module_na
 
 lua_vm_c *LUA_CreateVM(const char *name)
 {
-    lua_vm_c *vm = lua_vm_c::Create(name, LUA_PackAndLumpSearcher);
+    lua_vm_c *vm = lua_vm_c::Create(name, LUA_PackSearcher);
     RegisterGlobal(vm, "vec3", "core.vec3");
     return vm;
 }
