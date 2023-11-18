@@ -114,6 +114,9 @@ set (EDGE_SOURCE_FILES
   script/coal/vm_coal.cc
   script/coal/vm_hud.cc
   script/coal/vm_player.cc
+  script/lua/lua_vm.cc  
+  script/lua/compat/lua_compat.cc
+  script/lua/compat/lua_hud.cc
 )
 
 if (EMSCRIPTEN)
@@ -128,6 +131,7 @@ set (EDGE_LINK_LIBRARIES
   edge_ddf
   edge_deh
   edge_epi
+  edge_lua
   ${SDL2_LIBRARIES}
   crsid
   ec_voxelib
