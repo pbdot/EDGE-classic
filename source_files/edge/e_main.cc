@@ -94,6 +94,8 @@
 
 #ifdef EDGE_COAL
 #include "vm_coal.h"
+#else
+#include "script/compat/lua_compat.h"
 #endif
 
 extern cvar_c r_doubleframes;
@@ -600,6 +602,8 @@ void E_Display(void)
 
 #ifdef EDGE_COAL
         VM_RunHud();
+#else
+        LUA_RunHud();
 #endif
 
         if (need_save_screenshot)
@@ -1859,6 +1863,9 @@ static void E_Startup(void)
 #ifdef EDGE_COAL
     VM_InitCoal();
     VM_LoadScripts();
+#else
+    LUA_Init();
+    LUA_LoadScripts();
 #endif
 }
 

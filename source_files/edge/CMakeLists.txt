@@ -109,6 +109,10 @@ set (EDGE_SOURCE_FILES
   w_sprite.cc
   w_texture.cc
   w_wad.cc
+  script/compat/lua_vm.cc
+  script/compat/lua_compat.cc
+  script/compat/lua_game.cc
+  script/compat/lua_hud.cc
 )
 
 if (EDGE_COAL)
@@ -134,6 +138,7 @@ set (EDGE_LINK_LIBRARIES
   libRAD
   m4p
   miniz
+  lua
 )
 
 if (EDGE_COAL)
@@ -155,6 +160,8 @@ if(WIN32)
 else()
   target_compile_definitions(edge-classic PRIVATE UNIX)
 endif()
+
+target_include_directories(edge-classic PRIVATE ./)
 
 if (NOT EDGE_GL_ES2)
   target_include_directories(edge-classic PRIVATE ${EDGE_LIBRARY_DIR}/glad/include/glad)
