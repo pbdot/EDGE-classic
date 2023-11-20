@@ -1,6 +1,7 @@
 #pragma once
 
 #include "epi.h"
+#include "math_vector.h"
 #include "lua.hpp"
 
 lua_State *LUA_CreateVM();
@@ -15,5 +16,28 @@ void LUA_CallGlobalFunction(lua_State *L, const char *function_name);
 
 void LUA_RunHud(void);
 void LUA_RegisterHudLibrary(lua_State *L);
+
+inline epi::vec3_c LUA_CheckVector3(lua_State *L, int index)
+{
+    epi::vec3_c v;
+    SYS_ASSERT(lua_istable(L, index));
+    lua_geti(L, index, 1);
+    v.x = luaL_checknumber(L, -1);
+    lua_geti(L, index, 2);
+    v.y = luaL_checknumber(L, -1);
+    lua_geti(L, index, 3);
+    v.z = luaL_checknumber(L, -1);
+    lua_pop(L, 3);
+    return v;
+}
+
+inline void LUA_PushVector3(lua_State*L, epi::vec3_c v)
+{
+    lua_getglobal(L, "vec3");
+    lua_pushnumber(L, v.x);
+    lua_pushnumber(L, v.y);
+    lua_pushnumber(L, v.z);
+    lua_call(L, 3, 0);
+}
 
 extern lua_State *global_lua_state;
