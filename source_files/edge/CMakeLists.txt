@@ -109,10 +109,12 @@ set (EDGE_SOURCE_FILES
   w_sprite.cc
   w_texture.cc
   w_wad.cc
-  vm_coal.cc
-  vm_hud.cc
-  vm_player.cc
 )
+
+if (EDGE_COAL)
+  target_compile_definitions(edge-classic PRIVATE EDGE_COAL)
+  set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} vm_coal.cc vm_hud.cc vm_player.cc)
+endif()
 
 if (EMSCRIPTEN)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} i_web.cc)
@@ -121,8 +123,7 @@ else()
 endif()
 
 set (EDGE_LINK_LIBRARIES
-  edge_ajbsp
-  edge_coal
+  edge_ajbsp  
   edge_ddf
   edge_deh
   edge_epi
@@ -134,6 +135,10 @@ set (EDGE_LINK_LIBRARIES
   m4p
   miniz
 )
+
+if (EDGE_COAL)
+  set (EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} edge_coal)
+endif()
 
 if (WIN32)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} w32_res.rc)
@@ -161,7 +166,6 @@ endif()
 
 target_include_directories(edge-classic SYSTEM PRIVATE ${EDGE_LIBRARY_DIR}/almostequals)
 target_include_directories(edge-classic PRIVATE ../ajbsp)
-target_include_directories(edge-classic PRIVATE ../coal)
 target_include_directories(edge-classic SYSTEM PRIVATE ${EDGE_LIBRARY_DIR}/crsid)
 target_include_directories(edge-classic PRIVATE ../ddf)
 target_include_directories(edge-classic PRIVATE ../dehacked)

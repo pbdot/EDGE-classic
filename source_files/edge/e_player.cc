@@ -43,7 +43,9 @@
 
 #include "str_util.h"
 
+#ifdef EDGE_COAL
 #include "vm_coal.h" // For VM_EndLevel()
+#endif
 
 //
 // PLAYER ARRAY
@@ -144,7 +146,9 @@ void G_PlayerFinishLevel(player_t *p, bool keep_cards)
     //  "INTERNAL ERROR: player has a removed attacker"
     p->attacker = NULL;
 
+#ifdef EDGE_COAL
     VM_EndLevel();
+#endif
 }
 
 //

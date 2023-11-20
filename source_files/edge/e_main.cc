@@ -91,7 +91,10 @@
 #include "w_texture.h"
 #include "w_wad.h"
 #include "version.h"
+
+#ifdef EDGE_COAL
 #include "vm_coal.h"
+#endif
 
 extern cvar_c r_doubleframes;
 
@@ -595,7 +598,9 @@ void E_Display(void)
     case GS_LEVEL:
         R_PaletteStuff();
 
+#ifdef EDGE_COAL
         VM_RunHud();
+#endif
 
         if (need_save_screenshot)
         {
@@ -1851,8 +1856,10 @@ static void E_Startup(void)
     S_Init();
     N_InitNetwork();
     M_CheatInit();
+#ifdef EDGE_COAL
     VM_InitCoal();
     VM_LoadScripts();
+#endif
 }
 
 static void E_Shutdown(void)

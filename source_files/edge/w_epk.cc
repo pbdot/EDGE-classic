@@ -21,7 +21,9 @@
 #include "r_image.h"
 #include "w_files.h"
 #include "w_wad.h"
+#ifdef EDGE_COAL
 #include "vm_coal.h"
+#endif
 
 // EPI
 #include "epi.h"
@@ -681,6 +683,7 @@ static void ProcessDDFInPack(pack_file_c *pack)
     }
 }
 
+#ifdef EDGE_COAL
 static void ProcessCoalAPIInPack(pack_file_c *pack)
 {
     data_file_c *df = pack->parent;
@@ -741,6 +744,7 @@ static void ProcessCoalHUDInPack(pack_file_c *pack)
         }
     }
 }
+#endif
 
 void Pack_ProcessSubstitutions(pack_file_c *pack, int pack_index)
 {
@@ -1190,10 +1194,13 @@ void Pack_ProcessAll(data_file_c *df, size_t file_index)
     // Only load some things here; the rest are deferred until
     // after all files loaded so that pack substitutions can work properly
     ProcessDDFInPack(df->pack);
+
+#ifdef EDGE_COAL    
     // parse COALAPI only from edge-defs folder or `edge-defs.epk`
     if ((df->kind == FLKIND_EFolder || df->kind == FLKIND_EEPK) && file_index == 0)
         ProcessCoalAPIInPack(df->pack);
     ProcessCoalHUDInPack(df->pack);
+#endif    
     ProcessWADsInPack(df->pack);
 }
 

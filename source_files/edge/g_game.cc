@@ -58,7 +58,9 @@
 #include "version.h"
 #include "w_wad.h"
 #include "f_interm.h"
+#ifdef EDGE_COAL
 #include "vm_coal.h"
+#endif
 
 extern cvar_c r_doubleframes;
 
@@ -307,8 +309,9 @@ void G_DoLoadLevel(void)
     LoadLevel_Bits();
 
     SpawnInitialPlayers();
-
+#ifdef EDGE_COAL
     VM_BeginLevel();
+#endif
 }
 
 //
@@ -877,7 +880,9 @@ static void G_DoLoadGame(void)
 
     V_SetPalette(PALETTE_NORMAL, 0);
 
+#ifdef EDGE_COAL
     VM_LoadGame(); // Stub for now
+#endif
 }
 
 //
@@ -974,7 +979,9 @@ static bool G_SaveGameToFile(std::filesystem::path filename, const char *descrip
 
 static void G_DoSaveGame(void)
 {
+#ifdef EDGE_COAL
     VM_SaveGame(); // Stub for now; eventually things like determining if saving is allowed, etc
+#endif
 
     std::filesystem::path fn(SV_FileName("current", "head"));
 
@@ -1108,7 +1115,9 @@ static void G_DoNewGame(void)
     delete defer_params;
     defer_params = NULL;
 
+#ifdef EDGE_COAL
     VM_NewGame();
+#endif
 
     // -AJA- 2003/10/09: support for pre-level briefing screen on first map.
     //       FIXME: kludgy. All this game logic desperately needs rethinking.
