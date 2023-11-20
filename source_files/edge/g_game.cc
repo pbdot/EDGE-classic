@@ -60,6 +60,8 @@
 #include "f_interm.h"
 #ifdef EDGE_COAL
 #include "vm_coal.h"
+#else
+#include "script/compat/lua_compat.h"
 #endif
 
 extern cvar_c r_doubleframes;
@@ -311,6 +313,8 @@ void G_DoLoadLevel(void)
     SpawnInitialPlayers();
 #ifdef EDGE_COAL
     VM_BeginLevel();
+#else
+    LUA_BeginLevel();
 #endif
 }
 
@@ -882,6 +886,8 @@ static void G_DoLoadGame(void)
 
 #ifdef EDGE_COAL
     VM_LoadGame(); // Stub for now
+#else
+    LUA_LoadGame(); 
 #endif
 }
 
@@ -981,6 +987,8 @@ static void G_DoSaveGame(void)
 {
 #ifdef EDGE_COAL
     VM_SaveGame(); // Stub for now; eventually things like determining if saving is allowed, etc
+#else
+    LUA_SaveGame();
 #endif
 
     std::filesystem::path fn(SV_FileName("current", "head"));
@@ -1117,6 +1125,8 @@ static void G_DoNewGame(void)
 
 #ifdef EDGE_COAL
     VM_NewGame();
+#else
+    LUA_NewGame();
 #endif
 
     // -AJA- 2003/10/09: support for pre-level briefing screen on first map.

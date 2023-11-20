@@ -14,6 +14,13 @@ void LUA_DoFile(lua_State *L, const std::string &name);
 void LUA_DoString(lua_State *L, const char *source);
 void LUA_CallGlobalFunction(lua_State *L, const char *function_name);
 
+// Game
+void LUA_NewGame(void);
+void LUA_LoadGame(void);
+void LUA_SaveGame(void);
+void LUA_BeginLevel(void);
+void LUA_EndLevel(void);
+
 void LUA_RunHud(void);
 void LUA_RegisterHudLibrary(lua_State *L);
 

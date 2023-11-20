@@ -21,6 +21,8 @@ extern std::string w_map_title;
 extern epi::image_data_c *ReadAsEpiBlock(image_c *rim);
 extern epi::image_data_c *R_PalettisedToRGB(epi::image_data_c *src, const byte *palette, int opacity);
 
+extern player_t *ui_player_who;
+
 player_t *ui_hud_who = nullptr;
 
 static int   ui_hud_automap_flags[2]; // 0 = disabled, 1 = enabled
@@ -1015,7 +1017,7 @@ void LUA_RunHud(void)
     HUD_Reset();
 
     ui_hud_who = players[displayplayer];
-    // ui_player_who = players[displayplayer];
+    ui_player_who = players[displayplayer];
 
     LUA_CallGlobalFunction(global_lua_state, "draw_all");
 
