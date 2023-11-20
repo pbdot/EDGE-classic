@@ -6,8 +6,7 @@
 
 extern player_t *ui_hud_who;
 
-// todo: move to player
-player_t *ui_player_who;
+extern player_t *ui_player_who;
 
 
 void LUA_NewGame(void)
