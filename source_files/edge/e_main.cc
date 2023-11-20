@@ -92,6 +92,7 @@
 #include "w_wad.h"
 #include "version.h"
 #include "script/coal/vm_coal.h"
+#include "script/lua/compat/lua_compat.h"
 
 extern cvar_c r_doubleframes;
 
@@ -594,7 +595,9 @@ void E_Display(void)
     case GS_LEVEL:
         R_PaletteStuff();
 
-        VM_RunHud();
+        //VM_RunHud();
+        void LUA_RunHud();
+        LUA_RunHud();
 
         if (need_save_screenshot)
         {
@@ -1748,6 +1751,8 @@ static void E_Startup(void)
     M_CheatInit();
     VM_InitCoal();
     VM_LoadScripts();
+
+    LUA_InitCompat();
 }
 
 static void E_Shutdown(void)

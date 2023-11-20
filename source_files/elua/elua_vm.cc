@@ -5,6 +5,7 @@ namespace elua
 {
 
 std::unordered_map<std::string, lua_vm_c *> lua_vm_c::vms_;
+std::unordered_map<lua_State*, lua_vm_c *> lua_vm_c::vm_state_lookup_;
 
 void lua_vm_c::DoString(const char* source)
 {

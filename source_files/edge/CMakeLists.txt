@@ -116,6 +116,7 @@ set (EDGE_SOURCE_FILES
   script/coal/vm_player.cc
   script/lua/lua_vm.cc  
   script/lua/compat/lua_compat.cc
+  script/lua/compat/lua_sys.cc
   script/lua/compat/lua_hud.cc
 )
 

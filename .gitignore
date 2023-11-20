@@ -1,7 +1,6 @@
 # VS Code
 /build/
 cache/
-/.vscode/settings.json
 
 # MacOS
 .DS_Store

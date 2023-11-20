@@ -71,6 +71,21 @@ static int LUA_PackSearcher(lua_State *L)
     return 2;
 }
 
+void LUA_DoFile(lua_vm_c* vm, const std::string& name)
+{
+    epi::file_c *file = W_OpenPackFile(name);
+
+    if (file)
+    {        
+        lua_State* L = vm->GetState();
+        std::string source = file->ReadText();
+        int top = lua_gettop(L);
+        luaL_dostring(L, source.c_str());
+        lua_settop(L, top);
+        delete file;
+    }
+}
+
 static void RegisterGlobal(lua_vm_c *vm, const char *name, const char *module_name)
 {
     lua_State *L = vm->GetState();

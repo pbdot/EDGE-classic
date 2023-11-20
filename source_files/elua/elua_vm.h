@@ -11,10 +11,32 @@ class lua_vm_c final
 {
   public:
 
-    lua_State* GetState()
+    inline lua_State* GetState()
     {
         SYS_ASSERT(state_);
         return state_;
+    }
+
+    static inline lua_vm_c* GetVM(lua_State* L)
+    {
+        auto result = vm_state_lookup_.find(L);
+        if (result == vm_state_lookup_.end())
+        {
+            return nullptr;
+        }
+
+        return result->second;
+    }
+
+    static inline lua_vm_c* GetVM(const std::string& name)
+    {
+        auto result = vms_.find(name);
+        if (result == vms_.end())
+        {
+            return nullptr;
+        }
+
+        return result->second;
     }
 
     void DoString(const char* source);
@@ -54,6 +76,8 @@ class lua_vm_c final
     lua_State  *state_ = nullptr;
 
     std::unordered_map<std::string, lua_module_c *> modules_;
+
+    static std::unordered_map<lua_State*, lua_vm_c *> vm_state_lookup_;
 
     static std::unordered_map<std::string, lua_vm_c *> vms_;
 };

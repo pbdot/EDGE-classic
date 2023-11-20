@@ -732,6 +732,7 @@ void VM_EndLevel(void)
 
 void VM_RunHud(void)
 {
+    /*
     HUD_Reset();
 
     ui_hud_who    = players[displayplayer];
@@ -744,6 +745,7 @@ void VM_RunHud(void)
     VM_CallFunction(ui_vm, "draw_all");
 
     HUD_Reset();
+    */
 }
 
 //--- editor settings ---
