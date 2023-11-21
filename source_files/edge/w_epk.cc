@@ -756,7 +756,7 @@ static void ProcessLuaAPIInPack(pack_file_c *pack)
     if (bare_filename.empty())
         bare_filename = df->name.string();
 
-    std::string source = "coal_api.ec";
+    std::string source = "lua_api.lua";
     source += " in ";
     source += bare_filename;
 
