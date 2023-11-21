@@ -4,8 +4,12 @@ sys.TICRATE            = 35
 sys.gametic            = 0
 
 -- ECMATH
+ecmath.pi = 3.1415926535897932384
+ecmath.e  = 2.7182818284590452354
 
-
+ecmath.rand_range = function(low, high)	
+    return low + (high - low) * ecmath.random()
+end
 
 hud.which              = 0
 hud.automap            = 0

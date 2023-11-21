@@ -11,7 +11,7 @@ extern player_t *ui_player_who;
 
 void LUA_NewGame(void)
 {
-    //VM_CallFunction(ui_vm, "new_game");
+    LUA_CallGlobalFunction(LUA_GetGlobalVM(), "new_game");
 }
 
 void LUA_LoadGame(void)
@@ -20,12 +20,12 @@ void LUA_LoadGame(void)
     ui_hud_who    = players[displayplayer];
     ui_player_who = players[displayplayer];
 
-    //VM_CallFunction(ui_vm, "load_game");
+    LUA_CallGlobalFunction(LUA_GetGlobalVM(), "load_game");
 }
 
 void LUA_SaveGame(void)
 {
-    //VM_CallFunction(ui_vm, "save_game");
+    LUA_CallGlobalFunction(LUA_GetGlobalVM(), "save_game");
 }
 
 void LUA_BeginLevel(void)
@@ -33,11 +33,11 @@ void LUA_BeginLevel(void)
     // Need to set these to prevent NULL references if using player.xxx in the begin_level hook
     ui_hud_who    = players[displayplayer];
     ui_player_who = players[displayplayer];
-    //VM_CallFunction(ui_vm, "begin_level");
+    LUA_CallGlobalFunction(LUA_GetGlobalVM(), "begin_level");
 }
 
 void LUA_EndLevel(void)
 {
-    //VM_CallFunction(ui_vm, "end_level");
+    LUA_CallGlobalFunction(LUA_GetGlobalVM(), "end_level");
 }
 

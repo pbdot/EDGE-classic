@@ -36,3 +36,8 @@ void LUA_LoadScripts()
         LUA_DoString(global_lua_state, info.data.c_str());
     }
 }
+
+lua_State* LUA_GetGlobalVM()
+{
+    return global_lua_state;
+}

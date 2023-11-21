@@ -43,6 +43,8 @@
 #include "coal.h" // for coal::vm_c
 extern coal::vm_c *ui_vm;
 extern void VM_SetFloat(coal::vm_c *vm, const char *mod_name, const char *var_name, double value);
+#else
+#include "script/compat/lua_compat.h"
 #endif
 
 // #define DEBUG_TICS 1
@@ -190,6 +192,8 @@ void N_GrabTiccmds(void)
     }
 #ifdef EDGE_COAL
     VM_SetFloat(ui_vm, "sys", "gametic", gametic / (r_doubleframes.d ? 2 : 1));
+#else
+    LUA_SetFloat(LUA_GetGlobalVM(), "sys", "gametic", gametic / (r_doubleframes.d ? 2 : 1));
 #endif
 
     gametic++;

@@ -54,4 +54,14 @@ inline void LUA_PushVector3(lua_State*L, epi::vec3_c v)
     lua_call(L, 3, 0);
 }
 
+lua_State* LUA_GetGlobalVM();
+
+inline void LUA_SetFloat(lua_State* L, const char* module, const char* variable, float value)
+{
+    lua_getglobal(L, module);
+    lua_pushnumber(L, value);
+    lua_setfield(L, -2, variable);
+    lua_pop(L, 1);
+}
+
 extern lua_State *global_lua_state;

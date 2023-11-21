@@ -450,8 +450,8 @@ static int HD_draw_number(lua_State *L)
 
     int    len         = (int)luaL_checknumber(L, 3);
     int    num         = (int)luaL_checknumber(L, 4);
-    int    align_right = (int)luaL_checknumber(L, 6);
-    double size        = luaL_optnumber(L, 7, 0);
+    int    align_right = (int)luaL_checknumber(L, 5);
+    double size        = luaL_optnumber(L, 6, 0);
 
     if (len < 1 || len > 20)
         I_Error("hud.draw_number: bad field length: %d\n", len);
