@@ -85,5 +85,14 @@ inline void LUA_SetFloat(lua_State* L, const char* module, const char* variable,
     lua_pop(L, 1);
 }
 
+inline void LUA_SetBoolean(lua_State* L, const char* module, const char* variable, bool value)
+{
+    lua_getglobal(L, module);
+    lua_pushboolean(L, value ? 1 : 0);
+    lua_setfield(L, -2, variable);
+    lua_pop(L, 1);
+}
+
+
 
 extern lua_State *global_lua_state;

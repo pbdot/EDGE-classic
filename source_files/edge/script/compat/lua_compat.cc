@@ -1,5 +1,7 @@
 
+#include "w_wad.h"
 #include "lua_compat.h"
+
 
 lua_State *global_lua_state = nullptr;
 
@@ -35,6 +37,12 @@ void LUA_LoadScripts()
 
         LUA_DoString(global_lua_state, info.data.c_str());
     }
+
+    if (W_IsLumpInPwad("STBAR"))
+    {
+        LUA_SetBoolean(global_lua_state, "hud", "custom_stbar", true);
+    }
+
 }
 
 lua_State* LUA_GetGlobalVM()
