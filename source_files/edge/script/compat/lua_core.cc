@@ -61,6 +61,27 @@ static int SYS_edge_version(lua_State *L)
     return 1;
 }
 
+#ifdef WIN32
+static bool console_allocated = false;
+#endif
+static int SYS_AllocConsole(lua_State *L)
+{
+#ifdef WIN32
+    if (console_allocated)
+    {
+        return 0;
+    }
+
+    console_allocated = true;
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+#endif
+
+    return 0;
+}
+
 //------------------------------------------------------------------------
 //  ECMATH MODULE
 //------------------------------------------------------------------------
@@ -79,15 +100,24 @@ static int ECMATH_random2(lua_State *L)
     return 1;
 }
 
+// math.rint(val)
+static int MATH_rint(lua_State* L)
+{
+    double val = luaL_checknumber(L, 1);
+    lua_pushinteger(L, I_ROUND(val));
+    return 1;
+}
+
 // SYSTEM
 static const luaL_Reg syslib[] = {{"error", SYS_error},
                                   {"print", SYS_print},
                                   {"debug_print", SYS_debug_print},
                                   {"edge_version", SYS_edge_version},
+                                  {"allocate_console", SYS_AllocConsole},
                                   {NULL, NULL}};
 
 // ECMATH
-static const luaL_Reg ecmathlib[] = {{"random", ECMATH_random}, {"random2", ECMATH_random2}, {NULL, NULL}};
+static const luaL_Reg ecmathlib[] = {{"random", ECMATH_random}, {"random2", ECMATH_random2}, {"rint", MATH_rint}, {NULL, NULL}};
 
 static int luaopen_sys(lua_State *L)
 {

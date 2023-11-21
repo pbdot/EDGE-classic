@@ -3,6 +3,11 @@
 #include "i_system.h"
 #include "str_util.h"
 #include "w_files.h"
+#include "con_var.h"
+#include "../lua_debugger.h"
+
+// Enable Lua debugging
+DEF_CVAR(lua_debug, "0", CVAR_ROM)
 
 static void LUA_GetRequirePackPath(const char *name, std::string &out)
 {
@@ -107,10 +112,26 @@ static void RegisterGlobal(lua_State *L, const char *name, const char *module_na
     lua_setglobal(L, name);
 }
 
+// NOP dbg() for when debugger is disabled and someone has left some breakpoints in code
+static int LUA_DbgNOP(lua_State* L)
+{
+    return 0;
+}
+
 void LUA_CallGlobalFunction(lua_State *L, const char *function_name)
 {
     lua_getglobal(L, function_name);
-    int status = lua_pcall(L, 0, 0, 0);
+    int status = 0;
+    if (lua_debug.d)
+    {
+        dbg_pcall(L, 0, 0, 0);
+    }
+    else 
+    {
+        lua_pcall(L, 0, 0, 0);
+    }
+    
+    
     if (status != LUA_OK)
     {
         I_Error("LUA: %s\n", lua_tostring(L, -1));
@@ -156,5 +177,15 @@ lua_State *LUA_CreateVM()
 
     RegisterGlobal(L, "vec3", "core.vec3");
 
+    if (lua_debug.d)
+    {
+        dbg_setup_default(L);    
+    }
+    else 
+    {
+        lua_pushcfunction(L, LUA_DbgNOP);
+        lua_setglobal(L, "dbg");
+    }
+    
     return L;
 }

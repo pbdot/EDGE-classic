@@ -48,13 +48,12 @@ function pain_digit()
 
     assert(index >= 0)
     assert(index <= 4)
-
+    
     return tostring(math.tointeger(index))
 end
 
 function turn_digit()
-    local r = math.tointeger(ecmath.rand_range(0, 2)) --always between 0 and 2
-
+    local r = ecmath.rint(ecmath.rand_range(0, 2)) --always between 0 and 2    
     return tostring(r)
 end
 
@@ -125,8 +124,8 @@ function set_face_params()
 
         local dir = 0
 
-        if (player.hurt_by() ~= "self") then
-            dir = player.hurt_dir()
+        if (player.hurt_by() ~= "self") then            
+            dir = player.hurt_dir()            
         end
 
         if (dir < 0) then
@@ -156,7 +155,7 @@ function set_face_params()
     end
 
     -- default: look about the place...
-    face_image = "STFST" .. pain_digit() .. turn_digit()
+    face_image = "STFST" .. pain_digit() .. turn_digit()    
     face_tic   = sys.gametic + 17
 end
 

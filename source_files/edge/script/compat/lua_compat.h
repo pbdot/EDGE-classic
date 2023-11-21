@@ -2,6 +2,7 @@
 
 #include "epi.h"
 #include "math_vector.h"
+#include "con_var.h"
 #include "lua.hpp"
 
 lua_State *LUA_CreateVM();
@@ -34,6 +35,7 @@ void LUA_RegisterHudLibrary(lua_State *L);
 // VM
 
 lua_State* LUA_GetGlobalVM();
+extern cvar_c lua_debug;
 
 inline epi::vec3_c LUA_CheckVector3(lua_State *L, int index)
 {

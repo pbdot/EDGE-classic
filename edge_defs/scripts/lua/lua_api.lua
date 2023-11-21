@@ -195,7 +195,7 @@ end
 
 -- parse our benefit string to get the amount
 benefit.get_amount       = function(TheString)
-    local tempstr = ""    
+    local tempstr = ""
     local equalpos = 0 --position of "="
 
     equalpos = string.find(TheString, "=")
@@ -213,7 +213,7 @@ end
 -- enough: the only item which is multi-benefit is the backpack.
 benefit.get_group        = function(BenefitFull)
     local BenefitType = 0
-    
+
     local tempbenefitgroup = ""
 
     for loopCounter = 1, 8 do
