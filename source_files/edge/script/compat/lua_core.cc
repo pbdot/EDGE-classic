@@ -69,7 +69,7 @@ static int SYS_edge_version(lua_State *L)
 static int ECMATH_rint(lua_State *L)
 {
     double val = luaL_checknumber(L, 1);
-    lua_pushnumber(L, I_ROUND(val));
+    lua_pushinteger(L, I_ROUND(val));
     return 1;
 }
 
@@ -183,7 +183,7 @@ static int STRINGS_len(lua_State *L)
 {
     const char *s = luaL_checkstring(L, 0);
 
-    lua_pushnumber(L, strlen(s));
+    lua_pushinteger(L, strlen(s));
     return 1;
 }
 
@@ -201,7 +201,7 @@ static int STRINGS_find(lua_State *L)
 
     int found = str.find(str2);
 
-    lua_pushnumber(L, found);
+    lua_pushinteger(L, found);
     return 1;
 }
 

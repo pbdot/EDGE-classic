@@ -375,9 +375,9 @@ function InventoryScreenOneItem()
 
         local InventoryScriptName = ""
         if (CurrentInventoryItem < 10) then
-            InventoryScriptName = string.format("INVENTORY0%i", CurrentInventoryItem)
+            InventoryScriptName = "INVENTORY0" .. CurrentInventoryItem
         else
-            InventoryScriptName = string.format("INVENTORY%i", CurrentInventoryItem)
+            InventoryScriptName = "INVENTORY" .. CurrentInventoryItem
         end
 
         if (hud.rts_isactive(InventoryScriptName) == 1) then return end
@@ -391,7 +391,7 @@ function InventoryScreenOneItem()
         spriteName = GetInventorySprite(CurrentInventoryItem)
         hud.stretch_image(calculatedX, invGfx_Y, invGfx_H, invGfx_W, spriteName, 1)
         hud.set_scale(0.5)
-        hud.draw_text(calculatedX, invGfx_Y - 2, string.format("%i", player.inventory(CurrentInventoryItem))) -- + "/" + player.inventorymax(CurrentInventoryItem))
+        hud.draw_text(calculatedX, invGfx_Y - 2, tostring(player.inventory(CurrentInventoryItem))) -- + "/" + player.inventorymax(CurrentInventoryItem))
         hud.set_scale(1.0)
     else
         CurrentInventoryItem = GetNextInventoryItem(CurrentInventoryItem)
@@ -432,7 +432,7 @@ function InventoryScreenMultiItem()
             hud.stretch_image(calculatedX + 2, invGfx_Y + 2, invGfx_H - 5, invGfx_W - 5, spriteName, 1)
 
             hud.set_scale(0.4)
-            hud.draw_text(calculatedX + 1, invGfx_Y + 1, string.format("%i", player.inventory(loopCounter))) -- + "/" + player.inventorymax(loopCounter))
+            hud.draw_text(calculatedX + 1, invGfx_Y + 1, tostring(player.inventory(loopCounter))) -- + "/" + player.inventorymax(loopCounter))
             hud.set_scale(1.0)
         else
             hud.stretch_image(calculatedX, invGfx_Y, invGfx_H, invGfx_W, "ARTIBOX", 1)

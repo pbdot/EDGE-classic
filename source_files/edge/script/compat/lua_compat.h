@@ -31,6 +31,10 @@ void LUA_RegisterPlayerLibrary(lua_State *L);
 void LUA_RunHud(void);
 void LUA_RegisterHudLibrary(lua_State *L);
 
+// VM
+
+lua_State* LUA_GetGlobalVM();
+
 inline epi::vec3_c LUA_CheckVector3(lua_State *L, int index)
 {
     epi::vec3_c v;
@@ -54,7 +58,22 @@ inline void LUA_PushVector3(lua_State*L, epi::vec3_c v)
     lua_call(L, 3, 1);    
 }
 
-lua_State* LUA_GetGlobalVM();
+inline void LUA_SetVector3(lua_State* L, const char* module, const char* variable, epi::vec3_c v)
+{
+    lua_getglobal(L, module);
+    LUA_PushVector3(L, v);    
+    lua_setfield(L, -2, variable);
+    lua_pop(L, 1);
+}
+
+inline float LUA_GetFloat(lua_State* L, const char* module, const char* variable)
+{
+    lua_getglobal(L, module);
+    lua_getfield(L, -1, variable);
+    float ret = (float) lua_tonumber(L, -1);
+    lua_pop(L, 2);
+    return ret;
+}
 
 inline void LUA_SetFloat(lua_State* L, const char* module, const char* variable, float value)
 {
@@ -64,12 +83,5 @@ inline void LUA_SetFloat(lua_State* L, const char* module, const char* variable,
     lua_pop(L, 1);
 }
 
-inline void LUA_SetVector3(lua_State* L, const char* module, const char* variable, epi::vec3_c v)
-{
-    lua_getglobal(L, module);
-    LUA_PushVector3(L, v);    
-    lua_setfield(L, -2, variable);
-    lua_pop(L, 1);
-}
 
 extern lua_State *global_lua_state;

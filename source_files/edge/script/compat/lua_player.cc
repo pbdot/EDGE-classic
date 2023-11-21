@@ -37,7 +37,7 @@ player_t *ui_player_who = NULL;
 //
 static int PL_num_players(lua_State *L)
 {
-    lua_pushnumber(L, numplayers);
+    lua_pushinteger(L, numplayers);
     return 1;
 }
 
@@ -138,7 +138,7 @@ static int PL_health(lua_State *L)
     if (h < 98)
         h += 0.99f;
 
-    lua_pushnumber(L, floor(h));
+    lua_pushinteger(L, floor(h));
     return 1;
 }
 
@@ -158,7 +158,7 @@ static int PL_armor(lua_State *L)
     if (a < 98)
         a += 0.99f;
 
-    lua_pushnumber(L, floor(a));
+    lua_pushinteger(L, floor(a));
     return 1;
 }
 
@@ -172,7 +172,7 @@ static int PL_total_armor(lua_State *L)
     if (a < 98)
         a += 0.99f;
 
-    lua_pushnumber(L, floor(a));
+    lua_pushinteger(L, floor(a));
     return 1;
 }
 
@@ -180,7 +180,7 @@ static int PL_total_armor(lua_State *L)
 //
 static int PL_frags(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->frags);
+    lua_pushinteger(L, ui_player_who->frags);
     return 1;
 }
 
@@ -413,7 +413,7 @@ static int PL_cur_weapon_slot(lua_State *L)
     else
         slot = ui_player_who->weapons[ui_player_who->ready_wp].info->bind_key;
 
-    lua_pushnumber(L, slot);
+    lua_pushinteger(L, slot);
     return 1;
 }
 
@@ -595,7 +595,7 @@ static int PL_ammo(lua_State *L)
 
     ammo--;
 
-    lua_pushnumber(L, ui_player_who->ammo[ammo].num);
+    lua_pushinteger(L, ui_player_who->ammo[ammo].num);
     return 1;
 }
 
@@ -610,7 +610,7 @@ static int PL_ammomax(lua_State *L)
 
     ammo--;
 
-    lua_pushnumber(L, ui_player_who->ammo[ammo].max);
+    lua_pushinteger(L, ui_player_who->ammo[ammo].max);
     return 1;
 }
 
@@ -625,7 +625,7 @@ static int PL_inventory(lua_State *L)
 
     inv--;
 
-    lua_pushnumber(L, ui_player_who->inventory[inv].num);
+    lua_pushinteger(L, ui_player_who->inventory[inv].num);
     return 1;
 }
 
@@ -640,7 +640,7 @@ static int PL_inventorymax(lua_State *L)
 
     inv--;
 
-    lua_pushnumber(L, ui_player_who->inventory[inv].max);
+    lua_pushinteger(L, ui_player_who->inventory[inv].max);
     return 1;
 }
 
@@ -655,7 +655,7 @@ static int PL_counter(lua_State *L)
 
     cntr--;
 
-    lua_pushnumber(L, ui_player_who->counters[cntr].num);
+    lua_pushinteger(L, ui_player_who->counters[cntr].num);
     return 1;
 }
 
@@ -670,7 +670,7 @@ static int PL_counter_max(lua_State *L)
 
     cntr--;
 
-    lua_pushnumber(L, ui_player_who->counters[cntr].max);
+    lua_pushinteger(L, ui_player_who->counters[cntr].max);
     return 1;
 }
 
@@ -725,7 +725,7 @@ static int PL_main_ammo(lua_State *L)
         }
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -749,7 +749,7 @@ static int PL_ammo_type(lua_State *L)
         value = 1 + (int)pw->info->ammo[ATK];
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -773,7 +773,7 @@ static int PL_ammo_pershot(lua_State *L)
         value = pw->info->ammopershot[ATK];
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -797,7 +797,7 @@ static int PL_clip_ammo(lua_State *L)
         value = pw->clip_size[ATK];
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -821,7 +821,7 @@ static int PL_clip_size(lua_State *L)
         value = pw->info->clip_size[ATK];
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -839,7 +839,7 @@ static int PL_clip_is_shared(lua_State *L)
             value = 1;
     }
 
-    lua_pushnumber(L, value);
+    lua_pushboolean(L, value);
     return 1;
 }
 
@@ -884,7 +884,7 @@ static int PL_hurt_mon(lua_State *L)
 //
 static int PL_hurt_pain(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->damage_pain);
+    lua_pushinteger(L, ui_player_who->damage_pain);
     return 1;
 }
 
@@ -911,7 +911,7 @@ static int PL_hurt_dir(lua_State *L)
         }
     }
 
-    lua_pushnumber(L, dir);
+    lua_pushinteger(L, dir);
     return 1;
 }
 
@@ -937,7 +937,7 @@ static int PL_hurt_angle(lua_State *L)
             value += 360.0f;
     }
 
-    lua_pushnumber(L, value);
+    lua_pushinteger(L, value);
     return 1;
 }
 
@@ -945,7 +945,7 @@ static int PL_hurt_angle(lua_State *L)
 // Lobo: November 2021
 static int PL_kills(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->killcount);
+    lua_pushinteger(L, ui_player_who->killcount);
     return 1;
 }
 
@@ -953,7 +953,7 @@ static int PL_kills(lua_State *L)
 // Lobo: November 2021
 static int PL_secrets(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->secretcount);
+    lua_pushinteger(L, ui_player_who->secretcount);
     return 1;
 }
 
@@ -961,7 +961,7 @@ static int PL_secrets(lua_State *L)
 // Lobo: November 2021
 static int PL_items(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->itemcount);
+    lua_pushinteger(L, ui_player_who->itemcount);
     return 1;
 }
 
@@ -969,7 +969,7 @@ static int PL_items(lua_State *L)
 // Lobo: November 2021
 static int PL_map_enemies(lua_State *L)
 {
-    lua_pushnumber(L, wi_stats.kills);
+    lua_pushinteger(L, wi_stats.kills);
     return 1;
 }
 
@@ -977,7 +977,7 @@ static int PL_map_enemies(lua_State *L)
 // Lobo: November 2021
 static int PL_map_secrets(lua_State *L)
 {
-    lua_pushnumber(L, wi_stats.secret);
+    lua_pushinteger(L, wi_stats.secret);
     return 1;
 }
 
@@ -985,7 +985,7 @@ static int PL_map_secrets(lua_State *L)
 // Lobo: November 2021
 static int PL_map_items(lua_State *L)
 {
-    lua_pushnumber(L, wi_stats.items);
+    lua_pushinteger(L, wi_stats.items);
     return 1;
 }
 
@@ -1023,7 +1023,7 @@ static int PL_floor_flat(lua_State *L)
 // Lobo: November 2021
 static int PL_sector_tag(lua_State *L)
 {
-    lua_pushnumber(L, ui_player_who->mo->subsector->sector->tag);
+    lua_pushinteger(L, ui_player_who->mo->subsector->sector->tag);
     return 1;
 }
 
@@ -1040,20 +1040,20 @@ static int PL_play_footstep(lua_State *L)
 
     if (!current_flatdef)
     {
-        lua_pushnumber(L, 0);
+        lua_pushboolean(L, 0);
         return 1;
     }
 
     if (!current_flatdef->footstep)
     {
-        lua_pushnumber(L, 0);
+        lua_pushboolean(L, 0);
         return 1;
     }
     else
     {
         // Probably need to add check to see if the sfx is valid - Dasho
         S_StartFX(current_flatdef->footstep);
-        lua_pushnumber(L, 1);
+        lua_pushboolean(L, 1);
     }
 
     return 1;
@@ -1416,7 +1416,7 @@ static int MO_count(lua_State *L)
             thingcount++;
     }
 
-    lua_pushnumber(L, thingcount);
+    lua_pushinteger(L, thingcount);
 }
 
 // player.query_weapon(maxdistance,whatinfo,[SecAttack])

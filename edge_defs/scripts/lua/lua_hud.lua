@@ -49,13 +49,13 @@ function pain_digit()
     assert(index >= 0)
     assert(index <= 4)
 
-    return string.format("%i", index)
+    return tostring(math.tointeger(index))
 end
 
 function turn_digit()
     local r = ecmath.rint(ecmath.rand_range(0, 2)) --always between 0 and 2
 
-    return string.format("%i", r)
+    return tostring(r)
 end
 
 function check_face_state()
@@ -110,7 +110,7 @@ function set_face_params()
 
     -- evil grin when player just picked up a weapon
     if (face_state == 2) then
-        face_image = string.format("STFEVL%i", pain_digit())
+        face_image = "STFEVL" .. pain_digit()
         face_tic   = sys.gametic + 7
         return
     end
@@ -118,7 +118,7 @@ function set_face_params()
     -- being attacked ?
     if (face_state == 3) then
         if (player.hurt_pain() > 20) then
-            face_image = string.format("STFOUCH%i", pain_digit())
+            face_image = "STFOUCH" .. pain_digit()
             face_tic = sys.gametic + 26
             return
         end
@@ -130,11 +130,11 @@ function set_face_params()
         end
 
         if (dir < 0) then
-            face_image = string.format("STFTL%i0", pain_digit())
+            face_image = "STFTL" .. pain_digit() .. "0"
         elseif (dir > 0) then
-            face_image = string.format("STFTR%i0", pain_digit())
+            face_image = "STFTR" .. pain_digit() .. "0"
         else
-            face_image = string.format("STFKILL%i", pain_digit())
+            face_image = "STFKILL" .. pain_digit()
         end
 
         face_tic = sys.gametic + 35
@@ -143,7 +143,7 @@ function set_face_params()
 
     -- rampaging?
     if (face_state == 4) then
-        face_image = string.format("STFKILL%i", pain_digit())
+        face_image = "STFKILL" .. pain_digit()
         face_tic   = sys.gametic + 7
         return
     end
@@ -156,7 +156,7 @@ function set_face_params()
     end
 
     -- default: look about the place...
-    face_image = string.format("STFST%i%i", pain_digit(), turn_digit())
+    face_image = "STFST" .. pain_digit() .. turn_digit()
     face_tic   = sys.gametic + 17
 end
 

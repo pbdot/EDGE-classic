@@ -62,8 +62,8 @@ static int HD_coord_sys(lua_State *L)
 
     HUD_SetCoordSys(w, h);
 
-    // VM_SetFloat(ui_vm, "hud", "x_left", hud_x_left);
-    // VM_SetFloat(ui_vm, "hud", "x_right", hud_x_right);
+    LUA_SetFloat(L, "hud", "x_left", hud_x_left);
+    LUA_SetFloat(L, "hud", "x_right", hud_x_right);
 
     return 0;
 }
@@ -122,7 +122,7 @@ static int HD_map_author(lua_State *L)
 //
 static int HD_which_hud(lua_State *L)
 {
-    lua_pushnumber(L, (double)screen_hud);
+    lua_pushinteger(L, (double)screen_hud);
     return 1;
 }
 
@@ -904,11 +904,11 @@ static int HD_get_image_width(lua_State *L)
 
     if (img)
     {
-        lua_pushnumber(L, HUD_GetImageWidth(img));
+        lua_pushinteger(L, HUD_GetImageWidth(img));
     }
     else
     {
-        lua_pushnumber(L, 0);
+        lua_pushinteger(L, 0);
     }
 
     return 1;
@@ -924,11 +924,11 @@ static int HD_get_image_height(lua_State *L)
 
     if (img)
     {
-        lua_pushnumber(L, HUD_GetImageHeight(img));
+        lua_pushinteger(L, HUD_GetImageHeight(img));
     }
     else
     {
-        lua_pushnumber(L, 0);
+        lua_pushinteger(L, 0);
     }
 
     return 1;
@@ -1016,7 +1016,7 @@ void LUA_RunHud(void)
 {
     HUD_Reset();
 
-    ui_hud_who = players[displayplayer];
+    ui_hud_who    = players[displayplayer];
     ui_player_who = players[displayplayer];
 
     ui_hud_automap_flags[0] = 0;
