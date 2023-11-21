@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include "lua_compat.h"
 #include "i_system.h"
 #include "str_util.h"
