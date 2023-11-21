@@ -110,7 +110,11 @@ static void RegisterGlobal(lua_State *L, const char *name, const char *module_na
 void LUA_CallGlobalFunction(lua_State *L, const char *function_name)
 {
     lua_getglobal(L, function_name);
-    lua_call(L, 0, 0);
+    int status = lua_pcall(L, 0, 0, 0);
+    if (status != LUA_OK)
+    {
+        I_Error("LUA: %s\n", lua_tostring(L, -1));
+    }
 }
 
 lua_State *LUA_CreateVM()

@@ -1,6 +1,11 @@
-sys                    = {}
+-- SYSTEM
+
 sys.TICRATE            = 35
 sys.gametic            = 0
+
+-- ECMATH
+
+
 
 hud.which              = 0
 hud.automap            = 0
