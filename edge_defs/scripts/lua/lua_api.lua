@@ -4,10 +4,10 @@ sys.TICRATE            = 35
 sys.gametic            = 0
 
 -- ECMATH
-ecmath.pi = 3.1415926535897932384
-ecmath.e  = 2.7182818284590452354
+ecmath.pi              = 3.1415926535897932384
+ecmath.e               = 2.7182818284590452354
 
-ecmath.rand_range = function(low, high)	
+ecmath.rand_range      = function(low, high)
     return low + (high - low) * ecmath.random()
 end
 
@@ -159,3 +159,80 @@ mapobject.CURRENT_HEALTH = 2
 mapobject.SPAWN_HEALTH   = 3
 mapobject.PICKUP_BENEFIT = 4
 mapobject.KILL_BENEFIT   = 5
+
+benefit                  = {}
+
+-- BENEFIT GROUP
+benefit.HEALTH           = "HEALTH"
+benefit.AMMO             = "AMMO"
+benefit.ARMOUR           = "ARMOUR"
+benefit.KEY              = "KEY"
+benefit.POWERUP          = "POWERUP"
+benefit.COUNTER          = "COUNTER"
+benefit.INVENTORY        = "INVENTORY"
+benefit.WEAPON           = "WEAPON"
+
+-- parse our benefit string to get the type
+benefit.get_type         = function(TheString, BenefitName)
+    local tempstr = ""
+    local temppos = 0
+    local equalpos = 0
+
+    temppos = strings.find(TheString, BenefitName)
+    equalpos = strings.find(TheString, "=")
+    if (temppos > -1) then
+        if (equalpos > -1) then --a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
+            temppos = temppos + 1
+            temppos = temppos + strings.len(BenefitName)
+            tempstr = strings.sub(TheString, temppos, equalpos)
+        elseif (equalpos == -1) then --a XXXX99 kind of benefit i.e. KEY
+            temppos = temppos + 1
+            temppos = temppos + strings.len(BenefitName)
+            tempstr = strings.sub(TheString, temppos, strings.len(TheString))
+        end
+    end
+
+    return strings.tonumber(tempstr)
+end
+
+-- parse our benefit string to get the amount
+benefit.get_amount       = function(TheString)
+    local tempstr = ""    
+    local equalpos = 0 --position of "="
+
+    equalpos = strings.find(TheString, "=")
+    if (equalpos > -1) then --its a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
+        equalpos = equalpos + 2
+        tempstr = strings.sub(TheString, equalpos, strings.len(TheString))
+    else
+        tempstr = "1"
+    end
+
+    return strings.tonumber(tempstr)
+end
+
+--Note this only returns the first benefit, which is usually
+-- enough: the only item which is multi-benefit is the backpack.
+benefit.get_group        = function(BenefitFull)
+    local BenefitType = 0
+    
+    local tempbenefitgroup = ""
+
+    for loopCounter = 1, 8 do
+        if (loopCounter == 1) then tempbenefitgroup = benefit.AMMO end
+        if (loopCounter == 2) then tempbenefitgroup = benefit.ARMOUR end
+        if (loopCounter == 3) then tempbenefitgroup = benefit.COUNTER end
+        if (loopCounter == 4) then tempbenefitgroup = benefit.INVENTORY end
+        if (loopCounter == 5) then tempbenefitgroup = benefit.KEY end
+        if (loopCounter == 6) then tempbenefitgroup = benefit.POWERUP end
+        if (loopCounter == 7) then tempbenefitgroup = benefit.HEALTH end
+        if (loopCounter == 8) then tempbenefitgroup = benefit.WEAPON end
+
+        BenefitType = get_type(BenefitFull, tempbenefitgroup)
+
+        if (BenefitType > 0) then
+            break
+        end
+    end
+    return tempbenefitgroup
+end

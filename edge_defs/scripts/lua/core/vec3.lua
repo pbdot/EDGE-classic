@@ -2,8 +2,6 @@ local abs = math.abs
 local vec
 local metatable
 
-print("hello!")
-
 vec = {
 	__call = function(self, x, y, z)
 		if not x then
