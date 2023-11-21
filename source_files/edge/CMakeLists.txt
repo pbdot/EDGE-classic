@@ -111,6 +111,7 @@ set (EDGE_SOURCE_FILES
   w_wad.cc
   script/compat/lua_vm.cc
   script/compat/lua_compat.cc
+  script/compat/lua_core.cc
   script/compat/lua_game.cc
   script/compat/lua_player.cc
   script/compat/lua_hud.cc

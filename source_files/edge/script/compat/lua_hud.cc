@@ -1019,6 +1019,10 @@ void LUA_RunHud(void)
     ui_hud_who = players[displayplayer];
     ui_player_who = players[displayplayer];
 
+    ui_hud_automap_flags[0] = 0;
+    ui_hud_automap_flags[1] = 0;
+    ui_hud_automap_zoom     = -1;
+
     LUA_CallGlobalFunction(global_lua_state, "draw_all");
 
     HUD_Reset();

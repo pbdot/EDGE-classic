@@ -16,7 +16,9 @@ void LUA_Init()
     SYS_ASSERT(!global_lua_state);
     global_lua_state = LUA_CreateVM();
 
+    LUA_RegisterCoreLibraries(global_lua_state);
     LUA_RegisterHudLibrary(global_lua_state);
+    LUA_RegisterPlayerLibrary(global_lua_state);
     
 }
 

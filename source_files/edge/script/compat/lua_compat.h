@@ -21,6 +21,13 @@ void LUA_SaveGame(void);
 void LUA_BeginLevel(void);
 void LUA_EndLevel(void);
 
+// Core
+void LUA_RegisterCoreLibraries(lua_State* L);
+
+// Player
+void LUA_RegisterPlayerLibrary(lua_State *L);
+
+// Hud
 void LUA_RunHud(void);
 void LUA_RegisterHudLibrary(lua_State *L);
 

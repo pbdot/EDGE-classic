@@ -76,7 +76,7 @@ void LUA_DoString(lua_State *L, const char *source)
 
     if (ret != 0)
     {
-        I_Warning("LUA: %s\n", lua_tostring(L, -1));
+        I_Error("LUA: %s\n", lua_tostring(L, -1));
     }
 }
 
@@ -88,7 +88,12 @@ void LUA_DoFile(lua_State *L, const std::string &name)
     {
         std::string source = file->ReadText();
         int         top    = lua_gettop(L);
-        luaL_dostring(L, source.c_str());
+        int         ret    = luaL_dostring(L, source.c_str());
+        if (ret != 0)
+        {
+            I_Error("LUA: %s\n", lua_tostring(L, -1));
+        }
+
         lua_settop(L, top);
         delete file;
     }
@@ -102,13 +107,13 @@ static void RegisterGlobal(lua_State *L, const char *name, const char *module_na
     lua_setglobal(L, name);
 }
 
-void LUA_CallGlobalFunction(lua_State* L, const char* function_name)
+void LUA_CallGlobalFunction(lua_State *L, const char *function_name)
 {
     lua_getglobal(L, function_name);
     lua_call(L, 0, 0);
 }
 
-lua_State* LUA_CreateVM()
+lua_State *LUA_CreateVM()
 {
     // we could specify a lua allocator, which would be a good idea to hook up to a debug allocator
     // library for tracing l = lua_newstate(lua_Alloc alloc, nullptr);
@@ -149,4 +154,3 @@ lua_State* LUA_CreateVM()
 
     return L;
 }
-
