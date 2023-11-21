@@ -51,7 +51,7 @@ inline void LUA_PushVector3(lua_State*L, epi::vec3_c v)
     lua_pushnumber(L, v.x);
     lua_pushnumber(L, v.y);
     lua_pushnumber(L, v.z);
-    lua_call(L, 3, 0);
+    lua_call(L, 3, 1);    
 }
 
 lua_State* LUA_GetGlobalVM();
@@ -60,6 +60,14 @@ inline void LUA_SetFloat(lua_State* L, const char* module, const char* variable,
 {
     lua_getglobal(L, module);
     lua_pushnumber(L, value);
+    lua_setfield(L, -2, variable);
+    lua_pop(L, 1);
+}
+
+inline void LUA_SetVector3(lua_State* L, const char* module, const char* variable, epi::vec3_c v)
+{
+    lua_getglobal(L, module);
+    LUA_PushVector3(L, v);    
     lua_setfield(L, -2, variable);
     lua_pop(L, 1);
 }
