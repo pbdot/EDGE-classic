@@ -463,8 +463,8 @@ function edge_draw_bar(BarPos, BarHeight, BarLength, MaxValue, CurrentValue, Bar
     local BarValue = 0
     local percentvalue = 0
 
-    local TopX = BarPos * vec3(1, 0, 0)
-    local TopY = BarPos * vec3(0, 1, 0)
+    local TopX = BarPos.x
+    local TopY = BarPos.y
     TopX = hud.x_left + (hud.x_right - hud.x_left) * TopX
 
     --Convert to a percentage of the bars length
