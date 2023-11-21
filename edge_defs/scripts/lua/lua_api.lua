@@ -3,9 +3,7 @@
 sys.TICRATE            = 35
 sys.gametic            = 0
 
--- ECMATH
-ecmath.pi              = 3.1415926535897932384
-ecmath.e               = 2.7182818284590452354
+-- EC MATH
 
 ecmath.rand_range      = function(low, high)
     return low + (high - low) * ecmath.random()
@@ -178,21 +176,21 @@ benefit.get_type         = function(TheString, BenefitName)
     local temppos = 0
     local equalpos = 0
 
-    temppos = strings.find(TheString, BenefitName)
-    equalpos = strings.find(TheString, "=")
-    if (temppos > -1) then
-        if (equalpos > -1) then --a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
+    temppos = string.find(TheString, BenefitName)
+    equalpos = string.find(TheString, "=")
+    if (temppos) then
+        if (equalpos) then --a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
             temppos = temppos + 1
-            temppos = temppos + strings.len(BenefitName)
-            tempstr = strings.sub(TheString, temppos, equalpos)
-        elseif (equalpos == -1) then --a XXXX99 kind of benefit i.e. KEY
+            temppos = temppos + #BenefitName
+            tempstr = string.sub(TheString, temppos, equalpos)
+        elseif (not equalpos) then --a XXXX99 kind of benefit i.e. KEY
             temppos = temppos + 1
-            temppos = temppos + strings.len(BenefitName)
-            tempstr = strings.sub(TheString, temppos, strings.len(TheString))
+            temppos = temppos + #BenefitName
+            tempstr = string.sub(TheString, temppos, #TheString)
         end
     end
 
-    return strings.tonumber(tempstr)
+    return math.tointeger(tempstr)
 end
 
 -- parse our benefit string to get the amount
@@ -200,15 +198,15 @@ benefit.get_amount       = function(TheString)
     local tempstr = ""    
     local equalpos = 0 --position of "="
 
-    equalpos = strings.find(TheString, "=")
-    if (equalpos > -1) then --its a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
+    equalpos = string.find(TheString, "=")
+    if (equalpos) then --its a XXXX99=999 kind of benefit i.e. AMMO, ARMOUR
         equalpos = equalpos + 2
-        tempstr = strings.sub(TheString, equalpos, strings.len(TheString))
+        tempstr = string.sub(TheString, equalpos, #TheString)
     else
         tempstr = "1"
     end
 
-    return strings.tonumber(tempstr)
+    return math.tointeger(tempstr)
 end
 
 --Note this only returns the first benefit, which is usually

@@ -44,7 +44,7 @@ function pain_digit()
         health = 100
     end
 
-    local index = ecmath.floor(4.99 * (100 - health) / 100)
+    local index = math.floor(4.99 * (100 - health) / 100)
 
     assert(index >= 0)
     assert(index <= 4)
@@ -53,7 +53,7 @@ function pain_digit()
 end
 
 function turn_digit()
-    local r = ecmath.rint(ecmath.rand_range(0, 2)) --always between 0 and 2
+    local r = math.tointeger(ecmath.rand_range(0, 2)) --always between 0 and 2
 
     return tostring(r)
 end
@@ -440,7 +440,7 @@ function doom_automap()
     hud.text_font("DOOM")
     hud.text_color(hud.GREEN)
 
-    if (strings.len(hud.map_author()) > 0) then
+    if (#hud.map_author() > 0) then
         hud.draw_text(0, 200 - 32 - 20, hud.map_title())
         hud.draw_text(0, 200 - 32 - 10, " Author: " + hud.map_author())
     else
@@ -472,7 +472,7 @@ function edge_draw_bar(BarPos, BarHeight, BarLength, MaxValue, CurrentValue, Bar
     percentvalue = percentvalue * BarLength
     percentvalue = percentvalue / MaxValue --(strings.tonumber(MaxValue))
 
-    BarValue = ecmath.floor(percentvalue - 1)
+    BarValue = math.floor(percentvalue - 1)
     local BottomBarHeight = BarHeight / 2
 
     hud.thin_box(TopX, TopY, BarLength, BarHeight, hud.GRAY)
@@ -504,7 +504,7 @@ function edge_air_bar()
     local CurrentValue = 0
 
     BarMaxValue = 100                                  --Air_in_lungs is a percentage value so max is 100
-    CurrentValue = ecmath.floor(player.air_in_lungs()) --current air
+    CurrentValue = math.floor(player.air_in_lungs()) --current air
 
     --edge_draw_bar(TopX, TopY, BarHeight, BarLength, MaxValue, CurrentValue)
     edge_draw_bar(BarLocation, BarHeight, BarLength, BarMaxValue, CurrentValue, hud.BLACK, hud.LIGHTBLUE)
@@ -531,7 +531,7 @@ function edge_time_bar()
     local CurrentValue = 0
 
     BarMaxValue = 20                                                 --default STOP_TIME lasts 20 seconds
-    CurrentValue = ecmath.floor(player.power_left(player.STOP_TIME)) --current air
+    CurrentValue = math.floor(player.power_left(player.STOP_TIME)) --current air
 
     --edge_draw_bar(TopX, TopY, BarHeight, BarLength, MaxValue, CurrentValue)
     edge_draw_bar(BarLocation, BarHeight, BarLength, BarMaxValue, CurrentValue, hud.BLACK, hud.PURPLE)
@@ -545,7 +545,7 @@ function DoesNameStartWith(TheName, ThePart)
     local tempstr = "";
     local templen = 0
 
-    tempstr = strings.sub(TheName, 1, strings.len(ThePart))
+    tempstr = string.sub(TheName, 1, #ThePart)
 
     --hud.draw_text(10, 10, tempstr)
 
