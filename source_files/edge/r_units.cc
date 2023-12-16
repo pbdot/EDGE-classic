@@ -19,6 +19,8 @@
 // -AJA- 2000/10/09: Began work on this new unit system.
 //
 
+#ifdef __DISABLED
+
 #include "i_defs.h"
 #include "i_defs_gl.h"
 
@@ -307,6 +309,8 @@ void RGL_DrawUnits(void)
 {
     EDGE_ZoneScoped;
 
+    cur_vert = cur_unit = 0;
+
     if (cur_unit == 0)
         return;
 
@@ -580,3 +584,5 @@ void RGL_DrawUnits(void)
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab
+
+#endif

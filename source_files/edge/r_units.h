@@ -48,6 +48,7 @@ void RGL_SoftInitUnits(void);
 void RGL_StartUnits(bool sort_em);
 void RGL_FinishUnits(void);
 void RGL_DrawUnits(void);
+void RGL_FinishFrameUnits(void);
 
 typedef enum
 {

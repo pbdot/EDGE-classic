@@ -609,6 +609,10 @@ void E_Display(void)
         else
             LUA_RunHud();
 
+        void RGL_FinishFrameUnits(void);
+        RGL_FinishFrameUnits();
+
+
         if (need_save_screenshot)
         {
             M_MakeSaveScreenShot();
