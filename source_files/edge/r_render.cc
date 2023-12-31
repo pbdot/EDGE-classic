@@ -366,6 +366,7 @@ static bool MIR_SegOnPortal(seg_t *seg)
 
 static void MIR_SetClippers()
 {
+#ifdef sokol_port    
     glDisable(GL_CLIP_PLANE0);
     glDisable(GL_CLIP_PLANE1);
     glDisable(GL_CLIP_PLANE2);
@@ -428,6 +429,7 @@ static void MIR_SetClippers()
 
         glClipPlane(GL_CLIP_PLANE2 + i, front_p);
     }
+#endif
 }
 
 static void MIR_Push(drawmirror_c *mir)
@@ -847,8 +849,10 @@ static void DLIT_Wall(mobj_t *mo, void *dataptr)
 
     int blending = (data->blending & ~BL_Alpha) | BL_Add;
 
+#ifdef sokol_port
     mo->dlight.shader->WorldMix(GL_POLYGON, data->v_count, data->tex_id, data->trans, &data->pass, blending,
                                 data->mid_masked, data, WallCoordFunc);
+#endif
 }
 
 static void GLOWLIT_Wall(mobj_t *mo, void *dataptr)
@@ -858,9 +862,10 @@ static void GLOWLIT_Wall(mobj_t *mo, void *dataptr)
     SYS_ASSERT(mo->dlight.shader);
 
     int blending = (data->blending & ~BL_Alpha) | BL_Add;
-
+#ifdef sokol_port
     mo->dlight.shader->WorldMix(GL_POLYGON, data->v_count, data->tex_id, data->trans, &data->pass, blending,
                                 data->mid_masked, data, WallCoordFunc);
+#endif
 }
 
 static void DLIT_Plane(mobj_t *mo, void *dataptr)
@@ -885,9 +890,10 @@ static void DLIT_Plane(mobj_t *mo, void *dataptr)
     SYS_ASSERT(mo->dlight.shader);
 
     int blending = (data->blending & ~BL_Alpha) | BL_Add;
-
+#ifdef sokol_port
     mo->dlight.shader->WorldMix(GL_POLYGON, data->v_count, data->tex_id, data->trans, &data->pass, blending,
                                 false /* masked */, data, PlaneCoordFunc);
+#endif                                
 }
 
 static void GLOWLIT_Plane(mobj_t *mo, void *dataptr)
@@ -898,8 +904,10 @@ static void GLOWLIT_Plane(mobj_t *mo, void *dataptr)
 
     int blending = (data->blending & ~BL_Alpha) | BL_Add;
 
+#ifdef sokol_port
     mo->dlight.shader->WorldMix(GL_POLYGON, data->v_count, data->tex_id, data->trans, &data->pass, blending, false,
                                 data, PlaneCoordFunc);
+#endif                                
 }
 
 #define MAX_EDGE_VERT 20
@@ -1163,8 +1171,10 @@ static void DrawWallPart(drawfloor_t *dfloor, float x1, float y1, float lz1, flo
 
     abstract_shader_c *cmap_shader = R_GetColormapShader(props, lit_adjust, cur_sub->sector);
 
+#ifdef sokol_port
     cmap_shader->WorldMix(GL_POLYGON, data.v_count, data.tex_id, trans, &data.pass, data.blending, data.mid_masked,
                           &data, WallCoordFunc);
+#endif                          
 
     if (surf->image && surf->image->liquid_type > LIQ_None && swirling_flats == SWIRL_PARALLAX)
     {
@@ -1176,8 +1186,10 @@ static void DrawWallPart(drawfloor_t *dfloor, float x1, float y1, float lz1, flo
         data.blending   = BL_Masked | BL_Alpha;
         data.trans      = 0.33f;
         trans           = 0.33f;
+#ifdef sokol_port        
         cmap_shader->WorldMix(GL_POLYGON, data.v_count, data.tex_id, trans, &data.pass, data.blending, false, &data,
                               WallCoordFunc);
+#endif                              
         data.blending = old_blend;
         data.trans    = old_dt;
     }
@@ -1865,9 +1877,10 @@ static void DLIT_Flood(mobj_t *mo, void *dataptr)
             data->vert[col * 2 + 0].Set(x, y, z);
             data->vert[col * 2 + 1].Set(x, y, z + data->dh / data->piece_row);
         }
-
+#ifdef sokol_port
         mo->dlight.shader->WorldMix(GL_QUAD_STRIP, data->v_count, data->tex_id, 1.0, &data->pass, blending, false, data,
                                     FloodCoordFunc);
+#endif                                    
     }
 }
 
@@ -1985,9 +1998,10 @@ static void EmulateFloodPlane(const drawfloor_t *dfloor, const sector_t *flood_r
 		data.R = (64 + 190 * (row & 1)) / 255.0;
 		data.B = (64 + 90 * (row & 2))  / 255.0;
 #endif
-
+#ifdef sokol_port
         cmap_shader->WorldMix(GL_QUAD_STRIP, data.v_count, data.tex_id, 1.0, &data.pass, BL_NONE, false, &data,
                               FloodCoordFunc);
+#endif                              
     }
 
     if (use_dlights && solid_mode && ren_extralight < 250)
@@ -2630,8 +2644,10 @@ static void RGL_DrawPlane(drawfloor_t *dfloor, float h, surface_t *surf, int fac
 
     abstract_shader_c *cmap_shader = R_GetColormapShader(props, 0, cur_sub->sector);
 
+#ifdef sokol_port
     cmap_shader->WorldMix(GL_POLYGON, data.v_count, data.tex_id, trans, &data.pass, data.blending, false /* masked */,
                           &data, PlaneCoordFunc);
+#endif                          
 
     if (surf->image->liquid_type > LIQ_None &&
         swirling_flats == SWIRL_PARALLAX) // Kept as an example for future effects
@@ -2644,8 +2660,10 @@ static void RGL_DrawPlane(drawfloor_t *dfloor, float h, surface_t *surf, int fac
         data.blending   = BL_Masked | BL_Alpha;
         data.trans      = 0.33f;
         trans           = 0.33f;
+#ifdef sokol_port        
         cmap_shader->WorldMix(GL_POLYGON, data.v_count, data.tex_id, trans, &data.pass, data.blending, false, &data,
                               PlaneCoordFunc);
+#endif                              
         data.blending = old_blend;
         data.trans    = old_dt;
     }
@@ -2925,6 +2943,7 @@ static void RGL_DrawSubList(std::list<drawsub_c *> &dsubs, bool for_mirror = fal
 
 static void DrawMirrorPolygon(drawmirror_c *mir)
 {
+#ifdef sokol_port    
     glDisable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -2973,10 +2992,12 @@ static void DrawMirrorPolygon(drawmirror_c *mir)
     glEnd();
 
     glDisable(GL_BLEND);
+#endif
 }
 
 static void DrawPortalPolygon(drawmirror_c *mir)
 {
+#ifdef sokol_port    
     line_t *ld = mir->seg->linedef;
     SYS_ASSERT(ld);
 
@@ -3050,6 +3071,7 @@ static void DrawPortalPolygon(drawmirror_c *mir)
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 static void RGL_DrawMirror(drawmirror_c *mir)
@@ -3132,6 +3154,7 @@ static void RGL_DrawSubsector(drawsub_c *dsub, bool mirror_sub)
 
 static void DoWeaponModel(void)
 {
+#ifdef sokol_port    
     player_t *pl = view_cam_mo->player;
 
     if (!pl)
@@ -3150,6 +3173,7 @@ static void DoWeaponModel(void)
     RGL_DrawWeaponModel(pl);
 
     RGL_FinishUnits();
+#endif
 }
 
 //
@@ -3242,8 +3266,10 @@ static void RGL_RenderTrueBSP(void)
     frame_texids.clear();
     frame_texids.reserve(1024);
 
+#ifdef sokol_port
     glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+#endif
 
     // needed for drawing the sky
     RGL_BeginSky();
@@ -3253,12 +3279,16 @@ static void RGL_RenderTrueBSP(void)
 
     RGL_FinishSky();
 
+#ifdef sokol_port
     gl_state_c *state = RGL_GetState();
     state->setDefaultStateFull();
+#endif
 
     RGL_DrawSubList(drawsubs);
 
+#ifdef sokol_port
     state->setDefaultStateFull();
+#endif
 
     // Lobo 2022:
     // Allow changing the order of weapon model rendering to be
@@ -3279,7 +3309,9 @@ static void RGL_RenderTrueBSP(void)
         DoWeaponModel();
     }
 
+#ifdef sokol_port
     glDisable(GL_DEPTH_TEST);
+#endif
 
     // now draw 2D stuff like psprites, and add effects
     RGL_SetupMatricesWorld2D();
@@ -3297,10 +3329,14 @@ static void RGL_RenderTrueBSP(void)
     if (FlashFirst == true)
     {
         RGL_SetupMatrices3D();
+#ifdef sokol_port        
         glClear(GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+#endif
         DoWeaponModel();
+#ifdef sokol_port
         glDisable(GL_DEPTH_TEST);
+#endif
         RGL_SetupMatrices2D();
     }
 

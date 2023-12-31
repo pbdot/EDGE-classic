@@ -153,6 +153,7 @@ void RGL_RainbowEffect(player_t *player)
 //
 void RGL_ColourmapEffect(player_t *player)
 {
+#ifdef sokol_port    
     int x1, y1;
     int x2, y2;
 
@@ -200,6 +201,7 @@ void RGL_ColourmapEffect(player_t *player)
         }
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
+#endif
 }
 
 //
@@ -209,6 +211,7 @@ void RGL_ColourmapEffect(player_t *player)
 //
 void RGL_PaletteEffect(player_t *player)
 {
+#ifdef sokol_port    
     byte rgb_data[3];
 
     float s = EffectStrength(player);
@@ -275,6 +278,7 @@ void RGL_PaletteEffect(player_t *player)
 
         glDisable(GL_BLEND);
     }
+#endif
 }
 
 //----------------------------------------------------------------------------

@@ -569,6 +569,7 @@ static void CalcSizes()
 
 static void SolidBox(int x, int y, int w, int h, rgbcol_t col, float alpha)
 {
+#ifdef sokol_port    
     if (alpha < 0.99f)
         glEnable(GL_BLEND);
 
@@ -584,6 +585,7 @@ static void SolidBox(int x, int y, int w, int h, rgbcol_t col, float alpha)
     glEnd();
 
     glDisable(GL_BLEND);
+#endif
 }
 
 static void HorizontalLine(int y, rgbcol_t col)
@@ -595,6 +597,7 @@ static void HorizontalLine(int y, rgbcol_t col)
 
 static void DrawChar(int x, int y, char ch, rgbcol_t col)
 {
+    #ifdef sokol_port
     if (x + FNSZ < 0)
         return;
 
@@ -647,11 +650,13 @@ static void DrawChar(int x, int y, char ch, rgbcol_t col)
     glVertex2i(x + FNSZ, y);
 
     glEnd();
+    #endif
 }
 
 static void DrawEndoomChar(float x, float y, char ch, rgbcol_t col, rgbcol_t col2, bool blink, GLuint tex_id,
                            int enwidth)
 {
+    #ifdef sokol_port
     if (x + FNSZ < 0)
         return;
 
@@ -704,11 +709,13 @@ static void DrawEndoomChar(float x, float y, char ch, rgbcol_t col, rgbcol_t col
     glVertex2i(x + enwidth, y);
 
     glEnd();
+    #endif
 }
 
 // writes the text on coords (x,y) of the console
 static void DrawText(int x, int y, const char *s, rgbcol_t col)
 {
+    #ifdef sokol_port
     if (con_font->def->type == FNTYP_Image)
     {
         // Always whiten the font when used with console output
@@ -774,10 +781,12 @@ static void DrawText(int x, int y, const char *s, rgbcol_t col)
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
+    #endif
 }
 
 static void EndoomDrawText(int x, int y, console_line_c *endoom_line)
 {
+    #ifdef sokol_port
     // Always whiten the font when used with console output
     GLuint tex_id = W_ImageCache(endoom_font->font_image, true, (const colourmap_c *)0, true);
 
@@ -806,6 +815,7 @@ static void EndoomDrawText(int x, int y, console_line_c *endoom_line)
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
+    #endif
 }
 
 void CON_SetupFont(void)

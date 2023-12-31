@@ -783,9 +783,10 @@ static void CastDrawer(void)
 
         if (!skin_img)
             skin_img = W_ImageForDummySkin();
-
+#ifdef sokol_port
         glClear(GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
+#endif
 
         if (md->md2_model)
             MD2_RenderModel_2D(md->md2_model, skin_img, caststate->frame, pos_x, pos_y, scale_x, scale_y, castorder);
@@ -793,8 +794,9 @@ static void CastDrawer(void)
             MDL_RenderModel_2D(md->mdl_model, skin_img, caststate->frame, pos_x, pos_y, scale_x, scale_y, castorder);
         else
             VXL_RenderModel_2D(md->vxl_model, pos_x, pos_y, scale_x, scale_y, castorder);
-
+#ifdef sokol_port
         glDisable(GL_DEPTH_TEST);
+#endif
         return;
     }
 

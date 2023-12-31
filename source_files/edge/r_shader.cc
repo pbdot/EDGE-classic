@@ -329,6 +329,7 @@ class dynlight_shader_c : public abstract_shader_c
     virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, shader_coord_func_t func)
     {
+#ifdef sokol_port        
         for (int DL = 0; DL < 2; DL++)
         {
             if (WhatType(DL) == DLITE_None)
@@ -375,7 +376,8 @@ class dynlight_shader_c : public abstract_shader_c
 
             (*pass_var) += 1;
         }
-    }
+        #endif
+    }    
 };
 
 abstract_shader_c *MakeDLightShader(mobj_t *mo)
@@ -511,6 +513,7 @@ class plane_glow_c : public abstract_shader_c
     virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, shader_coord_func_t func)
     {
+#ifdef sokol_port        
         const sector_t *sec = mo->subsector->sector;
 
         for (int DL = 0; DL < 2; DL++)
@@ -557,6 +560,7 @@ class plane_glow_c : public abstract_shader_c
 
             (*pass_var) += 1;
         }
+    #endif
     }
 };
 
@@ -678,6 +682,7 @@ class wall_glow_c : public abstract_shader_c
     virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, shader_coord_func_t func)
     {
+#ifdef sokol_port        
         const sector_t *sec = mo->subsector->sector;
 
         for (int DL = 0; DL < 2; DL++)
@@ -724,6 +729,7 @@ class wall_glow_c : public abstract_shader_c
 
             (*pass_var) += 1;
         }
+#endif
     }
 };
 

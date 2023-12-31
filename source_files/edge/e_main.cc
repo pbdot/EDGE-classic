@@ -261,20 +261,24 @@ class startup_progress_c
         if (v_gamma.f < 0)
         {
             int col = (1.0f + v_gamma.f) * 255;
+#ifdef sokol_port
             glEnable(GL_BLEND);
             glBlendFunc(GL_ZERO, GL_SRC_COLOR);
             HUD_SolidBox(hud_x_left, 0, hud_x_right, 200, RGB_MAKE(col, col, col));
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable(GL_BLEND);
+#endif            
         }
         else if (v_gamma.f > 0)
         {
+#ifdef sokol_port            
             int col = v_gamma.f * 255;
             glEnable(GL_BLEND);
             glBlendFunc(GL_DST_COLOR, GL_ONE);
             HUD_SolidBox(hud_x_left, 0, hud_x_right, 200, RGB_MAKE(col, col, col));
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable(GL_BLEND);
+#endif
         }
 
         I_FinishFrame();
@@ -671,20 +675,24 @@ void E_Display(void)
     if (v_gamma.f < 0)
     {
         int col = (1.0f + v_gamma.f) * 255;
+#ifdef sokol_port        
         glEnable(GL_BLEND);
         glBlendFunc(GL_ZERO, GL_SRC_COLOR);
         HUD_SolidBox(hud_x_left, 0, hud_x_right, 200, RGB_MAKE(col, col, col));
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_BLEND);
+#endif
     }
     else if (v_gamma.f > 0)
     {
         int col = v_gamma.f * 255;
+#ifdef sokol_port        
         glEnable(GL_BLEND);
         glBlendFunc(GL_DST_COLOR, GL_ONE);
         HUD_SolidBox(hud_x_left, 0, hud_x_right, 200, RGB_MAKE(col, col, col));
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_BLEND);
+#endif
     }
 
     if (m_screenshot_required)

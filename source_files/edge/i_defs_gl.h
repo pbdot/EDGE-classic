@@ -26,13 +26,13 @@
 #ifndef __SYSTEM_SPECIFIC_DEFS_OPENGL__
 #define __SYSTEM_SPECIFIC_DEFS_OPENGL__
 
-#include "gl.h" // GLAD or gl4es
-
-#ifdef EDGE_GL_ES2
-#include "gl4esinit.h"
-#endif
-
 #define USING_GL_TYPES 1
+
+// sokol_port
+#define GLdouble double
+#define GLfloat float
+#define GLint int
+#define GLuint unsigned int
 
 #endif /* __SYSTEM_SPECIFIC_DEFS_OPENGL__ */
 

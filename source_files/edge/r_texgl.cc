@@ -120,6 +120,8 @@ GLuint R_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
      * assigned to it.
      */
 
+#ifdef sokol_port    
+
     SYS_ASSERT(img->bpp == 3 || img->bpp == 4);
 
     bool clamp  = (flags & UPL_Clamp) ? true : false;
@@ -213,6 +215,9 @@ GLuint R_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
     }
 
     return id;
+#else
+    return 0;
+#endif    
 }
 
 //----------------------------------------------------------------------------

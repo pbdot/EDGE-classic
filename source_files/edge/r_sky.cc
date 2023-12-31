@@ -209,6 +209,7 @@ static fake_skybox_t fake_box[2] = {{NULL, NULL, 1, {0, 0, 0, 0, 0, 0}, {NULL, N
 
 static void DeleteSkyTexGroup(int SK)
 {
+#ifdef sokol_port
     for (int i = 0; i < 6; i++)
     {
         if (fake_box[SK].tex[i] != 0)
@@ -217,6 +218,7 @@ static void DeleteSkyTexGroup(int SK)
             fake_box[SK].tex[i] = 0;
         }
     }
+#endif
 }
 
 void DeleteSkyTextures(void)
@@ -232,6 +234,7 @@ void DeleteSkyTextures(void)
 
 static void RGL_SetupSkyMatrices(void)
 {
+#ifdef sokol_port
     if (custom_sky_box)
     {
         glMatrixMode(GL_PROJECTION);
@@ -269,20 +272,24 @@ static void RGL_SetupSkyMatrices(void)
         else
             glTranslatef(0.0f, 0.0f, -(r_farclip.f * 2 * 0.15)); // Draw center below horizon a little
     }
+#endif
 }
 
 static void RGL_RevertSkyMatrices(void)
 {
+#ifdef sokol_port
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
 
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+#endif
 }
 
 void RGL_BeginSky(void)
 {
     need_to_draw_sky = false;
+#ifdef sokol_port
 
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDisable(GL_TEXTURE_2D);
@@ -293,6 +300,7 @@ void RGL_BeginSky(void)
     // glEnd is called in RGL_FinishSky and this code assumes that only
     // RGL_DrawSkyWall and RGL_DrawSkyPlane is doing OpenGL calls in between.
     glBegin(GL_TRIANGLES);
+#endif
 }
 
 // The following cylindrical sky-drawing routines are adapted from SLADE's 3D Renderer
@@ -326,7 +334,7 @@ static void renderSkySlice(float top, float bottom, float atop, float abottom, f
         tc_y1 = -tc_y1;
         tc_y2 = -tc_y2;
     }
-
+#ifdef sokol_port
     glBegin(GL_QUADS);
 
     // Go through circular points
@@ -365,10 +373,12 @@ static void renderSkySlice(float top, float bottom, float atop, float abottom, f
     glVertex3f((sky_circle[0].x * dist), -(sky_circle[0].y * dist), (bottom * dist));
 
     glEnd();
+#endif
 }
 
 static void RGL_DrawSkyCylinder(void)
 {
+#ifdef sokol_port
     GLuint sky = W_ImageCache(sky_image, false, ren_fx_colmap);
 
     if (currmap->forced_skystretch > SKS_Unset)
@@ -531,10 +541,12 @@ static void RGL_DrawSkyCylinder(void)
         glDisable(GL_FOG);
 
     RGL_RevertSkyMatrices();
+#endif
 }
 
 static void RGL_DrawSkyBox(void)
 {
+#ifdef sokol_port
     float dist = r_farclip.f / 2.0f;
 
     int SK = RGL_UpdateSkyBoxTextures();
@@ -703,11 +715,14 @@ static void RGL_DrawSkyBox(void)
     if (!r_culling.d && current_fog_rgb != RGB_NO_VALUE)
         glDisable(GL_FOG);
 
+#endif
     RGL_RevertSkyMatrices();
 }
 
 void RGL_FinishSky(void)
 {
+
+#ifdef sokol_port
     glEnd(); // End glBegin(GL_TRIANGLES) from RGL_BeginSky
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -742,10 +757,12 @@ void RGL_FinishSky(void)
     glDepthMask(GL_TRUE);
 
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 void RGL_DrawSkyPlane(subsector_t *sub, float h)
 {
+#ifdef sokol_port
     need_to_draw_sky = true;
 
     if (r_dumbsky.d)
@@ -787,10 +804,12 @@ void RGL_DrawSkyPlane(subsector_t *sub, float h)
         y1  = y2;
         seg = seg->sub_next;
     }
+#endif
 }
 
 void RGL_DrawSkyWall(seg_t *seg, float h1, float h2)
 {
+#ifdef sokol_port
     need_to_draw_sky = true;
 
     if (r_dumbsky.d)
@@ -816,6 +835,7 @@ void RGL_DrawSkyWall(seg_t *seg, float h1, float h2)
     glVertex3f(x2, y2, h1);
     glVertex3f(x2, y2, h2);
     glVertex3f(x1, y1, h1);
+#endif
 }
 
 //----------------------------------------------------------------------------

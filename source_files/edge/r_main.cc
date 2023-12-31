@@ -50,6 +50,7 @@ DEF_CVAR(r_cullfog, "0", CVAR_ARCHIVE)
 //
 void RGL_SetupMatrices2D(void)
 {
+#ifdef sokol_port    
     glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
 
     glMatrixMode(GL_PROJECTION);
@@ -64,6 +65,7 @@ void RGL_SetupMatrices2D(void)
     glDisable(GL_COLOR_MATERIAL);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#endif
 }
 
 //
@@ -73,6 +75,7 @@ void RGL_SetupMatrices2D(void)
 //
 void RGL_SetupMatricesWorld2D(void)
 {
+#ifdef sokol_port    
     glViewport(viewwindow_x, viewwindow_y, viewwindow_w, viewwindow_h);
 
     glMatrixMode(GL_PROJECTION);
@@ -87,6 +90,7 @@ void RGL_SetupMatricesWorld2D(void)
     glDisable(GL_COLOR_MATERIAL);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#endif
 }
 
 //
@@ -96,6 +100,7 @@ void RGL_SetupMatricesWorld2D(void)
 //
 void RGL_SetupMatrices3D(void)
 {
+#ifdef sokol_port    
     GLfloat ambient[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     glViewport(viewwindow_x, viewwindow_y, viewwindow_w, viewwindow_h);
@@ -137,6 +142,7 @@ void RGL_SetupMatrices3D(void)
         glDisable(GL_COLOR_MATERIAL);
 
     /* glBlendFunc(GL_SRC_ALPHA, GL_ONE);  // Additive lighting */
+#endif
 }
 
 static inline const char *SafeStr(const void *s)
@@ -151,7 +157,7 @@ static inline const char *SafeStr(const void *s)
 //
 void RGL_CheckExtensions(void)
 {
-
+#ifdef sokol_port
     // -ACB- 2004/08/11 Made local: these are not yet used elsewhere
     std::string glstr_version(SafeStr(glGetString(GL_VERSION)));
     std::string glstr_renderer(SafeStr(glGetString(GL_RENDERER)));
@@ -174,6 +180,7 @@ void RGL_CheckExtensions(void)
     if (!GLAD_GL_VERSION_1_5)
         I_Error("OpenGL supported version below minimum! (Requires OpenGL 1.5).\n");
 #endif
+#endif
 }
 
 //
@@ -183,6 +190,7 @@ void RGL_CheckExtensions(void)
 //
 void RGL_SoftInit(void)
 {
+#ifdef sokol_port    
     glDisable(GL_BLEND);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
@@ -208,6 +216,7 @@ void RGL_SoftInit(void)
 
     glHint(GL_FOG_HINT, GL_NICEST);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+#endif
 }
 
 //
@@ -221,16 +230,17 @@ void RGL_Init(void)
 
     // read implementation limits
     {
-        GLint max_lights;
-        GLint max_clip_planes;
-        GLint max_tex_size;
-        GLint max_tex_units;
+        GLint max_lights = 0;
+        GLint max_clip_planes = 0;
+        GLint max_tex_size = 0;
+        GLint max_tex_units = 0;
 
+#ifdef sokol_port
         glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
         glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
         glGetIntegerv(GL_MAX_TEXTURE_UNITS, &max_tex_units);
-
+#endif
         glmax_lights      = max_lights;
         glmax_clip_planes = max_clip_planes;
         glmax_tex_size    = max_tex_size;

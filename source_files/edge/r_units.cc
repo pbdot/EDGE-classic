@@ -262,6 +262,7 @@ struct Compare_Unit_pred
 
 static void EnableCustomEnv(GLuint env, bool enable)
 {
+#ifdef sokol_port    
     gl_state_c *state = RGL_GetState();
     switch (env)
     {
@@ -283,10 +284,12 @@ static void EnableCustomEnv(GLuint env, bool enable)
     default:
         I_Error("INTERNAL ERROR: no such custom env: %08x\n", env);
     }
+#endif
 }
 
 static inline void RGL_SendRawVector(const local_gl_vert_t *V)
 {
+#ifdef sokol_port    
     if (r_colormaterial.d || !r_colorlighting.d)
         glColor4fv(V->rgba);
     else
@@ -299,6 +302,7 @@ static inline void RGL_SendRawVector(const local_gl_vert_t *V)
 
     // vertex must be last
     glVertex3fv(reinterpret_cast<const GLfloat *>(&V->pos));
+#endif
 }
 
 //
@@ -309,6 +313,9 @@ static inline void RGL_SendRawVector(const local_gl_vert_t *V)
 //
 void RGL_DrawUnits(void)
 {
+    return;
+
+#ifdef sokol_port    
     EDGE_ZoneScoped;
 
     if (cur_unit == 0)
@@ -573,6 +580,7 @@ void RGL_DrawUnits(void)
     }
 
     state->resetDefaultState();
+#endif
 }
 
 //--- editor settings ---

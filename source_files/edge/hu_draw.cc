@@ -233,6 +233,7 @@ static int sci_stack_top = 0;
 
 void HUD_PushScissor(float x1, float y1, float x2, float y2, bool expand)
 {
+#ifdef sokol_port
     SYS_ASSERT(sci_stack_top < MAX_SCISSOR_STACK);
 
     // expand rendered view to cover whole screen
@@ -293,10 +294,12 @@ void HUD_PushScissor(float x1, float y1, float x2, float y2, bool expand)
     xy[3] = sy2;
 
     sci_stack_top++;
+#endif
 }
 
 void HUD_PopScissor()
 {
+#ifdef sokol_port    
     SYS_ASSERT(sci_stack_top > 0);
 
     sci_stack_top--;
@@ -312,6 +315,7 @@ void HUD_PopScissor()
 
         glScissor(xy[0], xy[1], xy[2] - xy[0], xy[3] - xy[1]);
     }
+#endif
 }
 
 // Adapted from Quake 3 GPL release
@@ -397,6 +401,7 @@ void HUD_CalcTurbulentTexCoords(float *tx, float *ty, float x, float y)
 void HUD_RawImage(float hx1, float hy1, float hx2, float hy2, const image_c *image, float tx1, float ty1, float tx2,
                   float ty2, float alpha, rgbcol_t text_col, const colourmap_c *palremap, float sx, float sy, char ch)
 {
+#ifdef sokol_port    
     int x1 = I_ROUND(hx1);
     int y1 = I_ROUND(hy1);
     int x2 = I_ROUND(hx2 + 0.25f);
@@ -587,11 +592,13 @@ void HUD_RawImage(float hx1, float hy1, float hx2, float hy2, const image_c *ima
     glDisable(GL_BLEND);
 
     glAlphaFunc(GL_GREATER, 0);
+#endif
 }
 
 void HUD_RawFromTexID(float hx1, float hy1, float hx2, float hy2, unsigned int tex_id, image_opacity_e opacity,
                       float tx1, float ty1, float tx2, float ty2, float alpha)
 {
+    #ifdef sokol_port
     int x1 = I_ROUND(hx1);
     int y1 = I_ROUND(hy1);
     int x2 = I_ROUND(hx2 + 0.25f);
@@ -644,6 +651,7 @@ void HUD_RawFromTexID(float hx1, float hy1, float hx2, float hy2, unsigned int t
     glDisable(GL_BLEND);
 
     glAlphaFunc(GL_GREATER, 0);
+    #endif
 }
 
 void HUD_StretchFromImageData(float x, float y, float w, float h, const epi::image_data_c *img, unsigned int tex_id,
@@ -811,6 +819,7 @@ void HUD_TileImage(float x, float y, float w, float h, const image_c *img, float
 
 void HUD_SolidBox(float x1, float y1, float x2, float y2, rgbcol_t col)
 {
+#ifdef sokol_port    
     // expand to cover wide screens
     if (x1 < hud_x_left && x2 > hud_x_right - 1 && y1 < hud_y_top + 1 && y2 > hud_y_bottom - 1)
     {
@@ -844,11 +853,13 @@ void HUD_SolidBox(float x1, float y1, float x2, float y2, rgbcol_t col)
     glEnd();
 
     glDisable(GL_BLEND);
+#endif
 }
 
 void HUD_SolidLine(float x1, float y1, float x2, float y2, rgbcol_t col, float thickness, bool smooth, float dx,
                    float dy)
 {
+#ifdef sokol_port
     x1 = COORD_X(x1);
     y1 = COORD_Y(y1);
     x2 = COORD_X(x2);
@@ -877,10 +888,12 @@ void HUD_SolidLine(float x1, float y1, float x2, float y2, rgbcol_t col, float t
     glDisable(GL_BLEND);
     glDisable(GL_LINE_SMOOTH);
     glLineWidth(1.0f);
+#endif
 }
 
 void HUD_ThinBox(float x1, float y1, float x2, float y2, rgbcol_t col, float thickness)
 {
+#ifdef sokol_port    
     std::swap(y1, y2);
 
     x1 = COORD_X(x1);
@@ -922,10 +935,12 @@ void HUD_ThinBox(float x1, float y1, float x2, float y2, rgbcol_t col, float thi
     glEnd();
 
     glDisable(GL_BLEND);
+#endif
 }
 
 void HUD_GradientBox(float x1, float y1, float x2, float y2, rgbcol_t *cols)
 {
+#ifdef sokol_port    
     std::swap(y1, y2);
 
     x1 = COORD_X(x1);
@@ -953,6 +968,7 @@ void HUD_GradientBox(float x1, float y1, float x2, float y2, rgbcol_t *cols)
     glEnd();
 
     glDisable(GL_BLEND);
+#endif
 }
 
 float HUD_FontWidth(void)
@@ -993,13 +1009,14 @@ void HUD_DrawChar(float left_x, float top_y, const image_c *img, char ch, float 
         if (cur_font->def->type == FNTYP_TrueType)
         {
             stbtt_aligned_quad *q = cur_font->ttf_glyph_map.at(static_cast<u8_t>(ch)).char_quad[current_font_size];
-            y                     = top_y + (cur_font->ttf_glyph_map.at(static_cast<u8_t>(ch)).y_shift[current_font_size] *
-                        (size > 0 ? (size / cur_font->def->default_size) : 1.0) * sc_y);
-            w = ((size > 0 ? (cur_font->CharWidth(ch) * (size / cur_font->def->default_size)) : cur_font->CharWidth(ch)) -
-                cur_font->spacing) *
+            y = top_y + (cur_font->ttf_glyph_map.at(static_cast<u8_t>(ch)).y_shift[current_font_size] *
+                         (size > 0 ? (size / cur_font->def->default_size) : 1.0) * sc_y);
+            w = ((size > 0 ? (cur_font->CharWidth(ch) * (size / cur_font->def->default_size))
+                           : cur_font->CharWidth(ch)) -
+                 cur_font->spacing) *
                 sc_x;
             h = (cur_font->ttf_glyph_map.at(static_cast<u8_t>(ch)).height[current_font_size] *
-                (size > 0 ? (size / cur_font->def->default_size) : 1.0)) *
+                 (size > 0 ? (size / cur_font->def->default_size) : 1.0)) *
                 sc_y;
             tx1 = q->s0;
             ty1 = q->t0;
@@ -1009,8 +1026,11 @@ void HUD_DrawChar(float left_x, float top_y, const image_c *img, char ch, float 
         else // Patch font atlas
         {
             w = (size > 0 ? (size * cur_font->p_cache.ratio) : cur_font->CharWidth(ch)) * sc_x;
-            h = (size > 0 ? size : (cur_font->def->default_size > 0.0 ? cur_font->def->default_size : 
-                cur_font->p_cache.atlas_rects.at(cp437_unicode_values[static_cast<u8_t>(ch)]).ih)) * sc_y;
+            h = (size > 0 ? size
+                          : (cur_font->def->default_size > 0.0
+                                 ? cur_font->def->default_size
+                                 : cur_font->p_cache.atlas_rects.at(cp437_unicode_values[static_cast<u8_t>(ch)]).ih)) *
+                sc_y;
             x -= (cur_font->p_cache.atlas_rects.at(cp437_unicode_values[static_cast<u8_t>(ch)]).off_x * sc_x);
             y -= (cur_font->p_cache.atlas_rects.at(cp437_unicode_values[static_cast<u8_t>(ch)]).off_y * sc_y);
             tx1 = cur_font->p_cache.atlas_rects.at(static_cast<u8_t>(ch)).tx;
@@ -1047,6 +1067,7 @@ void HUD_DrawChar(float left_x, float top_y, const image_c *img, char ch, float 
 void HUD_DrawEndoomChar(float left_x, float top_y, float FNX, const image_c *img, char ch, rgbcol_t color1,
                         rgbcol_t color2, bool blink)
 {
+#ifdef sokol_port    
     float w, h;
     float tx1, tx2, ty1, ty2;
 
@@ -1137,6 +1158,7 @@ void HUD_DrawEndoomChar(float left_x, float top_y, float FNX, const image_c *img
     glAlphaFunc(GL_GREATER, 0);
 
     cur_alpha = old_alpha;
+#endif
 }
 
 //

@@ -431,11 +431,13 @@ mdl_model_c *MDL_LoadModel(epi::file_c *f)
     delete[] texcoords;
     delete[] tris;
     delete[] frames;
+#ifdef sokol_port    
     glGenBuffers(1, &md->vbo);
     if (md->vbo == 0)
         I_Error("MDL_LoadModel: Failed to bind VBO!\n");
     glBindBuffer(GL_ARRAY_BUFFER, md->vbo);
     glBufferData(GL_ARRAY_BUFFER, md->num_tris * 3 * sizeof(local_gl_vert_t), NULL, GL_STREAM_DRAW);
+#endif
     return md;
 }
 
@@ -688,6 +690,9 @@ void MDL_RenderModel(mdl_model_c *md, const image_c *skin_img, bool is_weapon, i
                      float x, float y, float z, mobj_t *mo, region_properties_t *props, float scale, float aspect,
                      float bias, int rotation)
 {
+    return;
+
+#ifdef sokol_port    
     // check if frames are valid
     if (frame1 < 0 || frame1 >= md->num_frames)
     {
@@ -1043,11 +1048,15 @@ void MDL_RenderModel(mdl_model_c *md, const image_c *skin_img, bool is_weapon, i
     
     gl_state_c *state = RGL_GetState();
     state->setDefaultStateFull();
+#endif
 }
 
 void MDL_RenderModel_2D(mdl_model_c *md, const image_c *skin_img, int frame, float x, float y, float xscale,
                         float yscale, const mobjtype_c *info)
 {
+    return;
+
+#ifdef sokol_port    
     // check if frame is valid
     if (frame < 0 || frame >= md->num_frames)
         return;
@@ -1110,6 +1119,7 @@ void MDL_RenderModel_2D(mdl_model_c *md, const image_c *skin_img, int frame, flo
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_CULL_FACE);
+#endif
 }
 
 //--- editor settings ---

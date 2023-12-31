@@ -1885,7 +1885,9 @@ static cached_image_t *ImageCacheOGL(image_c *rim, const colourmap_c *trans, boo
         {
             if (rc->tex_id != 0)
             {
+#ifdef sokol_port                
                 glDeleteTextures(1, &rc->tex_id);
+#endif
                 rc->tex_id = 0;
             }
         }
@@ -2029,7 +2031,9 @@ void W_DeleteAllImages(void)
 
         if (rc->tex_id != 0)
         {
+#ifdef sokol_port            
             glDeleteTextures(1, &rc->tex_id);
+#endif
             rc->tex_id = 0;
         }
     }

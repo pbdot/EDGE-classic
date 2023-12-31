@@ -260,11 +260,13 @@ vxl_model_c *VXL_LoadModel(epi::file_c *f, const char *name)
 
     glvmesh.clear();
     voxel_verts.clear();
+#ifdef sokol_port    
     glGenBuffers(1, &md->vbo);
     if (md->vbo == 0)
         I_Error("VXL_LoadModel: Failed to bind VBO!\n");
     glBindBuffer(GL_ARRAY_BUFFER, md->vbo);
     glBufferData(GL_ARRAY_BUFFER, md->num_points * sizeof(local_gl_vert_t), NULL, GL_STREAM_DRAW);
+#endif
     return md;
 }
 
@@ -475,6 +477,10 @@ static inline void ModelCoordFunc(model_coord_data_t *data, int v_idx, vec3_t *p
 void VXL_RenderModel(vxl_model_c *md, bool is_weapon, float x, float y, float z, mobj_t *mo, region_properties_t *props,
                      float scale, float aspect, float bias, int rotation)
 {
+    return;
+
+#ifdef sokol_port
+
     if (!md->frame)
     {
         I_Debugf("Render model: bad frame for voxel %s\n", md->name);
@@ -816,10 +822,14 @@ void VXL_RenderModel(vxl_model_c *md, bool is_weapon, float x, float y, float z,
     glDisable(GL_ALPHA_TEST);
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
+#endif
 }
 
 void VXL_RenderModel_2D(vxl_model_c *md, float x, float y, float xscale, float yscale, const mobjtype_c *info)
 {
+    return;
+
+#ifdef sokol_port
     // check if frame is valid
     if (!md->frame)
         return;
@@ -883,6 +893,7 @@ void VXL_RenderModel_2D(vxl_model_c *md, float x, float y, float xscale, float y
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_CULL_FACE);
+#endif
 }
 
 //--- editor settings ---

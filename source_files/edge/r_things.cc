@@ -148,6 +148,7 @@ static int GetMulticolMaxRGB(multi_color_c *cols, int num, bool additive)
 static void RGL_DrawPSprite(pspdef_t *psp, int which, player_t *player, region_properties_t *props,
                             const state_t *state)
 {
+#ifdef sokol_port    
     if (state->flags & SFF_Model)
         return;
 
@@ -422,6 +423,7 @@ static void RGL_DrawPSprite(pspdef_t *psp, int which, player_t *player, region_p
     RGL_FinishUnits();
 
     glDisable(GL_SCISSOR_TEST);
+#endif
 }
 
 static const rgbcol_t crosshair_colors[8] = {
@@ -430,6 +432,7 @@ static const rgbcol_t crosshair_colors[8] = {
 
 static void DrawStdCrossHair(void)
 {
+#ifdef sokol_port    
     if (r_crosshair.d <= 0 || r_crosshair.d > 9)
         return;
 
@@ -497,6 +500,7 @@ static void DrawStdCrossHair(void)
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+#endif    
 }
 
 void RGL_DrawWeaponSprites(player_t *p)
@@ -1276,6 +1280,7 @@ static void DLIT_Thing(mobj_t *mo, void *dataptr)
 
 void RGL_DrawThing(drawfloor_t *dfloor, drawthing_t *dthing)
 {
+#ifdef sokol_port    
     EDGE_ZoneScoped;
 
     ecframe_stats.draw_things++;
@@ -1521,6 +1526,7 @@ void RGL_DrawThing(drawfloor_t *dfloor, drawthing_t *dthing)
 
         RGL_EndUnit(4);
     }
+#endif    
 }
 
 void RGL_DrawSortThings(drawfloor_t *dfloor)

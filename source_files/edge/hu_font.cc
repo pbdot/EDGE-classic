@@ -208,6 +208,7 @@ void font_c::LoadPatches()
             std::filesystem::remove(atlas_png);
         epi::PNG_Save(atlas_png, atlas->data);*/
 		p_cache.atlas_rects = atlas->rects;
+#ifdef sokol_port        
 		glGenTextures(1, &p_cache.atlas_texid);
 		glBindTexture(GL_TEXTURE_2D, p_cache.atlas_texid);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlas->data->width, atlas->data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlas->data->pixels);
@@ -218,7 +219,9 @@ void font_c::LoadPatches()
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlas->data->width, atlas->data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlas->data->pixels);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif        
         atlas->data->Whiten();
+#ifdef sokol_port
         glGenTextures(1, &p_cache.atlas_whitened_texid);
 		glBindTexture(GL_TEXTURE_2D, p_cache.atlas_whitened_texid);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlas->data->width, atlas->data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlas->data->pixels);
@@ -229,6 +232,7 @@ void font_c::LoadPatches()
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, atlas->data->width, atlas->data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, atlas->data->pixels);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif
 		delete atlas;
 	}
 	else
@@ -407,6 +411,7 @@ void font_c::LoadFontTTF()
             stbtt_PackSetOversampling(spc, 2, 2);
             stbtt_PackFontRanges(spc, ttf_buffer, 0, ttf_atlas[i], 1);
             stbtt_PackEnd(spc);
+#ifdef sokol_port            
             glGenTextures(1, &ttf_tex_id[i]);
             glBindTexture(GL_TEXTURE_2D, ttf_tex_id[i]);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, res_font_bitmap_sizes[i], res_font_bitmap_sizes[i], 0, GL_ALPHA,
@@ -419,6 +424,7 @@ void font_c::LoadFontTTF()
                          GL_UNSIGNED_BYTE, temp_bitmap);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif
             delete[] temp_bitmap;
             float x          = 0.0f;
             float y          = 0.0f;

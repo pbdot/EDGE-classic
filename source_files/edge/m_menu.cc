@@ -542,7 +542,11 @@ void M_ReadSaveStrings(void)
             delete ex_slots[i].save_imdata;
             ex_slots[i].save_imdata = nullptr;
             if (ex_slots[i].save_texid)
+            {
+#ifdef sokol_port                
                 glDeleteTextures(1, &ex_slots[i].save_texid);
+#endif
+            }
             ex_slots[i].save_texid  = 0;
             ex_slots[i].save_impage = save_page;
             epi::FS_Delete(fn);
@@ -555,7 +559,11 @@ void M_ReadSaveStrings(void)
         {
             delete ex_slots[i].save_imdata;
             if (ex_slots[i].save_texid)
+            {
+#ifdef sokol_port                
                 glDeleteTextures(1, &ex_slots[i].save_texid);
+#endif
+            }
             epi::file_c *svimg_file = epi::FS_Open(fn, epi::file_c::ACCESS_READ | epi::file_c::ACCESS_BINARY);
             if (svimg_file)
             {

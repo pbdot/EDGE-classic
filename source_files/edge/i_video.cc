@@ -310,7 +310,9 @@ static bool I_CreateWindow(scrmode_c *mode)
         SDL_GL_SetSwapInterval(v_sync.d);
 
 #ifndef EDGE_GL_ES2
+#ifdef sokol_port
     gladLoaderLoadGL();
+#endif
 #endif
 
     return true;
@@ -372,19 +374,21 @@ bool I_SetScreenSize(scrmode_c *mode)
     signal(SIGSEGV, SIG_DFL);
 #endif
 
+#ifdef sokol_port
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     SDL_GL_SwapWindow(my_vis);
-
+#endif
     return true;
 }
 
 void I_StartFrame(void)
 {
     ecframe_stats.Clear();
+#ifdef sokol_port
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
     if (r_culling.d)
         r_farclip.f = r_culldist.f;
     else
@@ -441,7 +445,9 @@ void I_ShutdownGraphics(void)
     }
 
 #ifndef EDGE_GL_ES2
+#ifdef sokol_port
     gladLoaderUnloadGL();
+#endif
 #else
     close_gl4es();
 #endif

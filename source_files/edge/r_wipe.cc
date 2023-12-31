@@ -64,6 +64,7 @@ static inline byte SpookyAlpha(int x, int y)
 
 static void CaptureScreenAsTexture(bool speckly, bool spooky)
 {
+#ifdef sokol_port    
     int total_w = W_MakeValidSize(SCREENWIDTH);
     int total_h = W_MakeValidSize(SCREENHEIGHT);
 
@@ -101,6 +102,7 @@ static void CaptureScreenAsTexture(bool speckly, bool spooky)
     }
 
     cur_wipe_tex = R_UploadTexture(&img);
+#endif    
 }
 
 void RGL_BlackoutWipeTex(void)
@@ -181,6 +183,7 @@ void RGL_InitWipe(wipetype_e effect)
 
 void RGL_StopWipe(void)
 {
+#ifdef sokol_port    
     cur_wipe_effect = WIPE_None;
 
     if (cur_wipe_tex != 0)
@@ -188,12 +191,14 @@ void RGL_StopWipe(void)
         glDeleteTextures(1, &cur_wipe_tex);
         cur_wipe_tex = 0;
     }
+#endif
 }
 
 //----------------------------------------------------------------------------
 
 static void RGL_Wipe_Fading(float how_far)
 {
+#ifdef sokol_port    
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
 
@@ -215,10 +220,12 @@ static void RGL_Wipe_Fading(float how_far)
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 static void RGL_Wipe_Pixelfade(float how_far)
 {
+#ifdef sokol_port    
     glEnable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
     glEnable(GL_ALPHA_TEST);
@@ -246,10 +253,12 @@ static void RGL_Wipe_Pixelfade(float how_far)
     glDisable(GL_TEXTURE_2D);
 
     glAlphaFunc(GL_GREATER, 0);
+#endif
 }
 
 static void RGL_Wipe_Melt(void)
 {
+#ifdef sokol_port    
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
 
@@ -278,10 +287,12 @@ static void RGL_Wipe_Melt(void)
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 static void RGL_Wipe_Slide(float how_far, float dx, float dy)
 {
+#ifdef sokol_port    
     dx *= how_far;
     dy *= how_far;
 
@@ -306,10 +317,12 @@ static void RGL_Wipe_Slide(float how_far, float dx, float dy)
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 static void RGL_Wipe_Doors(float how_far)
 {
+#ifdef sokol_port    
     float dx = cos(how_far * M_PI / 2) * (SCREENWIDTH / 2);
     float dy = sin(how_far * M_PI / 2) * (SCREENHEIGHT / 3);
 
@@ -357,6 +370,7 @@ static void RGL_Wipe_Doors(float how_far)
 
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
+#endif
 }
 
 bool RGL_DoWipe(void)

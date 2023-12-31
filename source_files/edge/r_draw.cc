@@ -35,14 +35,17 @@ void RGL_NewScreenSize(int width, int height, int bits)
     //!!! quick hack
     RGL_SetupMatrices2D();
 
+#ifdef sokol_port
     // prevent a visible border with certain cards/drivers
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+#endif
 }
 
 void RGL_DrawImage(float x, float y, float w, float h, const image_c *image, float tx1, float ty1, float tx2, float ty2,
                    const colourmap_c *textmap, float alpha, const colourmap_c *palremap)
 {
+#ifdef sokol_port    
     int x1 = I_ROUND(x);
     int y1 = I_ROUND(y);
     int x2 = I_ROUND(x + w + 0.25f);
@@ -104,10 +107,13 @@ void RGL_DrawImage(float x, float y, float w, float h, const image_c *image, flo
     glDisable(GL_BLEND);
 
     glAlphaFunc(GL_GREATER, 0);
+
+#endif
 }
 
 void RGL_ReadScreen(int x, int y, int w, int h, byte *rgb_buffer)
 {
+#ifdef sokol_port    
     glFlush();
 
     glPixelZoom(1.0f, 1.0f);
@@ -119,6 +125,7 @@ void RGL_ReadScreen(int x, int y, int w, int h, byte *rgb_buffer)
 
         rgb_buffer += w * 3;
     }
+#endif
 }
 
 //--- editor settings ---

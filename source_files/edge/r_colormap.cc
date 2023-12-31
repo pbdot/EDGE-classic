@@ -730,6 +730,7 @@ class colormap_shader_c : public abstract_shader_c
     virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, shader_coord_func_t func)
     {
+#ifdef sokol_port        
         rgbcol_t fc_to_use = fog_color;
         float    fd_to_use = fog_density;
         // check for DDFLEVL fog
@@ -767,6 +768,7 @@ class colormap_shader_c : public abstract_shader_c
         RGL_EndUnit(num_vert);
 
         (*pass_var) += 1;
+#endif
     }
 
   private:
@@ -883,6 +885,7 @@ class colormap_shader_c : public abstract_shader_c
   public:
     void Update()
     {
+#ifdef sokol_port        
         if (fade_tex == 0 || (r_forceflatlighting.d && lt_model != LMODEL_Flat) ||
             (!r_forceflatlighting.d && lt_model != currmap->episode->lighting))
         {
@@ -898,15 +901,18 @@ class colormap_shader_c : public abstract_shader_c
 
             MakeColormapTexture(0);
         }
+#endif        
     }
 
     void DeleteTex()
     {
+#ifdef sokol_port        
         if (fade_tex != 0)
         {
             glDeleteTextures(1, &fade_tex);
             fade_tex = 0;
         }
+#endif
     }
 
     void SetLight(int _level)
