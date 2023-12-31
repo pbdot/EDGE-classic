@@ -2,6 +2,8 @@
 add_subdirectory(crsid)
 if (NOT EDGE_GL_ES2)
   add_subdirectory(glad)
+  add_subdirectory(imgui)
+  add_subdirectory(sokol)
 else()
   add_subdirectory(gl4es)
 endif()

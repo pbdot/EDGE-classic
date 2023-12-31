@@ -30,6 +30,12 @@
 #include "str_util.h"
 #include "edge_profiling.h"
 
+#include "sokol_gfx.h"
+#include "sokol_log.h"
+#define SOKOL_IMGUI_NO_SOKOL_APP
+#include "sokol_imgui.h"
+#include "sokol_gfx_imgui.h"
+
 SDL_Window *my_vis;
 
 int graphics_shutdown = 0;
@@ -60,6 +66,8 @@ static bool grab_state;
 extern cvar_c r_farclip;
 extern cvar_c r_culling;
 extern cvar_c r_culldist;
+
+SDL_GLContext gl_context = NULL;
 
 void I_GrabCursor(bool enable)
 {
@@ -148,13 +156,11 @@ void I_StartupGraphics(void)
     if (argv::Find("nograb") > 0)
         in_grab = 0;
 
-    // -AJA- FIXME these are wrong (probably ignored though)
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
 #ifdef EDGE_GL_ES2
     SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -244,6 +250,8 @@ void I_StartupGraphics(void)
     I_Printf("I_StartupGraphics: initialisation OK\n");
 }
 
+static sg_imgui_t sg_imgui;
+
 static bool I_CreateWindow(scrmode_c *mode)
 {
     std::string temp_title = windowtitle.s;
@@ -294,7 +302,10 @@ static bool I_CreateWindow(scrmode_c *mode)
         tf_displaymode  = scrmode_c::SCR_BORDERLESS;
     }
 
-    if (SDL_GL_CreateContext(my_vis) == NULL)
+    gl_context = SDL_GL_CreateContext(my_vis);
+    SDL_GL_MakeCurrent(my_vis, gl_context);
+
+    if (gl_context == NULL)
         I_Error("Failed to create OpenGL context.\n");
 
     if (v_sync.d == 2)
@@ -308,6 +319,31 @@ static bool I_CreateWindow(scrmode_c *mode)
     }
     else
         SDL_GL_SetSwapInterval(v_sync.d);
+
+    /*
+        AllocConsole();
+        freopen("CONIN$", "r", stdin);
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    */    
+
+    sg_desc desc{0};
+    desc.logger.func = slog_func;
+    sg_setup(&desc);
+
+    if (!sg_isvalid())
+    {
+        I_Error("Sokol invalid");
+    }
+
+    simgui_desc_t imgui_desc = {0};
+    imgui_desc.logger.func   = slog_func;
+
+    simgui_setup(&imgui_desc);
+
+    sg_imgui_desc_t sg_imgui_desc = {0};
+
+    sg_imgui_init(&sg_imgui, &sg_imgui_desc);
 
 #ifndef EDGE_GL_ES2
 #ifdef sokol_port
@@ -393,19 +429,54 @@ void I_StartFrame(void)
         r_farclip.f = r_culldist.f;
     else
         r_farclip.f = 64000.0;
+
+    int            w, h;
+    sg_pass_action pass_action        = {0};
+    pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
+
+    SDL_GL_GetDrawableSize(my_vis, &w, &h);
+
+    simgui_frame_desc_t frame_desc = {0};
+    frame_desc.width               = w;
+    frame_desc.height              = h;
+    frame_desc.delta_time          = 100;
+    frame_desc.dpi_scale           = 1;
+
+    sg_begin_default_pass(&pass_action, w, h);
+
+    simgui_new_frame(&frame_desc);
+
+    sg_imgui.caps.open        = true;
+    sg_imgui.frame_stats.open = true;
+    sg_imgui.buffers.open     = true;
+    sg_imgui.images.open      = true;
+    sg_imgui.samplers.open    = true;
+    sg_imgui.shaders.open     = true;
+    sg_imgui.pipelines.open   = true;
+    sg_imgui.passes.open      = true;
+    sg_imgui.capture.open     = true;
+    sg_imgui.frame_stats.open = true;
+    sg_imgui_draw(&sg_imgui);
+    simgui_render();
+
+    sg_end_pass();
 }
 
 void I_FinishFrame(void)
 {
+
+    sg_commit();
+
     SDL_GL_SwapWindow(my_vis);
-    
-    EDGE_TracyPlot("draw_runits", (int64_t) ecframe_stats.draw_runits);
-    EDGE_TracyPlot("draw_wallparts", (int64_t) ecframe_stats.draw_wallparts);
-    EDGE_TracyPlot("draw_planes", (int64_t) ecframe_stats.draw_planes);
-    EDGE_TracyPlot("draw_things", (int64_t) ecframe_stats.draw_things);
-    EDGE_TracyPlot("draw_lightiterator", (int64_t) ecframe_stats.draw_lightiterator);
-    EDGE_TracyPlot("draw_sectorglowiterator", (int64_t) ecframe_stats.draw_sectorglowiterator);
-    
+
+    EDGE_TracyPlot("draw_runits", (int64_t)ecframe_stats.draw_runits);
+    EDGE_TracyPlot("draw_wallparts", (int64_t)ecframe_stats.draw_wallparts);
+    EDGE_TracyPlot("draw_planes", (int64_t)ecframe_stats.draw_planes);
+    EDGE_TracyPlot("draw_things", (int64_t)ecframe_stats.draw_things);
+    EDGE_TracyPlot("draw_lightiterator", (int64_t)ecframe_stats.draw_lightiterator);
+    EDGE_TracyPlot("draw_sectorglowiterator", (int64_t)ecframe_stats.draw_sectorglowiterator);
+
     EDGE_FrameMark;
 
     if (in_grab.CheckModified())
@@ -436,6 +507,12 @@ void I_ShutdownGraphics(void)
         return;
 
     graphics_shutdown = 1;
+
+    sg_imgui_discard(&sg_imgui);
+    simgui_shutdown();
+    sg_shutdown();
+    SDL_GL_DeleteContext(gl_context);
+    SDL_DestroyWindow(my_vis);
 
     if (SDL_WasInit(SDL_INIT_EVERYTHING))
     {
