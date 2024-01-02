@@ -163,7 +163,7 @@ target_include_directories(edge-classic PRIVATE ./)
 
 if (NOT EDGE_GL_ES2)
   target_include_directories(edge-classic PRIVATE ${EDGE_LIBRARY_DIR}/glad/include/glad)
-	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} glad ${OPENGL_LIBRARIES})
+	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} glad ${OPENGL_LIBRARIES} sokol)
 else()
   target_include_directories(edge-classic PRIVATE ${EDGE_LIBRARY_DIR}/gl4es/include ${EDGE_LIBRARY_DIR}/gl4es/include/GL)
 	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} gl4es)

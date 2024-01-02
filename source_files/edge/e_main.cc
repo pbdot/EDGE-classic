@@ -584,7 +584,7 @@ void E_Display(void)
         return; // for comparative timing / profiling
 
     // Start the frame - should we need to.
-    I_StartFrame();
+    I_StartFrame(true);
 
     HUD_FrameSetup();
 
@@ -700,7 +700,7 @@ void E_Display(void)
             M_ScreenShot(false);
     }
 
-    I_FinishFrame(); // page flip or blit buffer
+    I_FinishFrame(true); // page flip or blit buffer
 }
 
 //

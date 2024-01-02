@@ -199,12 +199,12 @@ void I_StartupGraphics(void);
 void I_ShutdownGraphics(void);
 
 // Called to prepare the screen for rendering (if necessary).
-void I_StartFrame(void);
+void I_StartFrame(bool sokol = false);
 
 // Called when the current frame has finished being rendered.  This
 // routine typically copies the screen buffer to the video memory.  It
 // may also handle double/triple buffering here.
-void I_FinishFrame(void);
+void I_FinishFrame(bool sokol = false);
 
 // Tries to set the video card to the given mode (or open a window).
 // If there already was a valid mode (or open window), this call
