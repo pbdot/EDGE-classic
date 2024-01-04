@@ -21,7 +21,10 @@
     in vec4 color;
     out vec4 frag_color;
     void main() {
+        
         frag_color = texture(sampler2D(tex, smp), uv.xy) * color;
+
+        if (floor(frag_color.a*255.) <= 16) discard;
     }
     @end
 
