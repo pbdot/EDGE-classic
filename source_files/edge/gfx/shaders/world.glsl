@@ -29,7 +29,9 @@
         if (floor(c0.a*255) <= 16) discard;
 
         vec4 c1 = texture(sampler2D(tex1, smp1), uv.zw);
-        frag_color = c0 * c1;
+        c0.rgb *= c1.rgb;
+        c0.rgb = clamp(c0.rgb, 0., 1.);
+        frag_color = c0;
 
         
     }

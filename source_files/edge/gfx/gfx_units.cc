@@ -228,6 +228,7 @@ void GFX_DrawWorld()
     range.size = sizeof(uint32_t) * cur_frame_index;
     sg_update_buffer(state.index_buffer, range);
 
+    /*
     for (auto pip : frame_pipelines)
     {
         bool     applied  = false;
@@ -284,6 +285,34 @@ void GFX_DrawWorld()
 
             sg_draw(cmd->index_first, cmd->index_count, 1);
         }
+        */
+
+    for (int i = 0; i < cur_command; i++)
+    {
+        draw_command_t *cmd = &draw_commands[i];
+
+        if (!cmd->index_count)
+        {
+            continue;
+        }
+
+        sg_apply_pipeline(cmd->pipeline);
+
+        // OPTIMIZE: apply per shader pipeling first?
+        range = SG_RANGE(vs_params);
+        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
+
+        sg_bindings bind       = {0};
+        bind.vertex_buffers[0] = state.vertex_buffer;
+        bind.index_buffer      = state.index_buffer;
+        bind.fs.images[0].id   = cmd->images[0];
+        bind.fs.images[1].id   = cmd->images[1];
+        bind.fs.samplers[0].id = cmd->samplers[0];
+        bind.fs.samplers[1].id = cmd->samplers[1];
+
+        sg_apply_bindings(&bind);
+
+        sg_draw(cmd->index_first, cmd->index_count, 1);
     }
 
     glUseProgram(0);
@@ -373,7 +402,7 @@ typedef enum
 */
 
 #define MAX_SHADERS 2
-#define MAX_PASSES 24
+#define MAX_PASSES  24
 
 static std::unordered_map<int, sg_pipeline> runit_pipelines[MAX_SHADERS][MAX_PASSES];
 
@@ -419,12 +448,6 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     desc.depth.compare       = SG_COMPAREFUNC_LESS_EQUAL;
     desc.depth.bias          = depth_bias;
 
-    if (pip_blend & BL_Alpha)
-    {
-        desc.colors[0].blend.enabled        = true;
-        desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
-        desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-    }
     if (pip_blend & BL_Add)
     {
         desc.colors[0].blend.enabled        = true;
@@ -432,15 +455,16 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
         desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
     }
 
+    if (pip_blend & BL_Alpha)
+    {
+        desc.colors[0].blend.enabled        = true;
+        desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+        desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    }
+
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
 
     desc.layout.buffers[0].stride = sizeof(frame_vert_t);
-
-    /*
-    sg_vertex_attr_state *normal = &desc.layout.attrs[3];
-    normal->offset               = offsetof(local_gl_vert_t, normal);
-    normal->format               = SG_VERTEXFORMAT_FLOAT3;
-    */
 
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
     desc.index_type     = SG_INDEXTYPE_UINT32;
