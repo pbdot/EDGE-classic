@@ -61,9 +61,17 @@ static struct
     sg_buffer vertex_buffer;
 } state;
 
+// a single vertex to pass to the GL
+struct frame_vert_t
+{
+    uint8_t rgba[4];
+    vec3_t  pos;
+    vec2_t  texc[2];
+};
+
 #define MAX_FRAME_VERTS 524288
-static local_gl_vert_t *frame_vertices = nullptr;
-static int              cur_frame_vert = 0;
+static frame_vert_t *frame_vertices = nullptr;
+static int           cur_frame_vert = 0;
 
 typedef struct local_gl_unit_s
 {
@@ -126,11 +134,11 @@ void RGL_InitUnits(void)
     sg_shader shd   = sg_make_shader(world_shader_desc(sg_query_backend()));
     state.shd_world = shd;
 
-    frame_vertices = (local_gl_vert_t *)malloc(sizeof(local_gl_vert_t) * MAX_FRAME_VERTS);
+    frame_vertices = (frame_vert_t *)malloc(sizeof(frame_vert_t) * MAX_FRAME_VERTS);
 
     sg_buffer_desc buffer_desc = {0};
     buffer_desc.type           = SG_BUFFERTYPE_VERTEXBUFFER;
-    buffer_desc.size           = sizeof(local_gl_vert_t) * MAX_FRAME_VERTS;
+    buffer_desc.size           = sizeof(frame_vert_t) * MAX_FRAME_VERTS;
     buffer_desc.usage          = SG_USAGE_STREAM;
     buffer_desc.label          = "r_units-vertices";
 
@@ -173,7 +181,7 @@ void GFX_DrawWorld()
     {
         return;
     }
-    
+
     my_vs_params_t vs_params;
 
     HMM_Mat4 proj = HMM_Perspective_RH_ZO(HMM_AngleDeg(75.0f), 1920.0f / 1080.0f, r_nearclip.f, r_farclip.f);
@@ -191,7 +199,7 @@ void GFX_DrawWorld()
 
     sg_range range;
     range.ptr  = frame_vertices;
-    range.size = sizeof(local_gl_vert_t) * cur_frame_vert;
+    range.size = sizeof(frame_vert_t) * cur_frame_vert;
 
     sg_update_buffer(state.vertex_buffer, range);
 
@@ -244,7 +252,7 @@ void GFX_DrawWorld()
                 sg_apply_bindings(&bind);
             }
 
-            cimage = cmd->images[0];
+            cimage   = cmd->images[0];
             csampler = cmd->samplers[0];
 
             sg_draw(cmd->vert_first, cmd->vert_count, 1);
@@ -383,7 +391,7 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
 
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
 
-    desc.layout.buffers[0].stride = sizeof(local_gl_vert_t);
+    desc.layout.buffers[0].stride = sizeof(frame_vert_t);
 
     /*
     sg_vertex_attr_state *normal = &desc.layout.attrs[3];
@@ -392,14 +400,14 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     */
 
     desc.primitive_type                      = SG_PRIMITIVETYPE_TRIANGLES;
-    desc.layout.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_FLOAT4;
-    desc.layout.attrs[ATTR_vs_color0].offset = offsetof(local_gl_vert_t, rgba);
+    desc.layout.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N;
+    desc.layout.attrs[ATTR_vs_color0].offset = offsetof(frame_vert_t, rgba);
 
     desc.layout.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3;
-    desc.layout.attrs[ATTR_vs_position].offset = offsetof(local_gl_vert_t, pos);
+    desc.layout.attrs[ATTR_vs_position].offset = offsetof(frame_vert_t, pos);
 
     desc.layout.attrs[ATTR_vs_texcoords].format = SG_VERTEXFORMAT_FLOAT4;
-    desc.layout.attrs[ATTR_vs_texcoords].offset = offsetof(local_gl_vert_t, texc);
+    desc.layout.attrs[ATTR_vs_texcoords].offset = offsetof(frame_vert_t, texc);
     /*
     desc.layout.attrs[ATTR_vs_normal].format    = SG_VERTEXFORMAT_FLOAT3;
     */
@@ -473,15 +481,35 @@ void RGL_DrawUnits(void)
             local_gl_vert_t *local = local_verts + unit->first;
             for (int j = 0; j < unit->count - 1; j++)
             {
-
-                local_gl_vert_t *dest = frame_vertices + cur_frame_vert;
+                frame_vert_t *dest = frame_vertices + cur_frame_vert;
 
                 local_gl_vert_t *src = &local[0];
-                *dest++              = *src;
-                src                  = &local[j + 1];
-                *dest++              = *src;
-                src                  = &local[(j + 2) % unit->count];
-                *dest++              = *src;
+                dest->pos            = src->pos;
+                dest->texc[0]        = src->texc[0];
+                dest->texc[1]        = src->texc[1];
+                dest->rgba[0]        = uint8_t(src->rgba[0] * 255.0f);
+                dest->rgba[1]        = uint8_t(src->rgba[1] * 255.0f);
+                dest->rgba[2]        = uint8_t(src->rgba[2] * 255.0f);
+                dest->rgba[3]        = uint8_t(src->rgba[3] * 255.0f);
+                dest++;
+                src           = &local[j + 1];
+                dest->pos     = src->pos;
+                dest->texc[0] = src->texc[0];
+                dest->texc[1] = src->texc[1];
+                dest->rgba[0] = uint8_t(src->rgba[0] * 255.0f);
+                dest->rgba[1] = uint8_t(src->rgba[1] * 255.0f);
+                dest->rgba[2] = uint8_t(src->rgba[2] * 255.0f);
+                dest->rgba[3] = uint8_t(src->rgba[3] * 255.0f);
+                dest++;
+                src           = &local[(j + 2) % unit->count];
+                dest->pos     = src->pos;
+                dest->texc[0] = src->texc[0];
+                dest->texc[1] = src->texc[1];
+                dest->rgba[0] = uint8_t(src->rgba[0] * 255.0f);
+                dest->rgba[1] = uint8_t(src->rgba[1] * 255.0f);
+                dest->rgba[2] = uint8_t(src->rgba[2] * 255.0f);
+                dest->rgba[3] = uint8_t(src->rgba[3] * 255.0f);
+                dest++;
 
                 cur_frame_vert += 3;
                 cmd->vert_count += 3;
