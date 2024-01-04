@@ -59,6 +59,7 @@ static struct
 {
     sg_shader shd_world;
     sg_buffer vertex_buffer;
+    sg_buffer index_buffer;
 } state;
 
 // a single vertex to pass to the GL
@@ -72,6 +73,10 @@ struct frame_vert_t
 #define MAX_FRAME_VERTS 524288
 static frame_vert_t *frame_vertices = nullptr;
 static int           cur_frame_vert = 0;
+
+#define MAX_FRAME_INDICES 524288
+static uint32_t *frame_indices   = nullptr;
+static int       cur_frame_index = 0;
 
 typedef struct local_gl_unit_s
 {
@@ -102,8 +107,8 @@ struct draw_command_t
     sg_pipeline pipeline;
     uint32_t    images[2];
     uint32_t    samplers[2];
-    int         vert_first;
-    int         vert_count;
+    int         index_first;
+    int         index_count;
 };
 
 #define MAX_DRAW_COMMANDS 65536
@@ -129,13 +134,15 @@ void RGL_InitUnits(void)
     // Run the soft init code
     RGL_SoftInitUnits();
 
+    frame_vertices = (frame_vert_t *)malloc(sizeof(frame_vert_t) * MAX_FRAME_VERTS);
+    frame_indices  = (uint32_t *)malloc(sizeof(uint32_t) * MAX_FRAME_INDICES);
+
     draw_commands = (draw_command_t *)malloc(sizeof(draw_command_t) * MAX_DRAW_COMMANDS);
 
     sg_shader shd   = sg_make_shader(world_shader_desc(sg_query_backend()));
     state.shd_world = shd;
 
-    frame_vertices = (frame_vert_t *)malloc(sizeof(frame_vert_t) * MAX_FRAME_VERTS);
-
+    // vertex buffer
     sg_buffer_desc buffer_desc = {0};
     buffer_desc.type           = SG_BUFFERTYPE_VERTEXBUFFER;
     buffer_desc.size           = sizeof(frame_vert_t) * MAX_FRAME_VERTS;
@@ -143,6 +150,15 @@ void RGL_InitUnits(void)
     buffer_desc.label          = "r_units-vertices";
 
     state.vertex_buffer = sg_make_buffer(&buffer_desc);
+
+    // index buffer
+    buffer_desc       = {0};
+    buffer_desc.type  = SG_BUFFERTYPE_INDEXBUFFER;
+    buffer_desc.size  = sizeof(uint32_t) * MAX_FRAME_INDICES;
+    buffer_desc.usage = SG_USAGE_STREAM;
+    buffer_desc.label = "r_units-indices";
+
+    state.index_buffer = sg_make_buffer(&buffer_desc);
 }
 
 //
@@ -156,8 +172,9 @@ void RGL_SoftInitUnits()
 
 void GFX_Frame()
 {
-    cur_frame_vert = 0;
-    cur_command    = 0;
+    cur_frame_vert  = 0;
+    cur_frame_index = 0;
+    cur_command     = 0;
     frame_pipelines.clear();
 }
 
@@ -198,10 +215,16 @@ void GFX_DrawWorld()
     vs_params.mvp = view_proj;
 
     sg_range range;
+
+    // vertex update
     range.ptr  = frame_vertices;
     range.size = sizeof(frame_vert_t) * cur_frame_vert;
-
     sg_update_buffer(state.vertex_buffer, range);
+
+    // index update
+    range.ptr  = frame_indices;
+    range.size = sizeof(uint32_t) * cur_frame_index;
+    sg_update_buffer(state.index_buffer, range);
 
     for (auto pip : frame_pipelines)
     {
@@ -218,7 +241,7 @@ void GFX_DrawWorld()
                 continue;
             }
 
-            if (!cmd->vert_count)
+            if (!cmd->index_count)
             {
                 continue;
             }
@@ -245,6 +268,7 @@ void GFX_DrawWorld()
             {
                 sg_bindings bind       = {0};
                 bind.vertex_buffers[0] = state.vertex_buffer;
+                bind.index_buffer      = state.index_buffer;
                 bind.fs.images[0].id   = cmd->images[0];
                 bind.fs.images[1].id   = cmd->images[1];
                 bind.fs.samplers[0].id = cmd->samplers[0];
@@ -263,7 +287,7 @@ void GFX_DrawWorld()
             cimage   = cmd->images[0];
             csampler = cmd->samplers[0];
 
-            sg_draw(cmd->vert_first, cmd->vert_count, 1);
+            sg_draw(cmd->index_first, cmd->index_count, 1);
         }
     }
 
@@ -421,6 +445,7 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     */
 
     desc.primitive_type                      = SG_PRIMITIVETYPE_TRIANGLES;
+    desc.index_type                          = SG_INDEXTYPE_UINT32;
     desc.layout.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N;
     desc.layout.attrs[ATTR_vs_color0].offset = offsetof(frame_vert_t, rgba);
 
@@ -456,7 +481,7 @@ void RGL_DrawUnits(void)
 
         if (unit->pass > 0)
         {
-           //continue;
+            // continue;
         }
 
         if (unit->shape != GL_POLYGON || unit->count < 3)
@@ -499,8 +524,8 @@ void RGL_DrawUnits(void)
             cmd->samplers[0] != samplers[0] || cmd->samplers[1] != samplers[1])
         {
             cmd              = &draw_commands[cur_command++];
-            cmd->vert_first  = cur_frame_vert;
-            cmd->vert_count  = 0;
+            cmd->index_first = cur_frame_index;
+            cmd->index_count = 0;
             cmd->pipeline    = pip;
             cmd->images[0]   = images[0];
             cmd->images[1]   = images[1];
@@ -509,51 +534,49 @@ void RGL_DrawUnits(void)
         }
         if (unit->shape == GL_POLYGON)
         {
+            uint32_t start_index = cur_frame_vert;
+
             local_gl_vert_t *local = local_verts + unit->first;
+            for (int j = 0; j < unit->count; j++)
+            {
+                frame_vert_t    *dest = frame_vertices + cur_frame_vert;
+                local_gl_vert_t *src  = &local[j];
+                dest->pos             = src->pos;
+                dest->texc[0]         = src->texc[0];
+                dest->texc[1]         = src->texc[1];
+                dest->rgba[0]         = uint8_t(src->rgba[0] * 255.0f);
+                dest->rgba[1]         = uint8_t(src->rgba[1] * 255.0f);
+                dest->rgba[2]         = uint8_t(src->rgba[2] * 255.0f);
+                dest->rgba[3]         = uint8_t(src->rgba[3] * 255.0f);
+
+                cur_frame_vert++;
+
+                if (cur_frame_vert >= MAX_FRAME_VERTS)
+                {
+                    I_Error("Ran out of frame verts %i", cur_frame_vert);
+                }
+            }            
+
             for (int j = 0; j < unit->count - 1; j++)
             {
-                frame_vert_t *dest = frame_vertices + cur_frame_vert;
+                uint32_t *dest = frame_indices + cur_frame_index;
 
-                local_gl_vert_t *src = &local[0];
-                dest->pos            = src->pos;
-                dest->texc[0]        = src->texc[0];
-                dest->texc[1]        = src->texc[1];
-                dest->rgba[0]        = uint8_t(src->rgba[0] * 255.0f);
-                dest->rgba[1]        = uint8_t(src->rgba[1] * 255.0f);
-                dest->rgba[2]        = uint8_t(src->rgba[2] * 255.0f);
-                dest->rgba[3]        = uint8_t(src->rgba[3] * 255.0f);
-                dest++;
-                src           = &local[j + 1];
-                dest->pos     = src->pos;
-                dest->texc[0] = src->texc[0];
-                dest->texc[1] = src->texc[1];
-                dest->rgba[0] = uint8_t(src->rgba[0] * 255.0f);
-                dest->rgba[1] = uint8_t(src->rgba[1] * 255.0f);
-                dest->rgba[2] = uint8_t(src->rgba[2] * 255.0f);
-                dest->rgba[3] = uint8_t(src->rgba[3] * 255.0f);
-                dest++;
-                src           = &local[(j + 2) % unit->count];
-                dest->pos     = src->pos;
-                dest->texc[0] = src->texc[0];
-                dest->texc[1] = src->texc[1];
-                dest->rgba[0] = uint8_t(src->rgba[0] * 255.0f);
-                dest->rgba[1] = uint8_t(src->rgba[1] * 255.0f);
-                dest->rgba[2] = uint8_t(src->rgba[2] * 255.0f);
-                dest->rgba[3] = uint8_t(src->rgba[3] * 255.0f);
-                dest++;
+                *dest++ = start_index;
+                *dest++ = start_index + j + 1;
+                *dest++ = start_index + ((j + 2) % unit->count);
 
-                cur_frame_vert += 3;
-                cmd->vert_count += 3;
-            }
+                cmd->index_count += 3;
+                cur_frame_index += 3;
 
-            if (cur_frame_vert >= MAX_FRAME_VERTS - 3)
-            {
-                I_Error("Ran out of frame verts %i", cur_frame_vert);
+                if (cur_frame_index >= MAX_FRAME_INDICES)
+                {
+                    I_Error("Ran out of frame indices %i", cur_frame_index);
+                }
             }
         }
-
-        SYS_ASSERT(cur_command < MAX_DRAW_COMMANDS);
     }
+
+    SYS_ASSERT(cur_command < MAX_DRAW_COMMANDS);
 
     cur_local_vert = cur_unit = 0;
 }
