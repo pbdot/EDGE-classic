@@ -36,6 +36,8 @@
 #include "sokol_imgui.h"
 #include "sokol_gfx_imgui.h"
 
+#include "gfx/gfx.h"
+
 SDL_Window *my_vis;
 
 int graphics_shutdown = 0;
@@ -326,7 +328,8 @@ static bool I_CreateWindow(scrmode_c *mode)
 #endif
 
     sg_desc desc{0};
-    desc.logger.func = slog_func;
+    desc.logger.func     = slog_func;
+    desc.image_pool_size = 8192;
     sg_setup(&desc);
 
     if (!sg_isvalid())
@@ -334,14 +337,17 @@ static bool I_CreateWindow(scrmode_c *mode)
         I_Error("Sokol invalid");
     }
 
-    simgui_desc_t imgui_desc = {0};
-    imgui_desc.logger.func   = slog_func;
+    simgui_desc_t imgui_desc   = {0};
+    imgui_desc.logger.func     = slog_func;
+    imgui_desc.image_pool_size = 1024;
 
     simgui_setup(&imgui_desc);
 
     sg_imgui_desc_t sg_imgui_desc = {0};
 
     sg_imgui_init(&sg_imgui, &sg_imgui_desc);
+
+    GFX_Setup();
 
     return true;
 }
@@ -410,6 +416,8 @@ bool I_SetScreenSize(scrmode_c *mode)
     return true;
 }
 
+int hack_buffer_update = 0;
+
 void I_StartFrame(bool sokol)
 {
     ecframe_stats.Clear();
@@ -429,14 +437,19 @@ void I_StartFrame(bool sokol)
         sg_pass_action pass_action        = {0};
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
         pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
-        pass_action.depth.load_action = SG_LOADACTION_CLEAR;
-        pass_action.depth.clear_value = 1.0f;
+        pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
+        pass_action.depth.clear_value     = 1.0f;
 
         SDL_GL_GetDrawableSize(my_vis, &w, &h);
         sg_begin_default_pass(&pass_action, w, h);
 
+        GFX_Frame();
+
         glGetIntegerv(GL_CURRENT_PROGRAM, &cur_prog);
         glUseProgram(0);
+
+
+        hack_buffer_update = 0;
     }
 }
 
@@ -451,7 +464,6 @@ void I_FinishFrame(bool sokol)
         {
             glUseProgram(cur_prog);
         }
-
 
         int w, h;
         SDL_GL_GetDrawableSize(my_vis, &w, &h);
@@ -483,12 +495,9 @@ void I_FinishFrame(bool sokol)
 
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_BLEND);
-    
     }
 
     SDL_GL_SwapWindow(my_vis);
-
-
 
     EDGE_TracyPlot("draw_runits", (int64_t)ecframe_stats.draw_runits);
     EDGE_TracyPlot("draw_wallparts", (int64_t)ecframe_stats.draw_wallparts);
@@ -542,7 +551,7 @@ void I_ShutdownGraphics(void)
     }
 
 #ifndef EDGE_GL_ES2
-    //gladLoaderUnloadGL();
+    // gladLoaderUnloadGL();
 #else
     close_gl4es();
 #endif

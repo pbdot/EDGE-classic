@@ -3258,6 +3258,9 @@ static void RGL_RenderTrueBSP(void)
 
     RGL_DrawSubList(drawsubs);
 
+    void GFX_DrawWorld();
+    GFX_DrawWorld();
+
     state->setDefaultStateFull();
 
     // Lobo 2022:

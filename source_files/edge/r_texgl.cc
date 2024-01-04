@@ -38,6 +38,8 @@
 #include "w_texture.h"
 #include "w_wad.h"
 
+#include "gfx/gfx.h"
+
 // clamp cache used by runits to avoid an extremely expensive gl tex param lookup
 extern std::unordered_map<GLuint, GLint> texture_clamp;
 
@@ -116,6 +118,9 @@ epi::image_data_c *R_PalettisedToRGB(epi::image_data_c *src, const byte *palette
 
 GLuint R_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
 {
+    return GFX_UploadTexture(img, flags, max_pix);    
+    
+#ifdef _disabled
     /* Send the texture data to the GL, and returns the texture ID
      * assigned to it.
      */
@@ -213,6 +218,7 @@ GLuint R_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
     }
 
     return id;
+#endif
 }
 
 //----------------------------------------------------------------------------

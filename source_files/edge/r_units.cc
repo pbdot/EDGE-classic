@@ -45,6 +45,8 @@
 #include "AlmostEquals.h"
 #include "edge_profiling.h"
 
+#ifdef _disabled
+
 // TODO review if these should be archived
 DEF_CVAR(r_colorlighting, "1", 0)
 DEF_CVAR(r_colormaterial, "1", 0)
@@ -574,6 +576,8 @@ void RGL_DrawUnits(void)
 
     state->resetDefaultState();
 }
+
+#endif
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab
