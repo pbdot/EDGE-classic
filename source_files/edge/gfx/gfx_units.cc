@@ -110,6 +110,8 @@ static int             cur_unit;
 static local_gl_vert_t local_verts[MAX_L_VERT];
 static int             cur_local_vert;
 
+static std::unordered_set<uint32_t> frame_pipelines;
+
 // RGL_InitUnits
 //
 // Initialise the unit system.  Once-only call.
@@ -148,6 +150,7 @@ void GFX_Frame()
 {
     cur_frame_vert = 0;
     cur_command    = 0;
+    frame_pipelines.clear();
 }
 
 #pragma pack(push, 1)
@@ -165,18 +168,12 @@ extern float   viewz;
 
 void GFX_DrawWorld()
 {
+
     if (!cur_command)
     {
         return;
     }
-/*
-    glActiveTexture(GL_TEXTURE0);
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-*/
+    
     my_vs_params_t vs_params;
 
     HMM_Mat4 proj = HMM_Perspective_RH_ZO(HMM_AngleDeg(75.0f), 1920.0f / 1080.0f, r_nearclip.f, r_farclip.f);
@@ -198,35 +195,65 @@ void GFX_DrawWorld()
 
     sg_update_buffer(state.vertex_buffer, range);
 
-    for (int i = 0; i < cur_command; i++)
+    for (auto pip : frame_pipelines)
     {
-        draw_command_t *cmd = &draw_commands[i];
+        bool     applied  = false;
+        uint32_t cimage   = 0;
+        uint32_t csampler = 0;
 
-        if (!cmd->vert_count)
+        for (int i = 0; i < cur_command; i++)
         {
-            continue;
+            draw_command_t *cmd = &draw_commands[i];
+
+            if (cmd->pipeline.id != pip)
+            {
+                continue;
+            }
+
+            if (!cmd->vert_count)
+            {
+                continue;
+            }
+
+            bool need_bind = false;
+
+            if (!applied)
+            {
+                applied = true;
+                sg_apply_pipeline(cmd->pipeline);
+
+                // OPTIMIZE: apply per shader pipeling first?
+                range = SG_RANGE(vs_params);
+                sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
+
+                need_bind = true;
+            }
+            else
+            {
+                need_bind = cimage != cmd->images[0] || csampler != cmd->samplers[0];
+            }
+
+            if (need_bind)
+            {
+                sg_bindings bind       = {0};
+                bind.vertex_buffers[0] = state.vertex_buffer;
+                bind.fs.images[0].id   = cmd->images[0];
+                bind.fs.images[1].id   = cmd->images[1];
+                bind.fs.samplers[0].id = cmd->samplers[0];
+                bind.fs.samplers[1].id = cmd->samplers[1];
+                sg_apply_bindings(&bind);
+            }
+
+            cimage = cmd->images[0];
+            csampler = cmd->samplers[0];
+
+            sg_draw(cmd->vert_first, cmd->vert_count, 1);
         }
-
-        sg_apply_pipeline(cmd->pipeline);
-
-        sg_bindings bind       = {0};
-        bind.vertex_buffers[0] = state.vertex_buffer;
-        bind.fs.images[0].id   = cmd->images[0];
-        bind.fs.images[1].id   = cmd->images[1];
-        bind.fs.samplers[0].id = cmd->samplers[0];
-        bind.fs.samplers[1].id = cmd->samplers[1];
-        sg_apply_bindings(&bind);
-
-        // OPTIMIZE: apply per shader pipeling first?
-        range = SG_RANGE(vs_params);
-        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
-
-        sg_draw(cmd->vert_first, cmd->vert_count, 1);
     }
 
     glUseProgram(0);
     // may need to unbind other samples
-    glBindSampler(0, 0);    
+    glBindSampler(0, 0);
 }
 
 void RGL_StartUnits(bool sort_em)
@@ -414,9 +441,12 @@ void RGL_DrawUnits(void)
             continue;
         }
 
-        sg_pipeline pip         = GFX_GetDrawUnitPipeline(unit);
-        uint32_t    images[2]   = {0};
-        uint32_t    samplers[2] = {0};
+        sg_pipeline pip = GFX_GetDrawUnitPipeline(unit);
+
+        uint32_t images[2]   = {0};
+        uint32_t samplers[2] = {0};
+
+        frame_pipelines.insert(pip.id);
 
         if (unit->tex[0])
         {
