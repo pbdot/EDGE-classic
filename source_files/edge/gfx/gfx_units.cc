@@ -433,12 +433,6 @@ void RGL_DrawUnits(void)
     {
         local_gl_unit_t *unit = &local_units[i];
 
-        // this causes black mid polygons
-        if (unit->blending & BL_ClampY)
-        {
-            continue;
-        }
-
         if (unit->pass > 0)
         {
             continue;
@@ -460,8 +454,21 @@ void RGL_DrawUnits(void)
         {
             auto search = gfx_image_lookup.find(unit->tex[0]);
             SYS_ASSERT(search != gfx_image_lookup.end());
-            images[0]   = search->second.image_id;
-            samplers[0] = search->second.sampler_id;
+            gfx_image_t &gimage = search->second;
+            images[0]           = gimage.image_id;
+            samplers[0]         = gimage.sampler_id;
+
+            if (unit->blending & BL_ClampY)
+            {
+                if (!gimage.sampler_clamp_y_id)
+                {
+                    // need a new sampler
+                    sg_sampler_desc desc      = sg_query_sampler_desc(sg_sampler{samplers[0]});
+                    desc.wrap_v               = SG_WRAP_CLAMP_TO_EDGE;
+                    gimage.sampler_clamp_y_id = sg_make_sampler(&desc).id;
+                }
+                samplers[0] = gimage.sampler_clamp_y_id;
+            }
         }
 
         if (!cmd || cmd->pipeline.id != pip.id || cmd->images[0] != images[0] || cmd->images[1] != images[1] ||

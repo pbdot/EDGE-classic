@@ -209,7 +209,7 @@ GLuint GFX_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minif_modes[(smooth ? 3 : 0) + (nomip ? 0 : mip_level)]);
 
-    gfx_image_t gimage = {image.id, sampler.id};
+    gfx_image_t gimage = {image.id, sampler.id, 0};
 
     gfx_image_lookup[info.tex[0]] = gimage;
 

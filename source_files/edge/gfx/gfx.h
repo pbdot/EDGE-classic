@@ -11,6 +11,7 @@ struct gfx_image_t
 {
     uint32_t image_id;
     uint32_t sampler_id;
+    uint32_t sampler_clamp_y_id;
 };
 
 void GFX_Setup();
