@@ -25,6 +25,7 @@
 #include "edge_profiling.h"
 #include "sokol_gfx.h"
 #include "shaders/world.h"
+#include "shaders/world_single_texture.h"
 #include "HandmadeMath.h"
 #include "gfx.h"
 
@@ -58,6 +59,7 @@ std::unordered_map<GLuint, GLint> texture_clamp;
 static struct
 {
     sg_shader shd_world;
+    sg_shader shd_world_single_texture;
     sg_buffer vertex_buffer;
     sg_buffer index_buffer;
 } state;
@@ -139,8 +141,8 @@ void RGL_InitUnits(void)
 
     draw_commands = (draw_command_t *)malloc(sizeof(draw_command_t) * MAX_DRAW_COMMANDS);
 
-    sg_shader shd   = sg_make_shader(world_shader_desc(sg_query_backend()));
-    state.shd_world = shd;
+    state.shd_world                = sg_make_shader(world_shader_desc(sg_query_backend()));
+    state.shd_world_single_texture = sg_make_shader(world_single_texture_shader_desc(sg_query_backend()));
 
     // vertex buffer
     sg_buffer_desc buffer_desc = {0};
@@ -274,13 +276,6 @@ void GFX_DrawWorld()
                 bind.fs.samplers[0].id = cmd->samplers[0];
                 bind.fs.samplers[1].id = cmd->samplers[1];
 
-                // temp workaround
-                if (!bind.fs.images[1].id)
-                {
-                    bind.fs.images[1].id   = cmd->images[0];
-                    bind.fs.samplers[1].id = cmd->samplers[0];
-                }
-
                 sg_apply_bindings(&bind);
             }
 
@@ -377,9 +372,10 @@ typedef enum
 
 */
 
+#define MAX_SHADERS 2
 #define MAX_PASSES 24
 
-static std::unordered_map<int, sg_pipeline> runit_pipelines[MAX_PASSES];
+static std::unordered_map<int, sg_pipeline> runit_pipelines[MAX_SHADERS][MAX_PASSES];
 
 static int pipeline_count = 0;
 
@@ -388,8 +384,10 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     // OPTIMIZE:
     // Do we need polygon offset, or can we disable depth compare, end up with a lot of passes
 
+    int shader_index = unit->tex[1] ? 1 : 0;
+
     SYS_ASSERT(unit->pass < MAX_PASSES);
-    std::unordered_map<int, sg_pipeline> &blend_lookup = runit_pipelines[unit->pass];
+    std::unordered_map<int, sg_pipeline> &blend_lookup = runit_pipelines[shader_index][unit->pass];
 
     // mask out blends at shader uniform level
     int pip_blend = unit->blending;
@@ -414,7 +412,7 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     }
 
     sg_pipeline_desc desc = {0};
-    desc.shader           = state.shd_world;
+    desc.shader           = shader_index ? state.shd_world : state.shd_world_single_texture;
     desc.cull_mode        = cull_mode;
 
     desc.depth.write_enabled = depth_write_enabled;
@@ -444,16 +442,19 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     normal->format               = SG_VERTEXFORMAT_FLOAT3;
     */
 
-    desc.primitive_type                      = SG_PRIMITIVETYPE_TRIANGLES;
-    desc.index_type                          = SG_INDEXTYPE_UINT32;
-    desc.layout.attrs[ATTR_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N;
-    desc.layout.attrs[ATTR_vs_color0].offset = offsetof(frame_vert_t, rgba);
+    desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
+    desc.index_type     = SG_INDEXTYPE_UINT32;
 
-    desc.layout.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3;
-    desc.layout.attrs[ATTR_vs_position].offset = offsetof(frame_vert_t, pos);
+    // Layout must match the single texture variation
+    // todo, shader manager
+    desc.layout.attrs[ATTR_world_vs_color0].format = SG_VERTEXFORMAT_UBYTE4N;
+    desc.layout.attrs[ATTR_world_vs_color0].offset = offsetof(frame_vert_t, rgba);
 
-    desc.layout.attrs[ATTR_vs_texcoords].format = SG_VERTEXFORMAT_FLOAT4;
-    desc.layout.attrs[ATTR_vs_texcoords].offset = offsetof(frame_vert_t, texc);
+    desc.layout.attrs[ATTR_world_vs_position].format = SG_VERTEXFORMAT_FLOAT3;
+    desc.layout.attrs[ATTR_world_vs_position].offset = offsetof(frame_vert_t, pos);
+
+    desc.layout.attrs[ATTR_world_vs_texcoords].format = SG_VERTEXFORMAT_FLOAT4;
+    desc.layout.attrs[ATTR_world_vs_texcoords].offset = offsetof(frame_vert_t, texc);
     /*
     desc.layout.attrs[ATTR_vs_normal].format    = SG_VERTEXFORMAT_FLOAT3;
     */
@@ -555,7 +556,7 @@ void RGL_DrawUnits(void)
                 {
                     I_Error("Ran out of frame verts %i", cur_frame_vert);
                 }
-            }            
+            }
 
             for (int j = 0; j < unit->count - 1; j++)
             {
