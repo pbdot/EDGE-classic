@@ -249,6 +249,14 @@ void GFX_DrawWorld()
                 bind.fs.images[1].id   = cmd->images[1];
                 bind.fs.samplers[0].id = cmd->samplers[0];
                 bind.fs.samplers[1].id = cmd->samplers[1];
+
+                // temp workaround
+                if (!bind.fs.images[1].id)
+                {
+                    bind.fs.images[1].id   = cmd->images[0];
+                    bind.fs.samplers[1].id = cmd->samplers[0];
+                }
+
                 sg_apply_bindings(&bind);
             }
 
@@ -345,7 +353,7 @@ typedef enum
 
 */
 
-#define MAX_PASSES 12
+#define MAX_PASSES 24
 
 static std::unordered_map<int, sg_pipeline> runit_pipelines[MAX_PASSES];
 
@@ -388,6 +396,19 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     desc.depth.write_enabled = depth_write_enabled;
     desc.depth.compare       = SG_COMPAREFUNC_LESS_EQUAL;
     desc.depth.bias          = depth_bias;
+
+    if (pip_blend & BL_Alpha)
+    {
+        desc.colors[0].blend.enabled        = true;
+        desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+        desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    }
+    if (pip_blend & BL_Add)
+    {
+        desc.colors[0].blend.enabled        = true;
+        desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+        desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
+    }
 
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
 
@@ -435,7 +456,7 @@ void RGL_DrawUnits(void)
 
         if (unit->pass > 0)
         {
-            continue;
+           //continue;
         }
 
         if (unit->shape != GL_POLYGON || unit->count < 3)
@@ -450,24 +471,27 @@ void RGL_DrawUnits(void)
 
         frame_pipelines.insert(pip.id);
 
-        if (unit->tex[0])
+        for (int j = 0; j < 2; j++)
         {
-            auto search = gfx_image_lookup.find(unit->tex[0]);
-            SYS_ASSERT(search != gfx_image_lookup.end());
-            gfx_image_t &gimage = search->second;
-            images[0]           = gimage.image_id;
-            samplers[0]         = gimage.sampler_id;
-
-            if (unit->blending & BL_ClampY)
+            if (unit->tex[j])
             {
-                if (!gimage.sampler_clamp_y_id)
+                auto search = gfx_image_lookup.find(unit->tex[j]);
+                SYS_ASSERT(search != gfx_image_lookup.end());
+                gfx_image_t &gimage = search->second;
+                images[j]           = gimage.image_id;
+                samplers[j]         = gimage.sampler_id;
+
+                if (unit->blending & BL_ClampY)
                 {
-                    // need a new sampler
-                    sg_sampler_desc desc      = sg_query_sampler_desc(sg_sampler{samplers[0]});
-                    desc.wrap_v               = SG_WRAP_CLAMP_TO_EDGE;
-                    gimage.sampler_clamp_y_id = sg_make_sampler(&desc).id;
+                    if (!gimage.sampler_clamp_y_id)
+                    {
+                        // need a new sampler
+                        sg_sampler_desc desc      = sg_query_sampler_desc(sg_sampler{samplers[j]});
+                        desc.wrap_v               = SG_WRAP_CLAMP_TO_EDGE;
+                        gimage.sampler_clamp_y_id = sg_make_sampler(&desc).id;
+                    }
+                    samplers[j] = gimage.sampler_clamp_y_id;
                 }
-                samplers[0] = gimage.sampler_clamp_y_id;
             }
         }
 
