@@ -203,7 +203,39 @@ void GFX_DrawWorld()
 
     my_vs_params_t vs_params;
 
-    HMM_Mat4 proj = HMM_Perspective_RH_ZO(HMM_AngleDeg(75.0f), 1920.0f / 1080.0f, r_nearclip.f, r_farclip.f);
+    float left   = -view_x_slope * r_nearclip.f;
+    float right  = view_x_slope * r_nearclip.f;
+    float bottom = -view_y_slope * r_nearclip.f;
+    float top    = view_y_slope * r_nearclip.f;
+    float fnear  = r_nearclip.f;
+    float ffar   = r_farclip.f;
+
+    float A = (right + left) / (right - left);
+    float B = (top + bottom) / (top - bottom);
+    float C = (-(ffar + fnear)) / (ffar - fnear);
+    float D = (-(2 * ffar * fnear)) / (ffar - fnear);
+
+    HMM_Mat4 proj;
+
+    proj.Columns[0][0] = (2 * fnear) / (right - left);
+    proj.Columns[0][1] = 0.0f;
+    proj.Columns[0][2] = 0.0f;
+    proj.Columns[0][3] = 0.0f;
+
+    proj.Columns[1][0] = 0.0f;
+    proj.Columns[1][1] = (2 * fnear) / (top - bottom);
+    proj.Columns[1][2] = 0.0f;
+    proj.Columns[1][3] = 0.0f;
+
+    proj.Columns[2][0] = A;
+    proj.Columns[2][1] = B;
+    proj.Columns[2][2] = C;
+    proj.Columns[2][3] = -1.0f;
+
+    proj.Columns[3][0] = 0.0f;
+    proj.Columns[3][1] = 0.0f;
+    proj.Columns[3][2] = D;
+    proj.Columns[3][3] = 0.0f;
 
     HMM_Mat4 view = HMM_M4D(1.0f);
     view = HMM_Mul(view, HMM_Rotate_RH(HMM_AngleDeg(270.0f - ANG_2_FLOAT(viewvertangle)), HMM_V3(1.0f, 0.0f, 0.0f)));
