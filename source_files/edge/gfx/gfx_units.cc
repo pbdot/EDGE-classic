@@ -227,13 +227,12 @@ void GFX_DrawWorld()
     range.ptr  = frame_indices;
     range.size = sizeof(uint32_t) * cur_frame_index;
     sg_update_buffer(state.index_buffer, range);
-
     /*
     for (auto pip : frame_pipelines)
     {
-        bool     applied  = false;
-        uint32_t cimage   = 0;
-        uint32_t csampler = 0;
+        bool     applied     = false;
+        uint32_t cimage[2]   = {0};
+        uint32_t csampler[2] = {0};
 
         for (int i = 0; i < cur_command; i++)
         {
@@ -264,7 +263,8 @@ void GFX_DrawWorld()
             }
             else
             {
-                need_bind = cimage != cmd->images[0] || csampler != cmd->samplers[0];
+                need_bind = cimage[0] != cmd->images[0] || csampler[0] != cmd->samplers[0] ||
+                            cimage[1] != cmd->images[1] || csampler[2] != cmd->samplers[2];
             }
 
             if (need_bind)
@@ -280,8 +280,10 @@ void GFX_DrawWorld()
                 sg_apply_bindings(&bind);
             }
 
-            cimage   = cmd->images[0];
-            csampler = cmd->samplers[0];
+            cimage[0]   = cmd->images[0];
+            csampler[0] = cmd->samplers[0];
+            cimage[1]   = cmd->images[1];
+            csampler[1] = cmd->samplers[1];
 
             sg_draw(cmd->index_first, cmd->index_count, 1);
         }
@@ -465,8 +467,8 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
         desc.colors[0].blend.enabled        = true;
         desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
         desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
-        //desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
-        //desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
+        // desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+        // desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     }
 
     if (pip_blend & BL_Alpha)
@@ -474,8 +476,8 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
         desc.colors[0].blend.enabled        = true;
         desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
         desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-        //desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
-        //desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
+        // desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+        // desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     }
 
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
