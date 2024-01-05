@@ -95,11 +95,6 @@
 #define SLOT_smp0 (0)
 #define SLOT_smp1 (1)
 #define SLOT_vs_params (0)
-#pragma pack(push,1)
-SOKOL_SHDC_ALIGN(16) typedef struct vs_params_t {
-    float mvp[16];
-} vs_params_t;
-#pragma pack(pop)
 /*
     #version 330
     

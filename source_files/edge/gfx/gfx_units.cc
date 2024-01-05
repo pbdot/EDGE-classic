@@ -448,11 +448,25 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
     desc.depth.compare       = SG_COMPAREFUNC_LESS_EQUAL;
     desc.depth.bias          = depth_bias;
 
+    /*
+        typedef struct sg_blend_state {
+            bool enabled;
+            sg_blend_factor src_factor_rgb;
+            sg_blend_factor dst_factor_rgb;
+            sg_blend_op op_rgb;
+            sg_blend_factor src_factor_alpha;
+            sg_blend_factor dst_factor_alpha;
+            sg_blend_op op_alpha;
+        } sg_blend_state;
+    */
+
     if (pip_blend & BL_Add)
     {
         desc.colors[0].blend.enabled        = true;
         desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
         desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
+        //desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+        //desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     }
 
     if (pip_blend & BL_Alpha)
@@ -460,6 +474,8 @@ static inline sg_pipeline GFX_GetDrawUnitPipeline(local_gl_unit_t *unit)
         desc.colors[0].blend.enabled        = true;
         desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
         desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+        //desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+        //desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     }
 
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
@@ -569,10 +585,10 @@ void RGL_DrawUnits(void)
                 dest->pos             = src->pos;
                 dest->texc[0]         = src->texc[0];
                 dest->texc[1]         = src->texc[1];
-                dest->rgba[0]         = uint8_t(src->rgba[0] * 255.0f);
-                dest->rgba[1]         = uint8_t(src->rgba[1] * 255.0f);
-                dest->rgba[2]         = uint8_t(src->rgba[2] * 255.0f);
-                dest->rgba[3]         = uint8_t(src->rgba[3] * 255.0f);
+                dest->rgba[0]         = uint8_t(MIN(src->rgba[0], 1.0f) * 255.0f);
+                dest->rgba[1]         = uint8_t(MIN(src->rgba[1], 1.0f) * 255.0f);
+                dest->rgba[2]         = uint8_t(MIN(src->rgba[2], 1.0f) * 255.0f);
+                dest->rgba[3]         = uint8_t(MIN(src->rgba[3], 1.0f) * 255.0f);
 
                 cur_frame_vert++;
 

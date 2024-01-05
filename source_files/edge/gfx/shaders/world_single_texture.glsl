@@ -22,8 +22,8 @@
     out vec4 frag_color;
     void main() {        
         vec4 c0 = texture(sampler2D(tex0, smp0), uv.xy);
-        if (floor(c0.a*255) <= 16) discard;
-        c0.rgb *= color.rgb;
+        if (floor(c0.a*255) <= 1) discard;
+        c0 *= color;
         c0.rgb = clamp(c0.rgb, 0., 1.);
         frag_color = c0;
     }
