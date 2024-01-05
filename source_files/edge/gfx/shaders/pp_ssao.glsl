@@ -56,6 +56,7 @@ float pow2(const in float v) {
   return v * v;
 }
 
+/*
 float rgba_to_depth(vec4 rgba) {
   float d = rgba_to_float(rgba);
   d *= log(0.05 * u_far + 1.0);
@@ -64,6 +65,13 @@ float rgba_to_depth(vec4 rgba) {
   d /= 0.05;
   return d;
 }
+*/
+
+float rgba_to_depth(vec4 rgba) {
+  float d = rgba_to_float(rgba);
+  return d * u_far;
+}
+
 
 float rgba_to_depth_log(vec4 rgba) {
   return rgba_to_float(rgba);
@@ -83,7 +91,7 @@ highp float rand( const in vec2 uv ) {
 // The sample kernel uses a spiral pattern so most samples are concentrated
 // close to the center. 
 #define NUM_RINGS 3
-#define KERNEL_RADIUS 15.0
+#define KERNEL_RADIUS 100.0
 // Misc params, tweaked to match the renderer
 #define BIAS 0.2
 #define SCALE 1.0
@@ -188,6 +196,9 @@ void main() {
   frag_color = float_to_rgba(ambientOcclusion) * max(0.0, max_dist - centerDepthNorm) * mult;  
 
   //frag_color.x = 1;
+  //frag_color.y = 0;
+  //frag_color.z = 1;
+  frag_color.w = 1;
 }
 
 @end

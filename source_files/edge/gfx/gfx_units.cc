@@ -64,14 +64,6 @@ static struct
     sg_buffer index_buffer;
 } state;
 
-// a single vertex to pass to the GL
-struct frame_vert_t
-{
-    uint8_t rgba[4];
-    vec3_t  pos;
-    vec2_t  texc[2];
-};
-
 #define MAX_FRAME_VERTS 524288
 static frame_vert_t *frame_vertices = nullptr;
 static int           cur_frame_vert = 0;
@@ -195,7 +187,7 @@ extern float   viewz;
 
 HMM_Mat4 frame_projection;
 
-void GFX_DrawUnits()
+void GFX_DrawUnits(sg_pass world_pass)
 {
     if (!cur_command)
     {
@@ -263,6 +255,18 @@ void GFX_DrawUnits()
     range.size = sizeof(uint32_t) * cur_frame_index;
     sg_update_buffer(state.index_buffer, range);
 
+    //void GFX_DrawWorldDepth(const HMM_Mat4& projection, int indices, sg_buffer vbuf, sg_buffer ibuf);
+    //GFX_DrawWorldDepth(view_proj, cur_frame_index, state.vertex_buffer, state.index_buffer);
+
+    sg_pass_action pass_action        = {0};
+    pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
+    pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
+    pass_action.depth.clear_value     = 1.0f;
+
+    sg_begin_pass(world_pass, pass_action);
+
+
     uint32_t cur_pipe_id = 0;
     uint32_t cimage[2]   = {0};
     uint32_t csampler[2] = {0};
@@ -313,6 +317,8 @@ void GFX_DrawUnits()
 
         sg_draw(cmd->index_first, cmd->index_count, 1);
     }
+
+    sg_end_pass();
 
     glUseProgram(0);
     // may need to unbind other samples

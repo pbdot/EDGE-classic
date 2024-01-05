@@ -13,8 +13,9 @@
 #include "r_texgl.h"
 #include "SDL_video.h"
 
-#include "shaders/screen.h"
+#include "shaders/depth.h"
 #include "shaders/pp_ssao.h"
+#include "shaders/screen.h"
 
 static struct
 {
@@ -25,6 +26,11 @@ static struct
     sg_pass     world_pass;
     sg_buffer   quad_buffer;
     sg_pipeline screen_pipeline;
+
+    // depth pass
+    sg_image    depth_pass_target;
+    sg_pipeline depth_pass_pipeline;
+    sg_pass     depth_pass;
 
     // ssao
     sg_image    ssao_target;
@@ -72,13 +78,26 @@ sg_image sokol_target_color(int32_t width, int32_t height, int32_t sample_count)
     return sg_make_image(&img_desc);
 }
 
+sg_image sokol_target_color_16f(int32_t width, int32_t height, int32_t sample_count)
+{
+    sg_image_desc img_desc = {0};
+    img_desc.render_target = true;
+    img_desc.width         = width;
+    img_desc.height        = height;
+    img_desc.pixel_format  = SG_PIXELFORMAT_RGBA16F;
+    img_desc.sample_count  = sample_count;
+    img_desc.label         = "Color target";
+
+    return sg_make_image(&img_desc);
+}
+
 sg_image sokol_target_ssao(int32_t width, int32_t height, int32_t sample_count)
 {
     sg_image_desc img_desc = {0};
     img_desc.render_target = true;
     img_desc.width         = width;
     img_desc.height        = height;
-    img_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+    img_desc.pixel_format  = SG_PIXELFORMAT_RGBA16F;
     img_desc.sample_count  = sample_count;
     img_desc.label         = "SSAO target";
 
@@ -105,13 +124,41 @@ void GFX_Setup()
     world_pass.depth_stencil_attachment.image = state.depth_target;
     state.world_pass                          = sg_make_pass(&world_pass);
 
+    // screen
     state.quad_buffer = sokol_buffer_quad();
 
-    sg_pipeline_desc pip_desc       = {0};
-    pip_desc.shader                 = sg_make_shader(screen_shader_desc(sg_query_backend()));
+    sg_pipeline_desc pip_desc = {0};
+    pip_desc.shader           = sg_make_shader(screen_shader_desc(sg_query_backend()));
+
     pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
     pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
-    state.screen_pipeline           = sg_make_pipeline(&pip_desc);
+
+    state.screen_pipeline = sg_make_pipeline(&pip_desc);
+
+    // depth
+    pip_desc                = {0};
+    state.depth_pass_target = sokol_target_color_16f(w, h, 1);
+
+    pip_desc.shader                 = sg_make_shader(depth_shader_desc(sg_query_backend()));
+    pip_desc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
+    pip_desc.depth.pixel_format     = SG_PIXELFORMAT_DEPTH;
+    pip_desc.depth.compare          = SG_COMPAREFUNC_LESS_EQUAL;
+    pip_desc.depth.write_enabled    = true;
+
+    pip_desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLES;
+    pip_desc.index_type     = SG_INDEXTYPE_UINT32;
+
+    pip_desc.layout.buffers[0].stride = sizeof(frame_vert_t);
+
+    pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+    pip_desc.layout.attrs[0].offset = offsetof(frame_vert_t, pos);
+
+    state.depth_pass_pipeline = sg_make_pipeline(&pip_desc);
+
+    sg_pass_desc depth_pass                   = {0};
+    depth_pass.color_attachments[0].image     = state.depth_pass_target;
+    depth_pass.depth_stencil_attachment.image = sokol_target_depth(w, h, 1);
+    state.depth_pass                          = sg_make_pass(&depth_pass);
 
     // ssao
     pip_desc = {0};
@@ -128,20 +175,55 @@ void GFX_Setup()
     state.ssao_pass                           = sg_make_pass(&ssao_pass_desc);
 }
 
-void GFX_DrawWorld()
-{
+#define SOKOL_DEPTH_C 0.05
+extern cvar_c r_nearclip;
+extern cvar_c r_farclip;
 
-    void GFX_DrawUnits();
+const float poop = 8192;
+
+void GFX_DrawWorldDepth(const HMM_Mat4 &projection, int indices, sg_buffer vbuf, sg_buffer ibuf)
+{
 
     sg_pass_action pass_action        = {0};
     pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-    pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
+    pass_action.colors[0].clear_value = {0.0f, 0.0f, 1.0f, 1.0f};
     pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
     pass_action.depth.clear_value     = 1.0f;
 
-    sg_begin_pass(state.world_pass, pass_action);
-    GFX_DrawUnits();
+    sg_begin_pass(state.depth_pass, pass_action);
+
+    depth_vs_params_t vs_params;
+    memcpy(&vs_params.mvp, &projection, sizeof(float) * 16);
+    depth_fs_params_t fs_params;
+    fs_params.u_far = poop;//r_farclip.f;
+
+    sg_apply_pipeline(state.depth_pass_pipeline);
+
+    sg_range range = SG_RANGE(vs_params);
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_depth_vs_params, &range);
+
+    range = SG_RANGE(fs_params);
+    sg_apply_uniforms(SG_SHADERSTAGE_FS, SLOT_depth_fs_params, &range);
+
+    sg_bindings bind       = {0};
+    bind.vertex_buffers[0] = vbuf;
+    bind.index_buffer      = ibuf;
+    sg_apply_bindings(bind);
+
+    sg_draw(0, indices, 1);
+
     sg_end_pass();
+
+    void GFX_DrawPostProcess();
+    GFX_DrawPostProcess();
+}
+
+void GFX_DrawWorld()
+{
+
+    void GFX_DrawUnits(sg_pass world_pass);
+
+    GFX_DrawUnits(state.world_pass);
 }
 
 extern HMM_Mat4 frame_projection;
@@ -169,9 +251,9 @@ void GFX_DrawPostProcess()
 
     params.u_mat_p     = frame_projection;
     params.u_inv_mat_p = HMM_InvPerspective_RH(frame_projection); // HMM_InvGeneralM4(frame_projection); <-- not sure if
-                                                             // messes  up glFrustum derived matrix
+                                                                  // messes  up glFrustum derived matrix
     params.u_near           = r_nearclip.f;
-    params.u_far            = r_farclip.f;
+    params.u_far            = poop;//r_farclip.f;
     params.u_target_size[0] = w;
     params.u_target_size[1] = h;
 
@@ -190,7 +272,7 @@ void GFX_DrawPostProcess()
     sg_bindings bind = {0};
 
     bind.vertex_buffers[0] = state.quad_buffer;
-    bind.fs.images[0]      = state.depth_target;
+    bind.fs.images[0]      = state.depth_pass_target;
     bind.fs.samplers[0]    = state.depth_sampler;
 
     sg_apply_bindings(&bind);
