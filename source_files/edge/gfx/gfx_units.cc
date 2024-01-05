@@ -259,67 +259,12 @@ void GFX_DrawWorld()
     range.ptr  = frame_indices;
     range.size = sizeof(uint32_t) * cur_frame_index;
     sg_update_buffer(state.index_buffer, range);
-    /*
-    for (auto pip : frame_pipelines)
-    {
-        bool     applied     = false;
-        uint32_t cimage[2]   = {0};
-        uint32_t csampler[2] = {0};
 
-        for (int i = 0; i < cur_command; i++)
-        {
-            draw_command_t *cmd = &draw_commands[i];
+    uint32_t cur_pipe_id = 0;
+    uint32_t cimage[2]   = {0};
+    uint32_t csampler[2] = {0};
 
-            if (cmd->pipeline.id != pip)
-            {
-                continue;
-            }
-
-            if (!cmd->index_count)
-            {
-                continue;
-            }
-
-            bool need_bind = false;
-
-            if (!applied)
-            {
-                applied = true;
-                sg_apply_pipeline(cmd->pipeline);
-
-                // OPTIMIZE: apply per shader pipeling first?
-                range = SG_RANGE(vs_params);
-                sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
-
-                need_bind = true;
-            }
-            else
-            {
-                need_bind = cimage[0] != cmd->images[0] || csampler[0] != cmd->samplers[0] ||
-                            cimage[1] != cmd->images[1] || csampler[2] != cmd->samplers[2];
-            }
-
-            if (need_bind)
-            {
-                sg_bindings bind       = {0};
-                bind.vertex_buffers[0] = state.vertex_buffer;
-                bind.index_buffer      = state.index_buffer;
-                bind.fs.images[0].id   = cmd->images[0];
-                bind.fs.images[1].id   = cmd->images[1];
-                bind.fs.samplers[0].id = cmd->samplers[0];
-                bind.fs.samplers[1].id = cmd->samplers[1];
-
-                sg_apply_bindings(&bind);
-            }
-
-            cimage[0]   = cmd->images[0];
-            csampler[0] = cmd->samplers[0];
-            cimage[1]   = cmd->images[1];
-            csampler[1] = cmd->samplers[1];
-
-            sg_draw(cmd->index_first, cmd->index_count, 1);
-        }
-        */
+    std::unordered_set<uint32_t> pip_uniforms;
 
     for (int i = 0; i < cur_command; i++)
     {
@@ -330,21 +275,38 @@ void GFX_DrawWorld()
             continue;
         }
 
-        sg_apply_pipeline(cmd->pipeline);
+        bool need_bind = false;
+        if (cur_pipe_id != cmd->pipeline.id)
+        {
+            need_bind = true;
+            sg_apply_pipeline(cmd->pipeline);
 
-        // OPTIMIZE: apply per shader pipeling first?
-        range = SG_RANGE(vs_params);
-        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
+            // OPTIMIZE: apply per shader pipeling first?
+            range = SG_RANGE(vs_params);
+            sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_vs_params, &range);
+        }
 
-        sg_bindings bind       = {0};
-        bind.vertex_buffers[0] = state.vertex_buffer;
-        bind.index_buffer      = state.index_buffer;
-        bind.fs.images[0].id   = cmd->images[0];
-        bind.fs.images[1].id   = cmd->images[1];
-        bind.fs.samplers[0].id = cmd->samplers[0];
-        bind.fs.samplers[1].id = cmd->samplers[1];
+        need_bind = need_bind || cimage[0] != cmd->images[0] || csampler[0] != cmd->samplers[0] ||
+                    cimage[1] != cmd->images[1] || csampler[2] != cmd->samplers[2];
 
-        sg_apply_bindings(&bind);
+        if (need_bind)
+        {
+            sg_bindings bind       = {0};
+            bind.vertex_buffers[0] = state.vertex_buffer;
+            bind.index_buffer      = state.index_buffer;
+            bind.fs.images[0].id   = cmd->images[0];
+            bind.fs.images[1].id   = cmd->images[1];
+            bind.fs.samplers[0].id = cmd->samplers[0];
+            bind.fs.samplers[1].id = cmd->samplers[1];
+
+            sg_apply_bindings(&bind);
+        }
+
+        cur_pipe_id = cmd->pipeline.id;
+        cimage[0]   = cmd->images[0];
+        csampler[0] = cmd->samplers[0];
+        cimage[1]   = cmd->images[1];
+        csampler[1] = cmd->samplers[1];
 
         sg_draw(cmd->index_first, cmd->index_count, 1);
     }
