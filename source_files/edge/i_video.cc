@@ -416,8 +416,6 @@ bool I_SetScreenSize(scrmode_c *mode)
     return true;
 }
 
-int hack_buffer_update = 0;
-
 void I_StartFrame(bool sokol)
 {
     ecframe_stats.Clear();
@@ -433,24 +431,8 @@ void I_StartFrame(bool sokol)
     }
     else
     {
-        int            w, h;
-        sg_pass_action pass_action        = {0};
-        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
-        pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
-        pass_action.depth.clear_value     = 1.0f;
-
-        SDL_GL_GetDrawableSize(my_vis, &w, &h);
-        sg_begin_default_pass(&pass_action, w, h);
-
-        GFX_Frame();
-
-        glGetIntegerv(GL_CURRENT_PROGRAM, &cur_prog);
-        glUseProgram(0);
-
-
-        hack_buffer_update = 0;
-    }
+        GFX_StartFrame();
+    }    
 }
 
 void I_FinishFrame(bool sokol)
@@ -460,13 +442,30 @@ void I_FinishFrame(bool sokol)
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
 
-        if (cur_prog != 0)
-        {
-            glUseProgram(cur_prog);
-        }
+        //if (cur_prog != 0)
+       // {
+        //    glUseProgram(cur_prog);
+       // }
 
-        int w, h;
+        int            w, h;
         SDL_GL_GetDrawableSize(my_vis, &w, &h);
+
+        //void GFX_DrawPostProcess();
+       //GFX_DrawPostProcess();
+
+        sg_pass_action pass_action        = {0};
+        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+        pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
+        pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
+        pass_action.depth.clear_value     = 1.0f;        
+
+        sg_begin_default_pass(&pass_action, w, h);
+
+        void GFX_DrawWorldToScreen();
+        GFX_DrawWorldToScreen();
+
+        //glGetIntegerv(GL_CURRENT_PROGRAM, &cur_prog);
+        //glUseProgram(0);
 
         simgui_frame_desc_t frame_desc = {0};
         frame_desc.width               = w;

@@ -11,47 +11,208 @@
 
 #include "r_gldefs.h"
 #include "r_texgl.h"
+#include "SDL_video.h"
 
-/*
+#include "shaders/screen.h"
+#include "shaders/pp_ssao.h"
+
 static struct
 {
-    float          rx, ry;
-    sg_pipeline    pip;
-    sg_bindings    bind;
-    sg_pass_action pass_action;
+    sg_image    color_target;
+    sg_sampler  color_sampler;
+    sg_image    depth_target;
+    sg_sampler  depth_sampler;
+    sg_pass     world_pass;
+    sg_buffer   quad_buffer;
+    sg_pipeline screen_pipeline;
+
+    // ssao
+    sg_image    ssao_target;
+    sg_pipeline ssao_pipeline;
+    sg_pass     ssao_pass;
+
 } state;
-*/
+
+extern SDL_Window *my_vis;
+
+static float quad_vertices_uvs[] = {-1.0f, -1.0f, 0.0f, 0, 0, 1.0f, -1.0f, 0.0f, 1, 0, 1.0f,  1.0f, 0.0f, 1, 1,
+                                    -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
+
+sg_buffer sokol_buffer_quad(void)
+{
+    sg_buffer_desc desc = {0};
+    desc.data           = SG_RANGE(quad_vertices_uvs);
+    desc.usage          = SG_USAGE_IMMUTABLE;
+    return sg_make_buffer(&desc);
+}
+
+sg_image sokol_target_depth(int32_t width, int32_t height, int32_t sample_count)
+{
+    sg_image_desc img_desc = {0};
+    img_desc.render_target = true;
+    img_desc.width         = width;
+    img_desc.height        = height;
+    img_desc.pixel_format  = SG_PIXELFORMAT_DEPTH;
+    img_desc.sample_count  = sample_count;
+    img_desc.label         = "Depth target";
+
+    return sg_make_image(&img_desc);
+}
+
+sg_image sokol_target_color(int32_t width, int32_t height, int32_t sample_count)
+{
+    sg_image_desc img_desc = {0};
+    img_desc.render_target = true;
+    img_desc.width         = width;
+    img_desc.height        = height;
+    img_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+    img_desc.sample_count  = sample_count;
+    img_desc.label         = "Color target";
+
+    return sg_make_image(&img_desc);
+}
+
+sg_image sokol_target_ssao(int32_t width, int32_t height, int32_t sample_count)
+{
+    sg_image_desc img_desc = {0};
+    img_desc.render_target = true;
+    img_desc.width         = width;
+    img_desc.height        = height;
+    img_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+    img_desc.sample_count  = sample_count;
+    img_desc.label         = "SSAO target";
+
+    return sg_make_image(&img_desc);
+}
 
 void GFX_Setup()
 {
+    int w, h;
+    SDL_GL_GetDrawableSize(my_vis, &w, &h);
 
-    /*
-        state.rx = state.ry = 0.0f;
+    sg_sampler_desc smp_desc = {0};
+    smp_desc.min_filter      = SG_FILTER_LINEAR;
+    smp_desc.mag_filter      = SG_FILTER_LINEAR;
 
-        // a vertex buffer with 3 vertices
-        float vertices[] = {// positions            // colors
-                            0.0f, 0.5f, 0.5f, 1.0f,  0.0f,  0.0f, 1.0f, 0.5f, -0.5f, 0.5f, 0.0f,
-                            1.0f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,  1.0f};
+    state.color_target  = sokol_target_color(w, h, 1);
+    state.color_sampler = sg_make_sampler(&smp_desc);
 
-        sg_buffer_desc buffer_desc = {0};
-        buffer_desc.data           = SG_RANGE(vertices);
-        buffer_desc.label          = "triangle-vertices";
+    state.depth_target  = sokol_target_depth(w, h, 1);
+    state.depth_sampler = sg_make_sampler(&smp_desc);
 
-        state.bind.vertex_buffers[0] = sg_make_buffer(&buffer_desc);
+    sg_pass_desc world_pass                   = {0};
+    world_pass.color_attachments[0].image     = state.color_target;
+    world_pass.depth_stencil_attachment.image = state.depth_target;
+    state.world_pass                          = sg_make_pass(&world_pass);
 
-        // create shader from code-generated sg_shader_desc
-        sg_shader shd = sg_make_shader(triangle_shader_desc(sg_query_backend()));
+    state.quad_buffer = sokol_buffer_quad();
 
-        // create a pipeline object (default render states are fine for triangle)
+    sg_pipeline_desc pip_desc       = {0};
+    pip_desc.shader                 = sg_make_shader(screen_shader_desc(sg_query_backend()));
+    pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+    pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+    state.screen_pipeline           = sg_make_pipeline(&pip_desc);
 
-        sg_pipeline_desc pipeline_desc                      = {0};
-        pipeline_desc.shader                                = shd;
-        pipeline_desc.layout.attrs[ATTR_vs_position].format = SG_VERTEXFORMAT_FLOAT3;
-        pipeline_desc.layout.attrs[ATTR_vs_color0].format   = SG_VERTEXFORMAT_FLOAT4;
-        pipeline_desc.label                                 = "triangle-pipeline";
+    // ssao
+    pip_desc = {0};
 
-        state.pip = sg_make_pipeline(&pipeline_desc);
-    */
+    state.ssao_target = sokol_target_ssao(w, h, 1);
+
+    pip_desc.shader                 = sg_make_shader(ssao_shader_desc(sg_query_backend()));
+    pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+    pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+    state.ssao_pipeline             = sg_make_pipeline(&pip_desc);
+
+    sg_pass_desc ssao_pass_desc               = {0};
+    ssao_pass_desc.color_attachments[0].image = state.ssao_target;
+    state.ssao_pass                           = sg_make_pass(&ssao_pass_desc);
+}
+
+void GFX_DrawWorld()
+{
+
+    void GFX_DrawUnits();
+
+    sg_pass_action pass_action        = {0};
+    pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass_action.colors[0].clear_value = {0.0f, 0.3f, 0.0f, 1.0f};
+    pass_action.depth.load_action     = SG_LOADACTION_CLEAR;
+    pass_action.depth.clear_value     = 1.0f;
+
+    sg_begin_pass(state.world_pass, pass_action);
+    GFX_DrawUnits();
+    sg_end_pass();
+}
+
+extern HMM_Mat4 frame_projection;
+
+#pragma pack(push, 1)
+SOKOL_SHDC_ALIGN(16) struct my_ssao_params_t
+{
+    float    u_near;
+    float    u_far;
+    float    u_target_size[2];
+    HMM_Mat4 u_mat_p;
+    HMM_Mat4 u_inv_mat_p;
+};
+#pragma pack(pop)
+
+extern cvar_c r_nearclip;
+extern cvar_c r_farclip;
+
+void GFX_DrawPostProcess()
+{
+    int w, h;
+    SDL_GL_GetDrawableSize(my_vis, &w, &h);
+
+    my_ssao_params_t params = {0};
+
+    params.u_mat_p     = frame_projection;
+    params.u_inv_mat_p = HMM_InvPerspective_RH(frame_projection); // HMM_InvGeneralM4(frame_projection); <-- not sure if
+                                                             // messes  up glFrustum derived matrix
+    params.u_near           = r_nearclip.f;
+    params.u_far            = r_farclip.f;
+    params.u_target_size[0] = w;
+    params.u_target_size[1] = h;
+
+    sg_pass_action pass_action        = {0};
+    pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass_action.colors[0].clear_value = {0.0f, 0.0f, 0.3f, 1.0f};
+    pass_action.depth.load_action     = SG_LOADACTION_DONTCARE;
+
+    sg_begin_pass(state.ssao_pass, pass_action);
+
+    sg_apply_pipeline(state.ssao_pipeline);
+
+    sg_range range = SG_RANGE(params);
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_ssao_params, &range);
+
+    sg_bindings bind = {0};
+
+    bind.vertex_buffers[0] = state.quad_buffer;
+    bind.fs.images[0]      = state.depth_target;
+    bind.fs.samplers[0]    = state.depth_sampler;
+
+    sg_apply_bindings(&bind);
+
+    sg_draw(0, 6, 1);
+
+    sg_end_pass();
+}
+
+void GFX_DrawWorldToScreen()
+{
+    sg_apply_pipeline(state.screen_pipeline);
+
+    sg_bindings bind = {0};
+
+    bind.vertex_buffers[0] = state.quad_buffer;
+    bind.fs.images[0]      = state.color_target;
+    bind.fs.samplers[0]    = state.color_sampler;
+
+    sg_apply_bindings(&bind);
+
+    sg_draw(0, 6, 1);
 }
 
 static std::unordered_map<uint32_t, sg_sampler> sampler_lookup;
@@ -124,7 +285,7 @@ GLuint GFX_UploadTexture(epi::image_data_c *img, int flags, int max_pix)
         desc.min_filter    = smooth ? SG_FILTER_LINEAR : SG_FILTER_NEAREST;
         desc.mipmap_filter = smooth ? SG_FILTER_LINEAR : SG_FILTER_NEAREST;
 
-        sampler = sg_make_sampler(&desc);
+        sampler               = sg_make_sampler(&desc);
         sampler_lookup[flags] = sampler;
     }
 

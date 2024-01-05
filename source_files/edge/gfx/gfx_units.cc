@@ -172,7 +172,7 @@ void RGL_SoftInitUnits()
 {
 }
 
-void GFX_Frame()
+void GFX_StartFrame()
 {
     cur_frame_vert  = 0;
     cur_frame_index = 0;
@@ -193,9 +193,10 @@ extern float   viewx;
 extern float   viewy;
 extern float   viewz;
 
-void GFX_DrawWorld()
-{
+HMM_Mat4 frame_projection;
 
+void GFX_DrawUnits()
+{
     if (!cur_command)
     {
         return;
@@ -236,6 +237,8 @@ void GFX_DrawWorld()
     proj.Columns[3][1] = 0.0f;
     proj.Columns[3][2] = D;
     proj.Columns[3][3] = 0.0f;
+
+    frame_projection = proj;
 
     HMM_Mat4 view = HMM_M4D(1.0f);
     view = HMM_Mul(view, HMM_Rotate_RH(HMM_AngleDeg(270.0f - ANG_2_FLOAT(viewvertangle)), HMM_V3(1.0f, 0.0f, 0.0f)));

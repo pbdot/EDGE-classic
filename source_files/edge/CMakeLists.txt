@@ -111,6 +111,7 @@ set (EDGE_SOURCE_FILES
   vm_hud.cc 
   vm_player.cc
   gfx/gfx_main.cc
+  gfx/gfx_ssao.cc
   gfx/gfx_units.cc
   script/lua_debugger.cc
   script/compat/lua_vm.cc

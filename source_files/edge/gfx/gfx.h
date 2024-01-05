@@ -15,7 +15,7 @@ struct gfx_image_t
 };
 
 void GFX_Setup();
-void GFX_Frame();
+void GFX_StartFrame();
 
 GLuint GFX_UploadTexture(epi::image_data_c *img, int flags, int max_pix);
 extern std::unordered_map<uint32_t, gfx_image_t> gfx_image_lookup;
