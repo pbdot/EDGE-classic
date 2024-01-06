@@ -127,6 +127,7 @@ set (EDGE_LINK_LIBRARIES
   edge_ddf
   edge_deh
   edge_epi
+  edge_gfx
   ${SDL2_LIBRARIES}
   libprimesynth
   libRAD
@@ -134,6 +135,7 @@ set (EDGE_LINK_LIBRARIES
   miniz
   edge_coal
   lua
+  sokol
 )
 
 if (WIN32)
