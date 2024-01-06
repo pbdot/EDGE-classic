@@ -41,7 +41,6 @@
 #include "r_image.h"
 #include "r_sky.h"
 #include "w_flat.h"
-#include "w_model.h"
 #include "w_sprite.h"
 #include "w_files.h"
 #include "w_wad.h"
@@ -428,9 +427,6 @@ void W_PrecacheLevel(void)
 
     if (r_precache_tex.d)
         W_PrecacheTextures();
-
-    if (r_precache_model.d)
-        W_PrecacheModels();
 
     RGL_PreCacheSky();
 }

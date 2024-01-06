@@ -86,7 +86,6 @@
 #include "r_modes.h"
 #include "r_image.h"
 #include "w_files.h"
-#include "w_model.h"
 #include "w_sprite.h"
 #include "w_texture.h"
 #include "w_wad.h"
@@ -1984,7 +1983,6 @@ static void E_Startup(void)
     S_PrecacheSounds();
     W_InitSprites();
     W_ProcessTX_HI();
-    W_InitModels();
 
     M_Init();
     R_Init();

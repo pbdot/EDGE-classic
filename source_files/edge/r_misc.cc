@@ -44,7 +44,6 @@
 #include "r_gldefs.h"
 #include "r_misc.h"
 #include "r_modes.h"
-#include "r_units.h"
 
 #include "AlmostEquals.h"
 

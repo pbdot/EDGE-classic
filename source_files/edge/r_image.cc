@@ -80,8 +80,7 @@ extern epi::file_c *OpenUserFileOrLump(imagedef_c *def);
 
 extern cvar_c r_doubleframes;
 
-extern void DeleteSkyTextures(void);
-extern void DeleteColourmapTextures(void);
+
 
 extern bool erraticism_active;
 
@@ -2031,9 +2030,6 @@ void W_DeleteAllImages(void)
             rc->tex_id = 0;
         }
     }
-
-    DeleteSkyTextures();
-    DeleteColourmapTextures();
 }
 
 //

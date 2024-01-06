@@ -42,7 +42,6 @@ extern cvar_c r_colormaterial;
 extern cvar_c r_dumbsky;
 extern cvar_c r_dumbmulti;
 extern cvar_c r_dumbcombine;
-extern cvar_c r_dumbclamp;
 
 //
 //  RGL_MAIN
@@ -296,20 +295,6 @@ drawmirror_c *R_GetDrawMirror();
 //
 
 void R2_Init(void);
-
-//
-//  MIRRORS
-//
-
-extern int num_active_mirrors;
-
-void MIR_Coordinate(float &x, float &y);
-void MIR_Height(float &z);
-void MIR_Angle(angle_t &ang);
-
-bool  MIR_Reflective(void);
-float MIR_XYScale(void);
-float MIR_ZScale(void);
 
 #endif /* __RGL_DEFS_H__ */
 

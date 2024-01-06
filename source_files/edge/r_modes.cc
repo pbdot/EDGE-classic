@@ -38,7 +38,6 @@
 #include "am_map.h"
 #include "r_image.h"
 #include "r_misc.h"
-#include "r_units.h"
 #include "r_draw.h"
 #include "r_wipe.h"
 
@@ -266,8 +265,7 @@ void R_SoftInitResolution(void)
     V_ColourNewFrame();
 
     // re-initialise various bits of GL state
-    RGL_SoftInit();
-    RGL_SoftInitUnits(); // -ACB- 2004/02/15 Needed to sort vars lost in res change
+    RGL_SoftInit();    
 
     L_WriteDebug("-  returning true.\n");
 

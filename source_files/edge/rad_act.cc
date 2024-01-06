@@ -1418,13 +1418,6 @@ void P_ActReplace(struct mobj_s *mo, const mobjtype_c *newThing)
             {
                 mo->dlight.target = dinfo->radius;
                 mo->dlight.color  = dinfo->colour;
-
-                // make renderer re-create shader info
-                if (mo->dlight.shader)
-                {
-                    // FIXME: delete mo->dlight.shader;
-                    mo->dlight.shader = NULL;
-                }
             }
         }
     }

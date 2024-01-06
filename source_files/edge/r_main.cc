@@ -22,7 +22,6 @@
 #include "g_game.h"
 #include "r_misc.h"
 #include "r_gldefs.h"
-#include "r_units.h"
 #include "r_colormap.h"
 #include "r_draw.h"
 #include "r_modes.h"
@@ -118,25 +117,6 @@ void RGL_SetupMatrices3D(void)
     glRotatef(90.0f - ANG_2_FLOAT(viewangle), 0.0f, 0.0f, 1.0f);
     glTranslatef(-viewx, -viewy, -viewz);
 
-    // turn on lighting.  Some drivers (e.g. TNT2) don't work properly
-    // without it.
-    if (r_colorlighting.d)
-    {
-        glEnable(GL_LIGHTING);
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
-    }
-    else
-        glDisable(GL_LIGHTING);
-
-    if (r_colormaterial.d)
-    {
-        glEnable(GL_COLOR_MATERIAL);
-        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-    }
-    else
-        glDisable(GL_COLOR_MATERIAL);
-
-    /* glBlendFunc(GL_SRC_ALPHA, GL_ONE);  // Additive lighting */
 }
 
 static inline const char *SafeStr(const void *s)
@@ -243,9 +223,6 @@ void RGL_Init(void)
     RGL_SoftInit();
 
     R2_InitUtil();
-
-    // initialise unit system
-    RGL_InitUnits();
 
     RGL_SetupMatrices2D();
 }

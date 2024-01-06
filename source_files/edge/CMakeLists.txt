@@ -59,21 +59,17 @@ set (EDGE_SOURCE_FILES
   rad_pars.cc
   rad_trig.cc
   r_draw.cc
-  r_shader.cc
   r_render.cc
   r_effects.cc
   r_main.cc
   r_occlude.cc
   r_things.cc
-  r_units.cc
   r_wipe.cc
   r_misc.cc
   r_sky.cc
   r_state.cc
   r_colormap.cc
   r_modes.cc
-  r_mdl.cc
-  r_md2.cc
   r_image.cc
   r_doomtex.cc
   r_texgl.cc
@@ -100,7 +96,6 @@ set (EDGE_SOURCE_FILES
   sv_save.cc
   w_files.cc
   w_flat.cc
-  w_model.cc
   w_epk.cc
   w_sprite.cc
   w_texture.cc

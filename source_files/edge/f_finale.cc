@@ -50,15 +50,12 @@
 #include "am_map.h"
 #include "r_colormap.h"
 #include "r_draw.h"
-#include "r_mdl.h"
-#include "r_md2.h"
 #include "r_modes.h"
 #include "r_state.h"
 #include "r_gldefs.h"
 #include "s_sound.h"
 #include "s_music.h"
 #include "w_wad.h"
-#include "w_model.h"
 #include "hu_style.h"
 
 typedef enum
@@ -776,22 +773,6 @@ static void CastDrawer(void)
 
     if (caststate->flags & SFF_Model)
     {
-        modeldef_c *md = W_GetModel(caststate->sprite);
-
-        const image_c *skin_img = md->skins[castorder->model_skin];
-
-        if (!skin_img)
-            skin_img = W_ImageForDummySkin();
-
-        glClear(GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-
-        if (md->md2_model)
-            MD2_RenderModel_2D(md->md2_model, skin_img, caststate->frame, pos_x, pos_y, scale_x, scale_y, castorder);
-        else if (md->mdl_model)
-            MDL_RenderModel_2D(md->mdl_model, skin_img, caststate->frame, pos_x, pos_y, scale_x, scale_y, castorder);
-
-        glDisable(GL_DEPTH_TEST);
         return;
     }
 

@@ -62,7 +62,6 @@
 #include "m_random.h"
 #include "p_local.h"
 #include "r_misc.h"
-#include "r_shader.h"
 #include "s_sound.h"
 
 #include "AlmostEquals.h"
@@ -1621,9 +1620,6 @@ static void DeleteMobj(mobj_t *mo)
     // link between object and effect.
 
     S_StopFX(mo);
-
-    if (mo->dlight.shader)
-        delete mo->dlight.shader;
 
     mo->next = (mobj_t *)-1;
     mo->prev = (mobj_t *)-1;

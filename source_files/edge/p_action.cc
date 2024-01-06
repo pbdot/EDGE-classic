@@ -3731,13 +3731,6 @@ void P_ActBecome(struct mobj_s *mo)
             {
                 mo->dlight.target = dinfo->radius;
                 mo->dlight.color  = dinfo->colour;
-
-                // make renderer re-create shader info
-                if (mo->dlight.shader)
-                {
-                    // FIXME: delete mo->dlight.shader;
-                    mo->dlight.shader = NULL;
-                }
             }
         }
     }
@@ -3806,13 +3799,6 @@ void P_ActUnBecome(struct mobj_s *mo)
             {
                 mo->dlight.target = dinfo->radius;
                 mo->dlight.color  = dinfo->colour;
-
-                // make renderer re-create shader info
-                if (mo->dlight.shader)
-                {
-                    // FIXME: delete mo->dlight.shader;
-                    mo->dlight.shader = NULL;
-                }
             }
         }
     }
@@ -3885,13 +3871,6 @@ void P_ActMorph(struct mobj_s *mo)
             {
                 mo->dlight.target = dinfo->radius;
                 mo->dlight.color  = dinfo->colour;
-
-                // make renderer re-create shader info
-                if (mo->dlight.shader)
-                {
-                    // FIXME: delete mo->dlight.shader;
-                    mo->dlight.shader = NULL;
-                }
             }
         }
     }
@@ -3964,13 +3943,6 @@ void P_ActUnMorph(struct mobj_s *mo)
             {
                 mo->dlight.target = dinfo->radius;
                 mo->dlight.color  = dinfo->colour;
-
-                // make renderer re-create shader info
-                if (mo->dlight.shader)
-                {
-                    // FIXME: delete mo->dlight.shader;
-                    mo->dlight.shader = NULL;
-                }
             }
         }
     }

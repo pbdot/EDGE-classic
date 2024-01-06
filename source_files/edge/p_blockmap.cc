@@ -38,7 +38,6 @@
 #include "m_bbox.h"
 #include "p_local.h"
 #include "p_spec.h"
-#include "r_shader.h"
 #include "r_state.h"
 
 #include "AlmostEquals.h"
@@ -869,20 +868,6 @@ void P_DynamicLightIterator(float x1, float y1, float z1, float x2, float y2, fl
                     mo->z - r >= z2)
                     continue;
 
-                // create shader if necessary
-                if (!mo->dlight.shader)
-                    mo->dlight.shader = MakeDLightShader(mo);
-
-                if (r_maxdlights.d > 0 && seen_dlights.count(mo->dlight.shader) == 0)
-                {
-                    if ((int)seen_dlights.size() >= r_maxdlights.d * 20)
-                        continue;
-                    else
-                    {
-                        seen_dlights.insert(mo->dlight.shader);
-                    }
-                }
-
                 //			mo->dlight.shader->CheckReset();
 
                 func(mo, data);
@@ -915,42 +900,6 @@ void P_SectorGlowIterator(sector_t *sec, float x1, float y1, float z1, float x2,
 
         if (mo->info->glow_type == GLOW_Ceiling && sec->c_h - r >= z1)
             continue;
-
-        // create shader if necessary
-        if (!mo->dlight.shader)
-        {
-            if (mo->info->glow_type == GLOW_Wall)
-            {
-                if (mo->dlight.bad_wall_glow)
-                    continue;
-                else if (!mo->dlight.glow_wall)
-                {
-                    // Use first line that the dlight mobj touches
-                    // Ideally it is only touching one line
-                    for (int i = 0; i < sec->linecount; i++)
-                    {
-                        if (P_ThingOnLineSide(mo, sec->lines[i]) == -1)
-                        {
-                            mo->dlight.glow_wall = sec->lines[i];
-                            break;
-                        }
-                    }
-                    if (mo->dlight.glow_wall)
-                    {
-                        mo->dlight.shader = MakeWallGlow(mo);
-                    }
-                    else // skip useless repeated checks
-                    {
-                        mo->dlight.bad_wall_glow = true;
-                        continue;
-                    }
-                }
-                else
-                    mo->dlight.shader = MakeWallGlow(mo);
-            }
-            else
-                mo->dlight.shader = MakePlaneGlow(mo);
-        }
 
         //		mo->dlight.shader->CheckReset();
 

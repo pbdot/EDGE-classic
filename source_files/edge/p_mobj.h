@@ -178,8 +178,6 @@ typedef struct dlight_state_s
     float    r;      // radius
     float    target; // target radius
     rgbcol_t color;
-    ///--- const image_c *image;
-    abstract_shader_c *shader;
     line_s            *glow_wall     = nullptr;
     bool               bad_wall_glow = false;
 } dlight_state_t;
