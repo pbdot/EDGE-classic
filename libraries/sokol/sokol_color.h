@@ -129,10 +129,7 @@
 #define SOKOL_COLOR_INCLUDED (1)
 
 #if !defined(SOKOL_GFX_INCLUDED)
-// Revert this when sokol_gfx is folded in - Dasho
-//#error "Please include sokol_gfx.h before sokol_color.h"
-#include <stdint.h>
-typedef struct sg_color { float r, g, b, a; } sg_color;
+#error "Please include sokol_gfx.h before sokol_color.h"
 #endif
 
 #if defined(SOKOL_API_DECL) && !defined(SOKOL_GL_API_DECL)

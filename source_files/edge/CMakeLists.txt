@@ -127,13 +127,14 @@ set (EDGE_LINK_LIBRARIES
   edge_ddf
   edge_deh
   edge_epi
+  edge_gfx
   ${SDL2_LIBRARIES}
   libprimesynth
   libRAD
   m4p
   miniz
   edge_coal
-  lua
+  lua  
 )
 
 if (WIN32)
