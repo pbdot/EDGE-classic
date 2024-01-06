@@ -134,8 +134,7 @@ set (EDGE_LINK_LIBRARIES
   m4p
   miniz
   edge_coal
-  lua
-  sokol
+  lua  
 )
 
 if (WIN32)

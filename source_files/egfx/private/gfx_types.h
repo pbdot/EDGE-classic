@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "HandmadeMath.h"
+#include "sokol_gfx.h"
 
 namespace gfx
 {
@@ -14,7 +15,6 @@ enum framement_type
     GFX_FRAGMENT_STATIC,
     GFX_FRAGMENT_DYNAMIC
 };
-
 
 struct fragment_vertex_t
 {
