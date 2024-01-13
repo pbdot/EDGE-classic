@@ -128,9 +128,12 @@
 */
 #define SOKOL_COLOR_INCLUDED (1)
 
-#if !defined(SOKOL_GFX_INCLUDED)
-#error "Please include sokol_gfx.h before sokol_color.h"
-#endif
+/*
+    sg_color
+
+    An RGBA color value.
+*/
+typedef struct sg_color { float r, g, b, a; } sg_color;
 
 #if defined(SOKOL_API_DECL) && !defined(SOKOL_GL_API_DECL)
 #define SOKOL_COLOR_API_DECL SOKOL_API_DECL

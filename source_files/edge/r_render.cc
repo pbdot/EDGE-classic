@@ -53,7 +53,6 @@
 
 #include "AlmostEquals.h"
 
-#define SOKOL_COLOR_IMPL // this will likely be somewhere else when sokol_gfx gets folded in
 #include "sokol_color.h"
 
 #include "edge_profiling.h"

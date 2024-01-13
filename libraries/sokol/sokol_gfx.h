@@ -1395,6 +1395,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "sokol_color.h"
+
 #if defined(SOKOL_API_DECL) && !defined(SOKOL_GFX_API_DECL)
 #define SOKOL_GFX_API_DECL SOKOL_API_DECL
 #endif
@@ -1484,13 +1486,6 @@ enum {
     SG_MAX_MIPMAPS = 16,
     SG_MAX_TEXTUREARRAY_LAYERS = 128
 };
-
-/*
-    sg_color
-
-    An RGBA color value.
-*/
-typedef struct sg_color { float r, g, b, a; } sg_color;
 
 /*
     sg_backend
