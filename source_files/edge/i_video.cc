@@ -30,7 +30,7 @@
 #include "str_util.h"
 #include "edge_profiling.h"
 
-SDL_Window *my_vis;
+SDL_Window *my_vis = nullptr;
 
 int graphics_shutdown = 0;
 
@@ -60,6 +60,8 @@ static bool grab_state;
 extern cvar_c r_farclip;
 extern cvar_c r_culling;
 extern cvar_c r_culldist;
+
+static SDL_GLContext gl_context = nullptr;
 
 void I_GrabCursor(bool enable)
 {
@@ -148,13 +150,11 @@ void I_StartupGraphics(void)
     if (argv::Find("nograb") > 0)
         in_grab = 0;
 
-    // -AJA- FIXME these are wrong (probably ignored though)
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+
 #ifdef EDGE_GL_ES2
     SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -294,8 +294,12 @@ static bool I_CreateWindow(scrmode_c *mode)
         tf_displaymode  = scrmode_c::SCR_BORDERLESS;
     }
 
-    if (SDL_GL_CreateContext(my_vis) == NULL)
+    gl_context = SDL_GL_CreateContext(my_vis);
+
+    if (!gl_context)
         I_Error("Failed to create OpenGL context.\n");
+
+    SDL_GL_MakeCurrent(my_vis, gl_context);
 
     if (v_sync.d == 2)
     {
@@ -310,7 +314,7 @@ static bool I_CreateWindow(scrmode_c *mode)
         SDL_GL_SetSwapInterval(v_sync.d);
 
 #ifndef EDGE_GL_ES2
-    gladLoaderLoadGL();
+    gladLoadGL();
 #endif
 
     return true;
@@ -433,6 +437,18 @@ void I_ShutdownGraphics(void)
 
     graphics_shutdown = 1;
 
+    if (gl_context)
+    {
+        SDL_GL_DeleteContext(gl_context);
+        gl_context = nullptr;
+    }
+
+    if (my_vis)
+    {
+        SDL_DestroyWindow(my_vis);
+        my_vis = nullptr;
+    }
+
     if (SDL_WasInit(SDL_INIT_EVERYTHING))
     {
         I_DeterminePixelAspect();
@@ -440,9 +456,7 @@ void I_ShutdownGraphics(void)
         SDL_Quit();
     }
 
-#ifndef EDGE_GL_ES2
-    gladLoaderUnloadGL();
-#else
+#ifdef EDGE_GL_ES2
     close_gl4es();
 #endif
 }
