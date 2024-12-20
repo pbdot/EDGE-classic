@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------------
-//  EDGE System Specific Header for OpenGL
+//  EDGE 2D DRAWING STUFF
 //----------------------------------------------------------------------------
 //
-//  Copyright (c) 2007-2024 The EDGE Team.
+//  Copyright (c) 1999-2024 The EDGE Team.
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -15,23 +15,36 @@
 //  GNU General Public License for more details.
 //
 //----------------------------------------------------------------------------
-//
-//  Based on the DOOM source code, released by Id Software under the
-//  following copyright:
-//
-//    Copyright (C) 1993-1996 by id Software, Inc.
-//
-//----------------------------------------------------------------------------
 
-#pragma once
-#ifdef EDGE_SOKOL
-#include "render/sokol/sk_glstubs.h"
-#elif EDGE_GL_ES2
-#include "gl.h"
-#include "gl4esinit.h"
-#else
-#include <glad/glad.h>
-#endif
+#include "r_draw.h"
+
+#include <vector>
+
+#include "epi.h"
+#include "g_game.h"
+#include "i_defs_gl.h"
+#include "r_colormap.h"
+#include "r_gldefs.h"
+#include "r_image.h"
+#include "r_misc.h"
+#include "r_modes.h"
+#include "r_units.h"
+
+void NewScreenSize(int width, int height, int bits)
+{
+    //!!! quick hack
+    SetupMatrices2D();
+
+    // prevent a visible border with certain cards/drivers
+    global_render_state->ClearColor(kRGBATransparent);
+    global_render_state->Clear(GL_COLOR_BUFFER_BIT);
+}
+
+void ReadScreen(int x, int y, int w, int h, uint8_t *rgb_buffer)
+{
+    global_render_state->Flush();
+    global_render_state->ReadScreen(x, y, w, h, rgb_buffer);
+}
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

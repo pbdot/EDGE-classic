@@ -683,7 +683,7 @@ static void DrawEndoomChar(float x, float y, char ch, RGBAColor col, RGBAColor c
     float ty1 = (py)*endoom_font->font_image_->height_ratio_;
     float ty2 = (py + 1) * endoom_font->font_image_->height_ratio_;
 
-    glvert = BeginRenderUnit(GL_POLYGON, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
+    glvert = BeginRenderUnit(GL_QUADS, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
                                                  0, kBlendingMasked);
 
     glvert->rgba = col;
@@ -739,7 +739,7 @@ static void DrawText(float x, float y, const char *s, RGBAColor col)
     int pos = 0;
     for (; *s; s++, pos++)
     {
-        glvert = BeginRenderUnit(GL_POLYGON, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
+        glvert = BeginRenderUnit(GL_QUADS, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
                                                  0, blend);
 
         DrawChar(x, y, *s, glvert, col);
@@ -758,7 +758,7 @@ static void DrawText(float x, float y, const char *s, RGBAColor col)
 
         if (pos == input_position && draw_cursor)
         {
-            glvert = BeginRenderUnit(GL_POLYGON, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
+            glvert = BeginRenderUnit(GL_QUADS, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
                                                  0, blend);
 
             DrawChar(x, y, 95, glvert, col);
@@ -776,7 +776,7 @@ static void DrawText(float x, float y, const char *s, RGBAColor col)
 
     if (draw_cursor)
     {
-        glvert = BeginRenderUnit(GL_POLYGON, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
+        glvert = BeginRenderUnit(GL_QUADS, 4, GL_MODULATE, tex_id, (GLuint)kTextureEnvironmentDisable, 0,
                                                  0, blend);
 
         DrawChar(x, y, 95, glvert, col);

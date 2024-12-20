@@ -1086,7 +1086,7 @@ void AdvanceTitle(void)
         // Only play title movies once
         if (!g->titlemovie_.empty() && !g->movie_played_)
         {
-            if (skip_intros.d_)
+            if (true)
                 g->movie_played_ = true;
             else
             {

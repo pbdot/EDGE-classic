@@ -302,6 +302,7 @@ static bool QueueNextBuffer(void)
 
 static void MixQueues(int pairs)
 {
+    return;
     SoundChannel *chan = queue_channel;
 
     if (!chan || !chan->data_ || chan->state_ != kChannelPlaying)

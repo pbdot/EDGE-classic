@@ -1,6 +1,5 @@
+#include "gl_state.h"
 
-#include "r_state.h"
-
-RenderState state;
+GLRenderState state;
 
 RenderState *global_render_state = &state;

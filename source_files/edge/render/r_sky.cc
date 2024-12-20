@@ -34,6 +34,7 @@
 #include "r_sky.h"
 #include "r_texgl.h"
 #include "r_units.h"
+#include "r_render_port.h"
 #include "stb_sprintf.h"
 #include "w_flat.h"
 #include "w_wad.h"
@@ -55,7 +56,7 @@ static RendererVertex *sky_glvert = nullptr;
 
 static bool sky_unit_started = false;
 
-static SkyStretch current_sky_stretch = kSkyStretchUnset;
+SkyStretch current_sky_stretch = kSkyStretchUnset;
 
 EDGE_DEFINE_CONSOLE_VARIABLE_CLAMPED(sky_stretch_mode, "0", kConsoleVariableFlagArchive, 0, 3);
 
@@ -293,7 +294,7 @@ void BeginSky(void)
 {
     need_to_draw_sky = false;
 
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    global_render_state->ColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 }
 
 // The following cylindrical sky-drawing routines are adapted from SLADE's 3D
@@ -714,7 +715,7 @@ void FinishSky(void)
     if (sky_unit_started)
         FinishSkyUnit();
 
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    global_render_state->ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     if (!need_to_draw_sky)
         return;

@@ -247,7 +247,7 @@ void HUDPushScissor(float x1, float y1, float x2, float y2, bool expand)
     EPI_ASSERT(sx2 >= sx1);
     EPI_ASSERT(sy2 >= sy1);
 
-    glScissor(sx1, sy1, sx2 - sx1, sy2 - sy1);
+    global_render_state->Scissor(sx1, sy1, sx2 - sx1, sy2 - sy1);
 
     // push current scissor
     int *xy = scissor_stack[scissor_stack_top];
@@ -275,7 +275,7 @@ void HUDPopScissor()
         // restore previous scissor
         int *xy = scissor_stack[scissor_stack_top];
 
-        glScissor(xy[0], xy[1], xy[2] - xy[0], xy[3] - xy[1]);
+        global_render_state->Scissor(xy[0], xy[1], xy[2] - xy[0], xy[3] - xy[1]);
     }
 }
 
