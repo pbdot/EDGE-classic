@@ -1,21 +1,3 @@
-//----------------------------------------------------------------------------
-//  EDGE OpenGL Rendering (Main Stuff)
-//----------------------------------------------------------------------------
-//
-//  Copyright (c) 1999-2024 The EDGE Team.
-//
-//  This program is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU General Public License
-//  as published by the Free Software Foundation; either version 3
-//  of the License, or (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU General Public License for more details.
-//
-//----------------------------------------------------------------------------
-
 #include "epi_str_compare.h"
 #include "g_game.h"
 #include "i_defs_gl.h"
@@ -32,14 +14,7 @@
 static int maximum_lights;
 static int maximum_clip_planes;
 static int maximum_texture_units;
-int        maximum_texture_size;
-
-EDGE_DEFINE_CONSOLE_VARIABLE(renderer_near_clip, "1", kConsoleVariableFlagArchive)
-EDGE_DEFINE_CONSOLE_VARIABLE(renderer_far_clip, "64000", kConsoleVariableFlagArchive)
-EDGE_DEFINE_CONSOLE_VARIABLE(draw_culling, "0", kConsoleVariableFlagArchive)
-EDGE_DEFINE_CONSOLE_VARIABLE_CLAMPED(draw_culling_distance, "3000", kConsoleVariableFlagArchive, 1000.0f, 16000.0f)
-EDGE_DEFINE_CONSOLE_VARIABLE(cull_fog_color, "0", kConsoleVariableFlagArchive)
-
+extern int maximum_texture_size;
 //
 // SetupMatrices2D
 //
@@ -169,28 +144,22 @@ void RendererInit(void)
 {
     LogPrint("OpenGL: Initialising...\n");
 
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+
+
     RendererCheckExtensions();
 
     // read implementation limits
     {
-        GLint max_lights;
-        GLint max_clip_planes;
         GLint max_tex_size;
-        GLint max_tex_units;
-
-        glGetIntegerv(GL_MAX_LIGHTS, &max_lights);
-        glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
-        glGetIntegerv(GL_MAX_TEXTURE_UNITS, &max_tex_units);
-
-        maximum_lights        = max_lights;
-        maximum_clip_planes   = max_clip_planes;
-        maximum_texture_size  = max_tex_size;
-        maximum_texture_units = max_tex_units;
+        maximum_texture_size = max_tex_size;
     }
 
-    LogPrint("OpenGL: Lights: %d  Clips: %d  Tex: %d  Units: %d\n", maximum_lights, maximum_clip_planes,
-             maximum_texture_size, maximum_texture_units);
+    LogPrint("OpenGL: Tex: %d\n", maximum_texture_size);
 
     RendererSoftInit();
 
@@ -198,6 +167,3 @@ void RendererInit(void)
 
     SetupMatrices2D();
 }
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab

@@ -89,7 +89,7 @@ void MovieVideoCallback(plm_t *mpeg, plm_frame_t *frame, void *user)
 
     plm_frame_to_rgb(frame, rgb_data, frame->width * 3);
     global_render_state->BindTexture(canvas);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width, frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_data);
+    global_render_state->TexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame->width, frame->height, 0, GL_RGB, GL_UNSIGNED_BYTE, rgb_data);
 }
 
 void PlayMovie(const std::string &name)
@@ -159,7 +159,7 @@ void PlayMovie(const std::string &name)
     if (canvas)
         global_render_state->DeleteTexture(&canvas);
 
-    glGenTextures(1, &canvas);
+    global_render_state->GenTextures(1, &canvas);
     global_render_state->BindTexture(canvas);
     global_render_state->TextureMagFilter(GL_LINEAR);
     global_render_state->TextureMinFilter(GL_LINEAR);

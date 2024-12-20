@@ -260,7 +260,7 @@ static void RenderPSprite(PlayerSprite *psp, int which, Player *player, RegionPr
     // clip psprite to view window
     global_render_state->Enable(GL_SCISSOR_TEST);
 
-    glScissor(view_window_x, view_window_y, view_window_width, view_window_height);
+    global_render_state->Scissor(view_window_x, view_window_y, view_window_width, view_window_height);
 
     x1b = (float)view_window_x + x1b;
     x1t = (float)view_window_x + x1t;
@@ -400,7 +400,7 @@ static void RenderPSprite(PlayerSprite *psp, int which, Player *player, RegionPr
         GLuint fuzz_tex = is_fuzzy ? ImageCache(fuzz_image, false) : 0;
 
         RendererVertex *glvert =
-            BeginRenderUnit(GL_POLYGON, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
+            BeginRenderUnit(GL_QUADS, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
                             is_fuzzy ? GL_MODULATE : (GLuint)kTextureEnvironmentDisable, fuzz_tex, pass, blending,
                             pass > 0 ? kRGBANoValue : fc_to_use, fd_to_use);
 
@@ -485,7 +485,7 @@ static void DrawStdCrossHair(void)
     StartUnitBatch(false);
 
     RendererVertex *glvert =
-            BeginRenderUnit(GL_POLYGON, 4, GL_MODULATE, tex_id,
+            BeginRenderUnit(GL_QUADS, 4, GL_MODULATE, tex_id,
                             (GLuint)kTextureEnvironmentDisable, 0, 0, kBlendingAdd);
 
     glvert->rgba = unit_col;
@@ -1340,7 +1340,7 @@ void RenderThing(DrawFloor *dfloor, DrawThing *dthing)
         GLuint fuzz_tex = is_fuzzy ? ImageCache(fuzz_image, false) : 0;
 
         RendererVertex *glvert =
-            BeginRenderUnit(GL_POLYGON, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
+            BeginRenderUnit(GL_QUADS, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
                             is_fuzzy ? GL_MODULATE : (GLuint)kTextureEnvironmentDisable, fuzz_tex, pass, blending,
                             pass > 0 ? kRGBANoValue : fc_to_use, fd_to_use);
 

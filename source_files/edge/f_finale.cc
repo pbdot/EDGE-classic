@@ -824,7 +824,7 @@ static void CastDrawer(void)
         if (!skin_img)
             skin_img = ImageForDummySkin();
 
-        glClear(GL_DEPTH_BUFFER_BIT);
+        global_render_state->Clear(GL_DEPTH_BUFFER_BIT);
         global_render_state->Enable(GL_DEPTH_TEST);
 
         if (md->md2_model_)

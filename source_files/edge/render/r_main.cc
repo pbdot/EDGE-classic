@@ -1,5 +1,5 @@
 //----------------------------------------------------------------------------
-//  EDGE 2D DRAWING STUFF
+//  EDGE OpenGL Rendering (Main Stuff)
 //----------------------------------------------------------------------------
 //
 //  Copyright (c) 1999-2024 The EDGE Team.
@@ -16,44 +16,20 @@
 //
 //----------------------------------------------------------------------------
 
-#include "r_draw.h"
-
-#include <vector>
-
-#include "epi.h"
+#include "epi_str_compare.h"
 #include "g_game.h"
 #include "i_defs_gl.h"
 #include "r_colormap.h"
+#include "r_draw.h"
 #include "r_gldefs.h"
 #include "r_image.h"
 #include "r_misc.h"
 #include "r_modes.h"
 #include "r_units.h"
 
-void NewScreenSize(int width, int height, int bits)
-{
-    //!!! quick hack
-    SetupMatrices2D();
-
-    // prevent a visible border with certain cards/drivers
-    global_render_state->ClearColor(kRGBATransparent);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void ReadScreen(int x, int y, int w, int h, uint8_t *rgb_buffer)
-{
-    glFlush();
-
-    glPixelZoom(1.0f, 1.0f);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-    for (; h > 0; h--, y++)
-    {
-        glReadPixels(x, y, w, 1, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer);
-
-        rgb_buffer += w * 3;
-    }
-}
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+EDGE_DEFINE_CONSOLE_VARIABLE(renderer_near_clip, "1", kConsoleVariableFlagArchive)
+EDGE_DEFINE_CONSOLE_VARIABLE(renderer_far_clip, "64000", kConsoleVariableFlagArchive)
+EDGE_DEFINE_CONSOLE_VARIABLE(draw_culling, "0", kConsoleVariableFlagArchive)
+EDGE_DEFINE_CONSOLE_VARIABLE_CLAMPED(draw_culling_distance, "3000", kConsoleVariableFlagArchive, 1000.0f, 16000.0f)
+EDGE_DEFINE_CONSOLE_VARIABLE(cull_fog_color, "0", kConsoleVariableFlagArchive)
+int maximum_texture_size;
