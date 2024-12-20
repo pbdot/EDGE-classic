@@ -248,7 +248,7 @@ void HUDPushScissor(float x1, float y1, float x2, float y2, bool expand)
     EPI_ASSERT(sx2 >= sx1);
     EPI_ASSERT(sy2 >= sy1);
 
-    glScissor(sx1, sy1, sx2 - sx1, sy2 - sy1);
+    global_render_state->Scissor(sx1, sy1, sx2 - sx1, sy2 - sy1);
 
     // push current scissor
     int *xy = scissor_stack[scissor_stack_top];
@@ -276,7 +276,7 @@ void HUDPopScissor()
         // restore previous scissor
         int *xy = scissor_stack[scissor_stack_top];
 
-        glScissor(xy[0], xy[1], xy[2] - xy[0], xy[3] - xy[1]);
+        global_render_state->Scissor(xy[0], xy[1], xy[2] - xy[0], xy[3] - xy[1]);
     }
 }
 
@@ -1373,39 +1373,6 @@ void HUDRenderWorld(float x, float y, float w, float h, MapObject *camera, int f
     float y2 = xy[3]; // HUDToRealCoordinatesY(y+h);
 
     RenderView(x1, y1, x2 - x1, y2 - y1, camera, full_height, expand_w);
-
-    HUDPopScissor();
-}
-
-void HUDRenderAutomap(float x, float y, float w, float h, MapObject *player, int flags)
-{
-    HUDPushScissor(x, y, x + w, y + h, (flags & 1) == 0);
-
-    // [ FIXME HACKY ]
-    if ((flags & 1) == 0)
-    {
-        if (x < 1 && x + w > hud_x_middle * 2 - 1)
-        {
-            x = hud_x_left;
-            w = hud_x_right - x;
-        }
-    }
-
-    if (fliplevels.d_)
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho((float)current_screen_width, 0.0f, 0.0f, (float)current_screen_height, -1.0f, 1.0f);
-    }
-
-    AutomapRender(x, y, w, h, player);
-
-    if (fliplevels.d_)
-    {
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0.0f, (float)current_screen_width, 0.0f, (float)current_screen_height, -1.0f, 1.0f);
-    }
 
     HUDPopScissor();
 }

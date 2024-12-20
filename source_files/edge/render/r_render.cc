@@ -375,8 +375,8 @@ static void MirrorSetClippers()
     global_render_state->Enable(GL_CLIP_PLANE0);
     global_render_state->Enable(GL_CLIP_PLANE1);
 
-    glClipPlane(GL_CLIP_PLANE0, left_p);
-    glClipPlane(GL_CLIP_PLANE1, right_p);
+    global_render_state->ClipPlane(GL_CLIP_PLANE0, left_p);
+    global_render_state->ClipPlane(GL_CLIP_PLANE1, right_p);
 
     // now for each mirror, setup a clip plane that removes
     // everything that gets projected in front of that mirror.
@@ -410,7 +410,7 @@ static void MirrorSetClippers()
 
         global_render_state->Enable(GL_CLIP_PLANE2 + i);
 
-        glClipPlane(GL_CLIP_PLANE2 + i, front_p);
+        global_render_state->ClipPlane(GL_CLIP_PLANE2 + i, front_p);
     }
 }
 
@@ -3292,7 +3292,7 @@ static void DoWeaponModel(void)
     // know how any better way to prevent clipping -- the model
     // needs the depth buffer for overlapping parts of itself.
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+    global_render_state->Clear(GL_DEPTH_BUFFER_BIT);
 
     solid_mode = false;
     StartUnitBatch(solid_mode);
@@ -3386,7 +3386,7 @@ static void RenderTrueBsp(void)
 
     SetupMatrices3d();
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+    global_render_state->Clear(GL_DEPTH_BUFFER_BIT);
     global_render_state->Enable(GL_DEPTH_TEST);
 
     // needed for drawing the sky
@@ -3436,7 +3436,7 @@ static void RenderTrueBsp(void)
     if (FlashFirst == true)
     {
         SetupMatrices3d();
-        glClear(GL_DEPTH_BUFFER_BIT);
+        global_render_state->Clear(GL_DEPTH_BUFFER_BIT);
         global_render_state->Enable(GL_DEPTH_TEST);
         DoWeaponModel();
         global_render_state->Disable(GL_DEPTH_TEST);

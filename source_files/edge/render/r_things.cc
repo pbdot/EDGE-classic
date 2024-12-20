@@ -260,7 +260,7 @@ static void RenderPSprite(PlayerSprite *psp, int which, Player *player, RegionPr
     // clip psprite to view window
     global_render_state->Enable(GL_SCISSOR_TEST);
 
-    glScissor(view_window_x, view_window_y, view_window_width, view_window_height);
+    global_render_state->Scissor(view_window_x, view_window_y, view_window_width, view_window_height);
 
     x1b = (float)view_window_x + x1b;
     x1t = (float)view_window_x + x1t;

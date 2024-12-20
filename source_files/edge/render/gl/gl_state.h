@@ -25,77 +25,12 @@
 
 #pragma once
 
-#include <string.h>
+#include "../r_state.h"
 
-#include <unordered_map>
-
-// Need data structure definitions.
-
-#include "AlmostEquals.h"
-#include "edge_profiling.h"
-#include "i_defs_gl.h"
-#include "i_system.h"
-#include "m_math.h"
-#include "r_defs.h"
-#include "w_flat.h"
-
-//
-// Lookup tables for map data.
-//
-extern int     total_level_vertexes;
-extern Vertex *level_vertexes;
-
-extern int     total_level_sectors;
-extern Sector *level_sectors;
-
-extern int        total_level_subsectors;
-extern Subsector *level_subsectors;
-
-extern int         total_level_extrafloors;
-extern Extrafloor *level_extrafloors;
-
-extern int      total_level_nodes;
-extern BspNode *level_nodes;
-
-extern int   total_level_lines;
-extern Line *level_lines;
-
-extern int   total_level_sides;
-extern Side *level_sides;
-
-extern std::unordered_map<GLuint, GLint> texture_clamp_s;
-extern std::unordered_map<GLuint, GLint> texture_clamp_t;
-
-//
-// POV data.
-//
-extern float view_x;
-extern float view_y;
-extern float view_z;
-
-extern BAMAngle view_angle;
-
-// -ES- 1999/03/20 Added these.
-// Angles that are used for linedef clipping.
-// Nearly the same as leftangle/rightangle, but slightly rounded to fit
-// view_angletox lookups, and converted to BAM format.
-
-// angles used for clipping
-extern BAMAngle clip_left, clip_right;
-
-// the scope of the clipped area (clip_left-clip_right).
-// kBAMAngle180 disables polar clipping
-extern BAMAngle clip_scope;
-
-// the most extreme angles of the view
-extern float view_x_slope, view_y_slope;
-
-extern ECFrameStats ec_frame_stats;
-
-class RenderState
+class GLRenderState : public RenderState
 {
   public:
-    inline void Enable(GLenum cap, bool enabled = true)
+    void Enable(GLenum cap, bool enabled = true)
     {
         switch (cap)
         {
@@ -192,12 +127,12 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void Disable(GLenum cap)
+    void Disable(GLenum cap)
     {
         Enable(cap, false);
     }
 
-    inline void DepthMask(bool enable)
+    void DepthMask(bool enable)
     {
         if (depth_mask_ == enable)
         {
@@ -209,20 +144,20 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void DepthFunction(GLenum func)
+    void DepthFunction(GLenum func)
     {
         if (func == depth_function_)
         {
             return;
         }
 
-        depth_function_           = func;
+        depth_function_ = func;
 
         glDepthFunc(depth_function_);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void CullFace(GLenum mode)
+    void CullFace(GLenum mode)
     {
         if (cull_face_ == mode)
         {
@@ -234,7 +169,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void AlphaFunction(GLenum func, GLfloat ref)
+    void AlphaFunction(GLenum func, GLfloat ref)
     {
         if (func == alpha_function_ && AlmostEquals(ref, alpha_function_reference_))
         {
@@ -248,7 +183,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void ActiveTexture(GLenum activeTexture)
+    void ActiveTexture(GLenum activeTexture)
     {
         if (activeTexture == active_texture_)
         {
@@ -260,7 +195,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void BindTexture(GLuint textureid)
+    void BindTexture(GLuint textureid)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
         if (bind_texture_2d_[index] == textureid)
@@ -274,7 +209,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void PolygonOffset(GLfloat factor, GLfloat units)
+    void PolygonOffset(GLfloat factor, GLfloat units)
     {
         if (factor == polygon_offset_factor_ && units == polygon_offset_units_)
         {
@@ -287,7 +222,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void ClearColor(RGBAColor color)
+    void ClearColor(RGBAColor color)
     {
         if (color == clear_color_)
         {
@@ -295,12 +230,12 @@ class RenderState
         }
 
         clear_color_ = color;
-        glClearColor(epi::GetRGBARed(clear_color_) / 255.0f, epi::GetRGBAGreen(clear_color_) / 255.0f, 
-            epi::GetRGBABlue(clear_color_) / 255.0f, epi::GetRGBAAlpha(clear_color_) / 255.0f);
+        glClearColor(epi::GetRGBARed(clear_color_) / 255.0f, epi::GetRGBAGreen(clear_color_) / 255.0f,
+                     epi::GetRGBABlue(clear_color_) / 255.0f, epi::GetRGBAAlpha(clear_color_) / 255.0f);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void FogMode(GLint fogMode)
+    void FogMode(GLint fogMode)
     {
         if (fog_mode_ == fogMode)
         {
@@ -312,7 +247,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void FogColor(RGBAColor color)
+    void FogColor(RGBAColor color)
     {
         if (fog_color_ == color)
         {
@@ -321,13 +256,13 @@ class RenderState
 
         fog_color_ = color;
 
-        float gl_fc[4] = { epi::GetRGBARed(fog_color_) / 255.0f, epi::GetRGBAGreen(fog_color_) / 255.0f, 
-            epi::GetRGBABlue(fog_color_) / 255.0f, epi::GetRGBAAlpha(fog_color_) / 255.0f };
+        float gl_fc[4] = {epi::GetRGBARed(fog_color_) / 255.0f, epi::GetRGBAGreen(fog_color_) / 255.0f,
+                          epi::GetRGBABlue(fog_color_) / 255.0f, epi::GetRGBAAlpha(fog_color_) / 255.0f};
         glFogfv(GL_FOG_COLOR, gl_fc);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void FogStart(GLfloat start)
+    void FogStart(GLfloat start)
     {
         if (fog_start_ == start)
         {
@@ -339,7 +274,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void FogEnd(GLfloat end)
+    void FogEnd(GLfloat end)
     {
         if (fog_end_ == end)
         {
@@ -351,7 +286,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void FogDensity(GLfloat density)
+    void FogDensity(GLfloat density)
     {
         if (fog_density_ == density)
         {
@@ -363,7 +298,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void GLColor(RGBAColor color)
+    void GLColor(RGBAColor color)
     {
         if (color == gl_color_)
         {
@@ -371,12 +306,11 @@ class RenderState
         }
 
         gl_color_ = color;
-        glColor4ub(epi::GetRGBARed(color), epi::GetRGBAGreen(color), epi::GetRGBABlue(color),
-            epi::GetRGBAAlpha(color));
+        glColor4ub(epi::GetRGBARed(color), epi::GetRGBAGreen(color), epi::GetRGBABlue(color), epi::GetRGBAAlpha(color));
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void BlendFunction(GLenum sfactor, GLenum dfactor)
+    void BlendFunction(GLenum sfactor, GLenum dfactor)
     {
         if (blend_source_factor_ == sfactor && blend_destination_factor_ == dfactor)
         {
@@ -389,7 +323,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureEnvironmentMode(GLint param)
+    void TextureEnvironmentMode(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
@@ -403,7 +337,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureEnvironmentCombineRGB(GLint param)
+    void TextureEnvironmentCombineRGB(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
@@ -417,7 +351,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureEnvironmentSource0RGB(GLint param)
+    void TextureEnvironmentSource0RGB(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
@@ -431,7 +365,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureMinFilter(GLint param)
+    void TextureMinFilter(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
@@ -440,7 +374,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureMagFilter(GLint param)
+    void TextureMagFilter(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
@@ -449,31 +383,31 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureWrapS(GLint param)
+    void TextureWrapS(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
         // We do it regardless of the cached value; functions should check
-        // texture environments against the appropriate unordered_map and 
+        // texture environments against the appropriate unordered_map and
         // know if a change needs to occur
         texture_wrap_s_[index] = param;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texture_wrap_s_[index]);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void TextureWrapT(GLint param)
+    void TextureWrapT(GLint param)
     {
         GLuint index = active_texture_ - GL_TEXTURE0;
 
         // We do it regardless of the cached value; functions should check
-        // texture environments against the appropriate unordered_map and 
+        // texture environments against the appropriate unordered_map and
         // know if a change needs to occur
         texture_wrap_t_[index] = param;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texture_wrap_t_[index]);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void MultiTexCoord(GLuint tex, const HMM_Vec2 *coords)
+    void MultiTexCoord(GLuint tex, const HMM_Vec2 *coords)
     {
         if (enable_texture_2d_[tex - GL_TEXTURE0] == false)
             return;
@@ -484,13 +418,13 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void Hint(GLenum target, GLenum mode)
+    void Hint(GLenum target, GLenum mode)
     {
         glHint(target, mode);
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void LineWidth(float width)
+    void LineWidth(float width)
     {
         if (AlmostEquals(width, line_width_))
         {
@@ -501,7 +435,7 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void DeleteTexture(const GLuint *tex_id)
+    void DeleteTexture(const GLuint *tex_id)
     {
         if (tex_id && *tex_id > 0)
         {
@@ -517,9 +451,9 @@ class RenderState
         }
     }
 
-    inline void FrontFace(GLenum wind)
+    void FrontFace(GLenum wind)
     {
-        if (front_face_== wind)
+        if (front_face_ == wind)
         {
             return;
         }
@@ -529,9 +463,9 @@ class RenderState
         ec_frame_stats.draw_state_change++;
     }
 
-    inline void ShadeModel(GLenum model)
+    void ShadeModel(GLenum model)
     {
-        if (shade_model_== model)
+        if (shade_model_ == model)
         {
             return;
         }
@@ -539,6 +473,55 @@ class RenderState
         shade_model_ = model;
         glShadeModel(model);
         ec_frame_stats.draw_state_change++;
+    }
+
+    void ColorMask(GLboolean r, GLboolean g, GLboolean b, GLboolean a)
+    {
+        glColorMask(r, g, b, a);
+    }
+
+    void Clear(GLbitfield mask)
+    {
+        glClear(mask);
+    }
+
+    void Flush()
+    {
+        glFlush();
+    }
+
+    void ReadScreen(int x, int y, int w, int h, uint8_t *rgb_buffer)
+    {
+        glPixelZoom(1.0f, 1.0f);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        for (; h > 0; h--, y++)
+        {
+            glReadPixels(x, y, w, 1, GL_RGB, GL_UNSIGNED_BYTE, rgb_buffer);
+
+            rgb_buffer += w * 3;
+        }
+    }
+
+    void ClipPlane(GLenum plane, const GLdouble *equation)
+    {
+        glClipPlane(plane, equation);
+    }
+
+    void Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
+    {
+        glScissor(x, y, width, height);
+    }
+
+    void GenTextures(GLsizei n, GLuint *textures)
+    {
+        glGenTextures(n, textures);
+    }
+
+    void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border,
+                    GLenum format, GLenum type, const void *data)
+    {
+        glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
     }
 
     int frameStateChanges_ = 0;
@@ -575,9 +558,9 @@ class RenderState
     GLuint bind_texture_2d_[2];
     GLenum active_texture_ = GL_TEXTURE0;
 
-    bool enable_depth_test_;
-    bool depth_mask_;
-    GLenum  depth_function_;
+    bool   enable_depth_test_;
+    bool   depth_mask_;
+    GLenum depth_function_;
 
     GLfloat polygon_offset_factor_;
     GLfloat polygon_offset_units_;
@@ -587,12 +570,12 @@ class RenderState
     GLfloat alpha_function_reference_;
 
     bool enable_lighting_;
-    
+
     bool enable_color_material_;
 
     bool enable_stencil_test_;
 
-    bool enable_line_smooth_;
+    bool  enable_line_smooth_;
     float line_width_;
 
     bool enable_normalize_;
@@ -601,17 +584,15 @@ class RenderState
     bool enable_polygon_smooth_;
 #endif
 
-    bool    enable_fog_;
-    GLint   fog_mode_;
-    GLfloat fog_start_;
-    GLfloat fog_end_;
-    GLfloat fog_density_;
+    bool      enable_fog_;
+    GLint     fog_mode_;
+    GLfloat   fog_start_;
+    GLfloat   fog_end_;
+    GLfloat   fog_density_;
     RGBAColor fog_color_;
 
     RGBAColor gl_color_;
 };
-
-extern RenderState *global_render_state;
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

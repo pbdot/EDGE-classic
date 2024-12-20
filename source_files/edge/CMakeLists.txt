@@ -59,25 +59,30 @@ set (EDGE_SOURCE_FILES
   rad_act.cc
   rad_pars.cc
   rad_trig.cc
-  r_draw.cc
-  r_shader.cc
-  r_render.cc
-  r_effects.cc
-  r_main.cc
-  r_occlude.cc
-  r_things.cc
-  r_units.cc
-  r_wipe.cc
-  r_misc.cc
-  r_sky.cc
-  r_state.cc
-  r_colormap.cc
-  r_modes.cc
-  r_mdl.cc
-  r_md2.cc
-  r_image.cc
-  r_doomtex.cc
-  r_texgl.cc
+  render/r_draw.cc
+  render/r_shader.cc
+  render/r_render.cc
+  render/r_effects.cc
+  render/r_main.cc
+  render/r_occlude.cc
+  render/r_things.cc  
+  render/r_wipe.cc
+  render/r_misc.cc
+  render/r_sky.cc
+  render/r_colormap.cc
+  render/r_modes.cc
+  render/r_image.cc
+  render/r_doomtex.cc
+  render/r_texgl.cc
+  render/gl/gl_font.cc
+  render/gl/gl_main.cc
+  render/gl/gl_state.cc
+  render/gl/gl_units.cc
+  render/gl/gl_mdl.cc
+  render/gl/gl_md2.cc
+  render/gl/gl_hu_draw.cc
+  render/gl/gl_render_port.cc
+  render/gl/gl_wipe.cc
   s_blit.cc
   s_cache.cc
   s_sound.cc
@@ -200,7 +205,7 @@ if(WIN32 AND (MSVC OR CLANG))
   target_include_directories(edge-classic SYSTEM PRIVATE ${EDGE_LIBRARY_DIR}/sdl2/include)
 endif()
 
-target_include_directories(edge-classic PRIVATE ./)
+target_include_directories(edge-classic PRIVATE ./ ./render)
 
 target_link_libraries(edge-classic PRIVATE ${EDGE_LINK_LIBRARIES})
 

@@ -387,7 +387,7 @@ bool SetScreenSize(DisplayMode *mode)
 #endif
 
     global_render_state->ClearColor(kRGBABlack);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    global_render_state->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     SDL_GL_SwapWindow(program_window);
 
@@ -398,7 +398,7 @@ void StartFrame(void)
 {
     ec_frame_stats.Clear();
     global_render_state->ClearColor(kRGBABlack);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    global_render_state->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if (draw_culling.d_)
         renderer_far_clip.f_ = draw_culling_distance.f_;
     else

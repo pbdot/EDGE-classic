@@ -15,7 +15,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-option(EDGE_GL_ES2 "Enable GLES2 Rendering Backend" OFF)
+option(EDGE_GL_ES2 "Enable GLES2 Rendering Backend" ON)
 option(EDGE_SANITIZE "Enable code sanitizing" OFF)
 option(EDGE_PROFILING "Enable Profiling" OFF)
 option(EDGE_COAL_SUPPORT "Enable support for COAL scripting" ON)
