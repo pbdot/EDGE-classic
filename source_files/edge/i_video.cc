@@ -320,11 +320,13 @@ static bool InitializeWindow(DisplayMode *mode)
     else
         SDL_GL_SetSwapInterval(vsync.d_);
 
+#ifndef EDGE_SOKOL
 #ifndef EDGE_GL_ES2
     gladLoadGL();
 
     if (GLVersion.major == 1 && GLVersion.minor < 3)
         FatalError("System only supports GL %d.%d. Minimum GL version 1.3 required!\n", GLVersion.major, GLVersion.minor);
+#endif
 #endif
 
     return true;

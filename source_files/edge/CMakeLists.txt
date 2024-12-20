@@ -74,15 +74,6 @@ set (EDGE_SOURCE_FILES
   render/r_image.cc
   render/r_doomtex.cc
   render/r_texgl.cc
-  render/gl/gl_font.cc
-  render/gl/gl_main.cc
-  render/gl/gl_state.cc
-  render/gl/gl_units.cc
-  render/gl/gl_mdl.cc
-  render/gl/gl_md2.cc
-  render/gl/gl_hu_draw.cc
-  render/gl/gl_render_port.cc
-  render/gl/gl_wipe.cc
   s_blit.cc
   s_cache.cc
   s_sound.cc
@@ -124,6 +115,36 @@ set (EDGE_SOURCE_FILES
   script/compat/lua_game.cc
   script/compat/lua_player.cc
   script/compat/lua_hud.cc)
+
+set (EDGE_GL_SOURCE_FILES
+  render/gl/gl_font.cc
+  render/gl/gl_main.cc
+  render/gl/gl_state.cc
+  render/gl/gl_units.cc
+  render/gl/gl_mdl.cc
+  render/gl/gl_md2.cc
+  render/gl/gl_hu_draw.cc
+  render/gl/gl_render_port.cc
+  render/gl/gl_wipe.cc
+)
+
+set (EDGE_SOKOL_SOURCE_FILES
+  render/sokol/sk_font.cc
+  render/sokol/sk_main.cc
+  render/sokol/sk_state.cc
+  render/sokol/sk_units.cc
+  render/sokol/sk_mdl.cc
+  render/sokol/sk_md2.cc
+  render/sokol/sk_hu_draw.cc
+  render/sokol/sk_render_port.cc
+  render/sokol/sk_wipe.cc
+)
+
+if (NOT EDGE_SOKOL)
+  set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} ${EDGE_GL_SOURCE_FILES})
+else()
+  set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} ${EDGE_SOKOL_SOURCE_FILES})
+endif()
 
 if (EDGE_COAL_SUPPORT)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} vm_coal.cc vm_hud.cc vm_player.cc)
@@ -193,7 +214,9 @@ else()
   target_compile_definitions(edge-classic PRIVATE UNIX)
 endif()
 
-if (NOT EDGE_GL_ES2)
+if (EDGE_SOKOL)
+
+elseif (NOT EDGE_GL_ES2)
   target_include_directories(edge-classic PRIVATE ${EDGE_LIBRARY_DIR}/glad/include/glad)
 	set(EDGE_LINK_LIBRARIES ${EDGE_LINK_LIBRARIES} glad ${OPENGL_LIBRARIES})
 else()

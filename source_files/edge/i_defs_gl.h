@@ -24,8 +24,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-
-#ifdef EDGE_GL_ES2
+#ifdef EDGE_SOKOL
+#include "render/sokol/sk_glstubs.h"
+#elif EDGE_GL_ES2
 #include "gl.h"
 #include "gl4esinit.h"
 #else
