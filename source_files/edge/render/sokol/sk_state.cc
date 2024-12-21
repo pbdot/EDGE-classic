@@ -1,5 +1,5 @@
 #include "sk_state.h"
 
-GLRenderState state;
+SokolRenderState state;
 
 RenderState *global_render_state = &state;

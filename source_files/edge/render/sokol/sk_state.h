@@ -27,7 +27,7 @@
 
 #include "../r_state.h"
 
-class GLRenderState : public RenderState
+class SokolRenderState : public RenderState
 {
   public:
     void Enable(GLenum cap, bool enabled = true)
@@ -527,6 +527,12 @@ class GLRenderState : public RenderState
     {
         //glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
     }
+
+    void StartFrame(void);
+
+    void SwapBuffers(void);
+
+    void FinishFrame(void);
 
     int frameStateChanges_ = 0;
 

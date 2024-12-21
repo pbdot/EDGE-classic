@@ -169,10 +169,17 @@ class RenderState
 
     virtual void GenTextures(GLsizei n, GLuint *textures) = 0;
 
-    virtual void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *data) = 0;
+    virtual void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+                            GLint border, GLenum format, GLenum type, const void *data) = 0;
+
+    virtual void StartFrame(void) = 0;
+
+    virtual void SwapBuffers(void) = 0;
+
+    virtual void FinishFrame(void) = 0;
 };
 
-extern RenderState *global_render_state;
+    extern RenderState *global_render_state;
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+    //--- editor settings ---
+    // vi:ts=4:sw=4:noexpandtab

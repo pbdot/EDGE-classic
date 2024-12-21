@@ -325,7 +325,8 @@ static bool InitializeWindow(DisplayMode *mode)
     gladLoadGL();
 
     if (GLVersion.major == 1 && GLVersion.minor < 3)
-        FatalError("System only supports GL %d.%d. Minimum GL version 1.3 required!\n", GLVersion.major, GLVersion.minor);
+        FatalError("System only supports GL %d.%d. Minimum GL version 1.3 required!\n", GLVersion.major,
+                   GLVersion.minor);
 #endif
 #endif
 
@@ -405,17 +406,23 @@ void StartFrame(void)
         renderer_far_clip.f_ = draw_culling_distance.f_;
     else
         renderer_far_clip.f_ = 64000.0;
+
+    global_render_state->StartFrame();        
 }
 
 static void SwapBuffers(void)
 {
     EDGE_ZoneScoped;
 
+    global_render_state->SwapBuffers();
+
     SDL_GL_SwapWindow(program_window);
 }
 
 void FinishFrame(void)
 {
+    global_render_state->FinishFrame();
+    
     SwapBuffers();
 
     EDGE_TracyPlot("draw_render_units", (int64_t)ec_frame_stats.draw_render_units);
@@ -434,13 +441,13 @@ void FinishFrame(void)
     {
         if (framerate_limit.d_ >= kTicRate)
         {
-            uint64_t target_time = 1000000ull / framerate_limit.d_;
+            uint64_t        target_time = 1000000ull / framerate_limit.d_;
             static uint64_t start_time;
 
             while (1)
             {
-                uint64_t current_time = GetMicroseconds();
-                uint64_t elapsed_time = current_time - start_time;
+                uint64_t current_time   = GetMicroseconds();
+                uint64_t elapsed_time   = current_time - start_time;
                 uint64_t remaining_time = 0;
 
                 if (elapsed_time >= target_time)
@@ -478,7 +485,7 @@ void FinishFrame(void)
     }
 
     if (monitor_aspect_ratio.CheckModified() || forced_pixel_aspect_ratio.CheckModified())
-        DeterminePixelAspect();
+        DeterminePixelAspect();    
 }
 
 void ShutdownGraphics(void)
