@@ -150,6 +150,12 @@ void RendererInit(void)
 {
     LogPrint("OpenGL: Initialising...\n");
 
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+
+
     RendererCheckExtensions();
 
     // read implementation limits

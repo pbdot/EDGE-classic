@@ -26,6 +26,7 @@
 #pragma once
 
 #include "../r_state.h"
+#include "sk_local.h"
 
 class SokolRenderState : public RenderState
 {
@@ -117,10 +118,19 @@ class SokolRenderState : public RenderState
 
         if (enabled)
         {
+            if (cap ==GL_TEXTURE_2D)
+            {
+                sgl_enable_texture();
+            }
             //glEnable(cap);
         }
         else
         {
+            if (cap ==GL_TEXTURE_2D)
+            {
+                sgl_disable_texture();
+            }
+
             //glDisable(cap);
         }
 
@@ -204,7 +214,12 @@ class SokolRenderState : public RenderState
         }
 
         bind_texture_2d_[index] = textureid;
+        
         //glBindTexture(GL_TEXTURE_2D, textureid);
+        sg_image img;
+        img.id = textureid;
+        sgl_texture(img, default_sampler);
+
         ec_frame_stats.draw_texture_change++;
         ec_frame_stats.draw_state_change++;
     }
@@ -528,6 +543,8 @@ class SokolRenderState : public RenderState
         //glTexImage2D(target, level, internalformat, width, height, border, format, type, data);
     }
 
+    void Initialize();
+
     void StartFrame(void);
 
     void SwapBuffers(void);
@@ -602,6 +619,8 @@ class SokolRenderState : public RenderState
     RGBAColor fog_color_;
 
     RGBAColor gl_color_;
+
+    sg_sampler     default_sampler;
 };
 
 //--- editor settings ---

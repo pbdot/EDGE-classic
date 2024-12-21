@@ -177,6 +177,8 @@ class RenderState
     virtual void SwapBuffers(void) = 0;
 
     virtual void FinishFrame(void) = 0;
+
+    virtual void Initialize() = 0;
 };
 
     extern RenderState *global_render_state;

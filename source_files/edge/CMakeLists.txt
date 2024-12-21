@@ -129,6 +129,7 @@ set (EDGE_GL_SOURCE_FILES
 )
 
 set (EDGE_SOKOL_SOURCE_FILES
+  render/sokol/sk_gl.cc
   render/sokol/sk_font.cc
   render/sokol/sk_main.cc
   render/sokol/sk_state.cc
