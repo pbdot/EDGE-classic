@@ -536,6 +536,15 @@ class GLRenderState : public RenderState
     {
     }
 
+    void Initialize(void)
+    {
+    }
+
+    void SetRenderMode(RenderMode mode)
+    {
+
+    }
+
     int frameStateChanges_ = 0;
 
   private:
