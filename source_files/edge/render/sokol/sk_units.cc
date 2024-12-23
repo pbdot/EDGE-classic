@@ -367,14 +367,12 @@ void RenderCurrentUnits(void)
             if (!unit->texture[1])
             {
                 sgl_texture(img0, fixme->default_sampler);
-                sgl_flags(0);
             }
             else
             {
                 sg_image img1;
                 img1.id = unit->texture[1];
-                sgl_multi_texture(img0, fixme->default_sampler, img1, fixme->clamp_sampler);
-                sgl_flags(1);
+                sgl_multi_texture(img0, fixme->default_sampler, img1, fixme->clamp_sampler);                
             }
         }
 
@@ -460,6 +458,12 @@ void RenderCurrentUnits(void)
             }
         }
         */
+
+       float fogr = float(epi::GetRGBARed(fixme->fog_color_)) / 255.0f;
+       float fogg = float(epi::GetRGBAGreen(fixme->fog_color_)) / 255.0f;
+       float fogb = float(epi::GetRGBABlue(fixme->fog_color_)) / 255.0f;
+              
+       sgl_set_fog(fixme->enable_fog_,fogr, fogg, fogb, 1, std::log1p(fixme->fog_density_), fixme->fog_start_, fixme->fog_end_, 1);       
 
         // glBegin(unit->shape);
         if (unit->shape == GL_QUADS)

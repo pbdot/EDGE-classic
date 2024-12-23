@@ -594,7 +594,6 @@ class SokolRenderState : public RenderState
 
     int frameStateChanges_ = 0;
 
-  private:
     bool   enable_blend_;
     GLenum blend_source_factor_;
     GLenum blend_destination_factor_;

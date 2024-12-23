@@ -190,4 +190,6 @@ void RendererInit(void)
 {
     global_render_state->Initialize();
     AllocateDrawStructs();
+
+    maximum_texture_size = 4096;
 }

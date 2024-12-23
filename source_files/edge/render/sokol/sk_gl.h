@@ -824,6 +824,11 @@ typedef struct sgl_desc_t {
     sgl_logger_t logger;            // optional log function override (default: NO LOGGING)
 } sgl_desc_t;
 
+typedef enum sg_state_flag {
+    SGL_STATE_MULTITEXTURE = 1,
+    SGL_STATE_FOG = 2,
+} sg_state_flag;
+
 /* the default context handle */
 static const sgl_context SGL_DEFAULT_CONTEXT = { 0x00010001 };
 
@@ -867,8 +872,9 @@ SOKOL_GL_API_DECL void sgl_enable_texture(void);
 SOKOL_GL_API_DECL void sgl_disable_texture(void);
 SOKOL_GL_API_DECL void sgl_texture(sg_image img0, sg_sampler smp0);
 SOKOL_GL_API_DECL void sgl_multi_texture(sg_image img0, sg_sampler smp0, sg_image img1, sg_sampler smp1);
-SOKOL_GL_API_DECL void sgl_flags(uint32_t flags);
 SOKOL_GL_API_DECL void sgl_layer(int layer_id);
+
+SOKOL_GL_API_DECL void sgl_set_fog(bool enabled, float r, float g, float b, float a, float density, float start, float end, float scale);
 
 /* pipeline stack functions */
 SOKOL_GL_API_DECL void sgl_load_default_pipeline(void);
@@ -1051,23 +1057,24 @@ inline sgl_pipeline sgl_context_make_pipeline(sgl_context ctx, const sg_pipeline
     }
 */
 static const char* _sgl_vs_source_glsl410 = "#version 410 core\n\
-    uniform vec4 vs_params[8]; \
-    uniform int vs_flags; \
+    uniform vec4 vs_params[12]; \
     layout(location = 0) in vec4 position; \
     layout(location = 1) in vec4 texcoords; \
     layout(location = 2) in vec4 color0; \
     layout(location = 3) in float psize; \
     layout(location = 0) out vec4 uv; \
     layout(location = 1) out vec4 color; \
-    layout(location = 2) flat out int flags; \
- \
+    layout(location = 2) out float fog_src; \
+  \
     void main() \
     { \
+        mat4 modelView = mat4(vs_params[8], vs_params[9], vs_params[10], vs_params[11]);\
+        vec4 vertex = modelView * position;\
         gl_Position = mat4(vs_params[0], vs_params[1], vs_params[2], vs_params[3]) * position; \
         gl_PointSize = psize; \
         uv = texcoords; \
         color = color0; \
-        flags = vs_flags;\
+        fog_src = vertex.z;\
     }\
  ";
 /*
@@ -1087,13 +1094,23 @@ static const char* _sgl_vs_source_glsl410 = "#version 410 core\n\
 
 static const char* _sgl_fs_source_glsl410 = "#version 410 core\n\
 \
+    struct frag_State {\
+        int flags;\
+        vec4 fog_color;\
+        float fog_density;\
+        float fog_start;\
+        float fog_end;\
+        float fog_scale;\
+    };\
+\
+    uniform frag_State state;\
     uniform sampler2D tex0_smp0;\
     uniform sampler2D tex1_smp1;\
 \
     layout(location = 0) out vec4 frag_color;\
     layout(location = 0) in vec4 uv;\
     layout(location = 1) in vec4 color;\
-    layout(location = 2) flat in int flags;\
+    layout(location = 2) in float fog_src;\
 \
     void main()\
     {\
@@ -1102,12 +1119,18 @@ static const char* _sgl_fs_source_glsl410 = "#version 410 core\n\
         {\
            discard;\
         }\
-        if ((flags & 1) == 1)\
+        if ((state.flags & 1) == 1)\
         {\
-        vec4 c1 = texture(tex1_smp1, uv.zw);\
-        c0.rgb *= c1.rgb;\
-        c0.rgb = clamp(c0.rgb, vec3(0), vec3(1));\
+            vec4 c1 = texture(tex1_smp1, uv.zw);\
+            c0.rgb *= c1.rgb;\
         }\
+        if ((state.flags & 2) == 2)\
+        {\
+            float fog_c = abs(fog_src);\
+            float fogf = clamp(exp(-state.fog_density * fog_c), 0., 1.);\
+            c0.rgb = mix(state.fog_color.rgb, c0.rgb, fogf);\
+        }\
+        c0.rgb = clamp(c0.rgb, vec3(0), vec3(1));\
         frag_color = c0;\
     }\
 ";
@@ -2753,11 +2776,20 @@ typedef struct {
     float v[4][4];
 } _sgl_matrix_t;
 
-typedef struct {
+typedef struct {    
     _sgl_matrix_t mvp;  /* model-view-projection matrix */
     _sgl_matrix_t tm;   /* texture matrix */
-    uint32_t flags;
-} _sgl_uniform_t;
+    _sgl_matrix_t mv;  /* model-view */
+} _sgl_vertex_uniform_t;
+
+typedef struct {
+    int32_t flags;
+    float fog_color[4];
+    float fog_density;
+    float fog_start;
+    float fog_end;
+    float fog_scale;
+} _sgl_fragment_uniform_t;
 
 typedef enum {
     SGL_COMMAND_DRAW,
@@ -2773,7 +2805,8 @@ typedef struct {
     sg_sampler smp1;
     int base_vertex;
     int num_vertices;
-    int uniform_index;
+    int vertex_uniform_index;
+    int fragment_uniform_index;
 } _sgl_draw_args_t;
 
 typedef struct {
@@ -2821,8 +2854,13 @@ typedef struct {
     struct {
         int cap;
         int next;
-        _sgl_uniform_t* ptr;
-    } uniforms;
+        _sgl_vertex_uniform_t* ptr;
+    } vertex_uniforms;
+    struct {
+        int cap;
+        int next;
+        _sgl_fragment_uniform_t* ptr;
+    } fragment_uniforms;
     struct {
         int cap;
         int next;
@@ -2844,9 +2882,10 @@ typedef struct {
     sg_sampler cur_smp0;
     sg_image cur_img1;
     sg_sampler cur_smp1;
-    uint32_t cur_flags;
+
     bool texturing_enabled;
-    bool uniforms_dirty;      /* reset in sgl_end(), set in any of the matrix stack functions */
+    bool fragment_uniforms_dirty;
+    bool vertex_uniforms_dirty;      /* reset in sgl_end(), set in any of the matrix stack functions */
 
     /* sokol-gfx resources */
     sg_buffer vbuf;
@@ -3238,7 +3277,8 @@ static sg_pipeline _sgl_get_pipeline(sgl_pipeline pip_id, _sgl_primitive_type_t 
 static void _sgl_reset_context(_sgl_context_t* ctx) {
     SOKOL_ASSERT(ctx);
     SOKOL_ASSERT(0 == ctx->vertices.ptr);
-    SOKOL_ASSERT(0 == ctx->uniforms.ptr);
+    SOKOL_ASSERT(0 == ctx->vertex_uniforms.ptr);
+    SOKOL_ASSERT(0 == ctx->fragment_uniforms.ptr);
     SOKOL_ASSERT(0 == ctx->commands.ptr);
     _sgl_clear(ctx, sizeof(_sgl_context_t));
 }
@@ -3315,13 +3355,14 @@ static void _sgl_init_context(sgl_context ctx_id, const sgl_context_desc_t* in_d
     ctx->cur_smp0 = _sgl.def_smp;
     ctx->cur_img1 = _sgl.def_img;
     ctx->cur_smp1 = _sgl.def_smp;
-    ctx->cur_flags = 0;
 
     // allocate buffers and pools
     ctx->vertices.cap = ctx->desc.max_vertices;
-    ctx->commands.cap = ctx->uniforms.cap = ctx->desc.max_commands;
+    ctx->commands.cap = ctx->vertex_uniforms.cap = ctx->desc.max_commands;
+    ctx->commands.cap = ctx->fragment_uniforms.cap = ctx->desc.max_commands;
     ctx->vertices.ptr = (_sgl_vertex_t*) _sgl_malloc((size_t)ctx->vertices.cap * sizeof(_sgl_vertex_t));
-    ctx->uniforms.ptr = (_sgl_uniform_t*) _sgl_malloc((size_t)ctx->uniforms.cap * sizeof(_sgl_uniform_t));
+    ctx->vertex_uniforms.ptr = (_sgl_vertex_uniform_t*) _sgl_malloc((size_t)ctx->vertex_uniforms.cap * sizeof(_sgl_vertex_uniform_t));
+    ctx->fragment_uniforms.ptr = (_sgl_fragment_uniform_t*) _sgl_malloc((size_t)ctx->fragment_uniforms.cap * sizeof(_sgl_fragment_uniform_t));
     ctx->commands.ptr = (_sgl_command_t*) _sgl_malloc((size_t)ctx->commands.cap * sizeof(_sgl_command_t));
 
     // create sokol-gfx resource objects
@@ -3353,7 +3394,8 @@ static void _sgl_init_context(sgl_context ctx_id, const sgl_context_desc_t* in_d
         _sgl_identity(&ctx->matrix_stack[i][0]);
     }
     ctx->pip_stack[0] = ctx->def_pip;
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
+    ctx->fragment_uniforms_dirty = true;
 }
 
 static sgl_context _sgl_make_context(const sgl_context_desc_t* desc) {
@@ -3371,14 +3413,17 @@ static void _sgl_destroy_context(sgl_context ctx_id) {
     _sgl_context_t* ctx = _sgl_lookup_context(ctx_id.id);
     if (ctx) {
         SOKOL_ASSERT(ctx->vertices.ptr);
-        SOKOL_ASSERT(ctx->uniforms.ptr);
+        SOKOL_ASSERT(ctx->vertex_uniforms.ptr);
+        SOKOL_ASSERT(ctx->fragment_uniforms.ptr);
         SOKOL_ASSERT(ctx->commands.ptr);
 
         _sgl_free(ctx->vertices.ptr);
-        _sgl_free(ctx->uniforms.ptr);
+        _sgl_free(ctx->vertex_uniforms.ptr);
+        _sgl_free(ctx->fragment_uniforms.ptr);
         _sgl_free(ctx->commands.ptr);
         ctx->vertices.ptr = 0;
-        ctx->uniforms.ptr = 0;
+        ctx->vertex_uniforms.ptr = 0;
+        ctx->fragment_uniforms.ptr = 0;
         ctx->commands.ptr = 0;
 
         sg_push_debug_group("sokol-gl");
@@ -3424,12 +3469,15 @@ static void _sgl_begin(_sgl_context_t* ctx, _sgl_primitive_type_t mode) {
 static void _sgl_rewind(_sgl_context_t* ctx) {
     ctx->frame_id++;
     ctx->vertices.next = 0;
-    ctx->uniforms.next = 0;
+    ctx->vertex_uniforms.next = 0;
+    ctx->fragment_uniforms.next = 0;
+    _sgl_clear(&ctx->fragment_uniforms.ptr[0], sizeof(_sgl_fragment_uniform_t ) * ctx->fragment_uniforms.cap);
     ctx->commands.next = 0;
     ctx->base_vertex = 0;
     ctx->error = _sgl_error_defaults();
     ctx->layer_id = 0;
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
+    ctx->fragment_uniforms_dirty = true;
 }
 
 // called from inside sokol-gfx sg_commit()
@@ -3455,9 +3503,19 @@ static _sgl_vertex_t* _sgl_next_vertex(_sgl_context_t* ctx) {
     }
 }
 
-static _sgl_uniform_t* _sgl_next_uniform(_sgl_context_t* ctx) {
-    if (ctx->uniforms.next < ctx->uniforms.cap) {
-        return &ctx->uniforms.ptr[ctx->uniforms.next++];
+static _sgl_vertex_uniform_t* _sgl_next_vertex_uniform(_sgl_context_t* ctx) {
+    if (ctx->vertex_uniforms.next < ctx->vertex_uniforms.cap) {
+        return &ctx->vertex_uniforms.ptr[ctx->vertex_uniforms.next++];
+    } else {
+        ctx->error.uniforms_full = true;
+        ctx->error.any = true;
+        return 0;
+    }
+}
+
+static _sgl_fragment_uniform_t* _sgl_next_fragment_uniform(_sgl_context_t* ctx) {
+    if (ctx->fragment_uniforms.next < ctx->fragment_uniforms.cap) {
+        return &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next++];
     } else {
         ctx->error.uniforms_full = true;
         ctx->error.any = true;
@@ -3789,17 +3847,32 @@ static void _sgl_setup_common(void) {
     shd_desc.attrs[3].hlsl_sem_name = "TEXCOORD";
     shd_desc.attrs[3].hlsl_sem_index = 3;
     shd_desc.uniform_blocks[0].stage = SG_SHADERSTAGE_VERTEX;
-    shd_desc.uniform_blocks[0].size = sizeof(_sgl_uniform_t);
+    shd_desc.uniform_blocks[0].size = sizeof(_sgl_vertex_uniform_t);
     shd_desc.uniform_blocks[0].hlsl_register_b_n = 0;
     shd_desc.uniform_blocks[0].msl_buffer_n = 0;
     shd_desc.uniform_blocks[0].wgsl_group0_binding_n = 0;
     shd_desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "vs_params";
     shd_desc.uniform_blocks[0].glsl_uniforms[0].type = SG_UNIFORMTYPE_FLOAT4;
-    shd_desc.uniform_blocks[0].glsl_uniforms[0].array_count = 8;
-    shd_desc.uniform_blocks[0].glsl_uniforms[1].glsl_name = "vs_flags";
-    shd_desc.uniform_blocks[0].glsl_uniforms[1].type = SG_UNIFORMTYPE_INT;
+    shd_desc.uniform_blocks[0].glsl_uniforms[0].array_count = 12;
 
-
+    shd_desc.uniform_blocks[1].stage = SG_SHADERSTAGE_FRAGMENT;
+    shd_desc.uniform_blocks[1].size = sizeof(_sgl_fragment_uniform_t);
+    shd_desc.uniform_blocks[1].hlsl_register_b_n = 0; // ???
+    shd_desc.uniform_blocks[1].msl_buffer_n = 0; // ???
+    shd_desc.uniform_blocks[1].wgsl_group0_binding_n = 0; // ???
+    shd_desc.uniform_blocks[1].glsl_uniforms[0].glsl_name = "state.flags";
+    shd_desc.uniform_blocks[1].glsl_uniforms[0].type = SG_UNIFORMTYPE_INT;
+    shd_desc.uniform_blocks[1].glsl_uniforms[1].glsl_name = "state.fog_color";
+    shd_desc.uniform_blocks[1].glsl_uniforms[1].type = SG_UNIFORMTYPE_FLOAT4;    
+    shd_desc.uniform_blocks[1].glsl_uniforms[2].glsl_name = "state.fog_density";
+    shd_desc.uniform_blocks[1].glsl_uniforms[2].type = SG_UNIFORMTYPE_FLOAT;
+    shd_desc.uniform_blocks[1].glsl_uniforms[3].glsl_name = "state.fog_start";
+    shd_desc.uniform_blocks[1].glsl_uniforms[3].type = SG_UNIFORMTYPE_FLOAT;
+    shd_desc.uniform_blocks[1].glsl_uniforms[4].glsl_name = "state.fog_end";
+    shd_desc.uniform_blocks[1].glsl_uniforms[4].type = SG_UNIFORMTYPE_FLOAT;
+    shd_desc.uniform_blocks[1].glsl_uniforms[5].glsl_name = "state.fog_scale";
+    shd_desc.uniform_blocks[1].glsl_uniforms[5].type = SG_UNIFORMTYPE_FLOAT;
+    
     shd_desc.images[0].stage = SG_SHADERSTAGE_FRAGMENT;
     shd_desc.images[0].image_type = SG_IMAGETYPE_2D;
     shd_desc.images[0].sample_type = SG_IMAGESAMPLETYPE_FLOAT;
@@ -3899,7 +3972,8 @@ static void _sgl_draw(_sgl_context_t* ctx, int layer_id) {
         uint32_t cur_img1_id = SG_INVALID_ID;
         uint32_t cur_smp1_id = SG_INVALID_ID;
 
-        int cur_uniform_index = -1;
+        int cur_vertex_uniform_index = -1;
+        int cur_fragment_uniform_index = -1;
 
         if (ctx->update_frame_id != ctx->frame_id) {
             ctx->update_frame_id = ctx->frame_id;
@@ -3938,7 +4012,8 @@ static void _sgl_draw(_sgl_context_t* ctx, int layer_id) {
                             cur_smp0_id = SG_INVALID_ID;
                             cur_img1_id = SG_INVALID_ID;
                             cur_smp1_id = SG_INVALID_ID;
-                            cur_uniform_index = -1;
+                            cur_vertex_uniform_index = -1;
+                            cur_fragment_uniform_index = -1;
                         }
                         if ((cur_img0_id != args->img0.id) || (cur_smp0_id != args->smp0.id) ||
                             (cur_img1_id != args->img1.id) || (cur_smp1_id != args->smp1.id)) {
@@ -3952,10 +4027,15 @@ static void _sgl_draw(_sgl_context_t* ctx, int layer_id) {
                             cur_img1_id = args->img1.id;
                             cur_smp1_id = args->smp1.id;
                         }
-                        if (cur_uniform_index != args->uniform_index) {
-                            const sg_range ub_range = { &ctx->uniforms.ptr[args->uniform_index], sizeof(_sgl_uniform_t) };
+                        if (cur_vertex_uniform_index != args->vertex_uniform_index) {
+                            const sg_range ub_range = { &ctx->vertex_uniforms.ptr[args->vertex_uniform_index], sizeof(_sgl_vertex_uniform_t) };
                             sg_apply_uniforms(0, &ub_range);
-                            cur_uniform_index = args->uniform_index;
+                            cur_vertex_uniform_index = args->vertex_uniform_index;
+                        }
+                        if (cur_fragment_uniform_index != args->fragment_uniform_index) {
+                            const sg_range ub_range = { &ctx->fragment_uniforms.ptr[args->fragment_uniform_index], sizeof(_sgl_fragment_uniform_t) };
+                            sg_apply_uniforms(1, &ub_range);
+                            cur_fragment_uniform_index = args->fragment_uniform_index;
                         }
                         /* FIXME: what if number of vertices doesn't match the primitive type? */
                         if (args->num_vertices > 0) {
@@ -4197,13 +4277,13 @@ SOKOL_API_IMPL void sgl_defaults(void) {
     ctx->cur_smp0 = _sgl.def_smp;
     ctx->cur_img1 = _sgl.def_img;
     ctx->cur_smp1 = _sgl.def_smp;
-    ctx->cur_flags = 0;
     sgl_load_default_pipeline();
     _sgl_identity(_sgl_matrix_texture(ctx));
     _sgl_identity(_sgl_matrix_modelview(ctx));
     _sgl_identity(_sgl_matrix_projection(ctx));
     ctx->cur_matrix_mode = SGL_MATRIXMODE_MODELVIEW;
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
+    ctx->fragment_uniforms_dirty = true;
 }
 
 SOKOL_API_IMPL void sgl_layer(int layer_id) {
@@ -4282,23 +4362,6 @@ SOKOL_API_IMPL void sgl_disable_texture(void) {
     ctx->texturing_enabled = false;
 }
 
-SOKOL_API_IMPL void sgl_flags(uint32_t flags) {
-    SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
-    _sgl_context_t* ctx = _sgl.cur_ctx;
-    if (!ctx) {
-        return;
-    }
-    SOKOL_ASSERT(!ctx->in_begin);
-    if (ctx->cur_flags == flags)
-    {
-        return;
-    }
-    ctx->cur_flags = flags;
-    ctx->uniforms_dirty = true;
-}
- 
-
-
 SOKOL_API_IMPL void sgl_texture(sg_image img0, sg_sampler smp0) {
     SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
     _sgl_context_t* ctx = _sgl.cur_ctx;
@@ -4319,6 +4382,14 @@ SOKOL_API_IMPL void sgl_texture(sg_image img0, sg_sampler smp0) {
 
     ctx->cur_img1 = _sgl.def_img;
     ctx->cur_smp1 = _sgl.def_smp;
+
+    _sgl_fragment_uniform_t *cf = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+
+    if (cf->flags & SGL_STATE_MULTITEXTURE)
+    {   
+        cf->flags &= ~SGL_STATE_MULTITEXTURE;
+        ctx->fragment_uniforms_dirty = true;
+    }
 }
 
 SOKOL_API_IMPL void sgl_multi_texture(sg_image img0, sg_sampler smp0, sg_image img1, sg_sampler smp1) {
@@ -4348,6 +4419,14 @@ SOKOL_API_IMPL void sgl_multi_texture(sg_image img0, sg_sampler smp0, sg_image i
         ctx->cur_smp1 = smp1;
     } else {
         ctx->cur_smp1 = _sgl.def_smp;
+    }
+
+    _sgl_fragment_uniform_t *cf = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+
+    if (!(cf->flags & SGL_STATE_MULTITEXTURE))
+    {   
+        cf->flags |= SGL_STATE_MULTITEXTURE;
+        ctx->fragment_uniforms_dirty = true;
     }
 }
 
@@ -4421,15 +4500,23 @@ SOKOL_API_IMPL void sgl_end(void) {
     SOKOL_ASSERT(ctx->vertices.next >= ctx->base_vertex);
     ctx->in_begin = false;
 
-    bool uniforms_dirty = ctx->uniforms_dirty;
-    if (uniforms_dirty) {
-        ctx->uniforms_dirty = false;
-        _sgl_uniform_t* uni = _sgl_next_uniform(ctx);
+    bool vertex_uniforms_dirty = ctx->vertex_uniforms_dirty;
+    if (vertex_uniforms_dirty) {
+        ctx->vertex_uniforms_dirty = false;
+        _sgl_vertex_uniform_t* uni = _sgl_next_vertex_uniform(ctx);
         if (uni) {
+            uni->mv = *_sgl_matrix_modelview(ctx);
             _sgl_matmul4(&uni->mvp, _sgl_matrix_projection(ctx), _sgl_matrix_modelview(ctx));
-            uni->tm = *_sgl_matrix_texture(ctx);
-            uni->flags = ctx->cur_flags;
+            uni->tm = *_sgl_matrix_texture(ctx);        
         }
+    }
+
+    bool fragment_uniforms_dirty = ctx->fragment_uniforms_dirty;
+    if (fragment_uniforms_dirty) {
+        ctx->fragment_uniforms_dirty = false;
+        _sgl_fragment_uniform_t* current = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+        _sgl_fragment_uniform_t* next = _sgl_next_fragment_uniform(ctx);
+        *next = *current;
     }
 
     // don't record any new commands when we're in an error state
@@ -4450,7 +4537,7 @@ SOKOL_API_IMPL void sgl_end(void) {
             (cur_cmd->layer_id == ctx->layer_id) &&
             (ctx->cur_prim_type != SGL_PRIMITIVETYPE_LINE_STRIP) &&
             (ctx->cur_prim_type != SGL_PRIMITIVETYPE_TRIANGLE_STRIP) &&
-            !uniforms_dirty &&
+            (!vertex_uniforms_dirty && !fragment_uniforms_dirty) &&
             (cur_cmd->args.draw.img0.id == img0.id) &&
             (cur_cmd->args.draw.smp0.id == smp0.id) &&
             (cur_cmd->args.draw.img1.id == img1.id) &&
@@ -4467,7 +4554,8 @@ SOKOL_API_IMPL void sgl_end(void) {
         // append a new draw command
         _sgl_command_t* cmd = _sgl_next_command(ctx);
         if (cmd) {
-            SOKOL_ASSERT(ctx->uniforms.next > 0);
+            SOKOL_ASSERT(ctx->vertex_uniforms.next > 0);
+            SOKOL_ASSERT(ctx->fragment_uniforms.next > 0);
             cmd->cmd = SGL_COMMAND_DRAW;
             cmd->layer_id = ctx->layer_id;
             cmd->args.draw.img0 = img0;
@@ -4477,7 +4565,8 @@ SOKOL_API_IMPL void sgl_end(void) {
             cmd->args.draw.pip = _sgl_get_pipeline(ctx->pip_stack[ctx->pip_tos], ctx->cur_prim_type);
             cmd->args.draw.base_vertex = ctx->base_vertex;
             cmd->args.draw.num_vertices = ctx->vertices.next - ctx->base_vertex;
-            cmd->args.draw.uniform_index = ctx->uniforms.next - 1;
+            cmd->args.draw.vertex_uniform_index = ctx->vertex_uniforms.next - 1;
+            cmd->args.draw.fragment_uniform_index = ctx->fragment_uniforms.next - 1;
         }
     }
 }
@@ -4707,6 +4796,55 @@ SOKOL_API_IMPL void sgl_v3f_t2f_c1i(float x, float y, float z, float u, float v,
     }
 }
 
+SOKOL_API_IMPL void sgl_set_fog(bool enabled, float r, float g, float b, float a, float density, float start, float end,
+                                float scale)
+{
+    SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
+    _sgl_context_t *ctx = _sgl.cur_ctx;
+    if (ctx)
+    {
+        _sgl_fragment_uniform_t *cf = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+
+        bool dirty = false;
+        int32_t flags = cf->flags;
+        if (!enabled)
+        {
+            if (!(flags & SGL_STATE_FOG))
+            {
+                return;
+            }
+
+            dirty = true;
+            flags &= ~SGL_STATE_FOG;
+        }
+        else
+        {
+            if (!(flags & SGL_STATE_FOG))
+            {
+                dirty = true;
+            }
+
+            flags |= SGL_STATE_FOG;
+        }
+        
+        if (dirty || (cf->fog_color[0] != r) || (cf->fog_color[1] != g) || (cf->fog_color[2] != b) ||
+            (cf->fog_color[3] != a) || (density != cf->fog_density) || (start != cf->fog_start) ||
+            (end != cf->fog_end) || (scale != cf->fog_scale))
+        {
+            ctx->fragment_uniforms_dirty = true;
+            cf->flags                    = flags;
+            cf->fog_color[0]             = r;
+            cf->fog_color[1]             = g;
+            cf->fog_color[2]             = b;
+            cf->fog_color[3]             = a;
+            cf->fog_density              = density;
+            cf->fog_start                = start;
+            cf->fog_end                  = end;
+            cf->fog_scale                = scale;
+        }
+    }
+}
+
 SOKOL_API_IMPL void sgl_matrix_mode_modelview(void) {
     SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
     _sgl_context_t* ctx = _sgl.cur_ctx;
@@ -4737,7 +4875,7 @@ SOKOL_API_IMPL void sgl_load_identity(void) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_identity(_sgl_matrix(ctx));
 }
 
@@ -4747,7 +4885,7 @@ SOKOL_API_IMPL void sgl_load_matrix(const float m[16]) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     memcpy(&_sgl_matrix(ctx)->v[0][0], &m[0], 64);
 }
 
@@ -4757,7 +4895,7 @@ SOKOL_API_IMPL void sgl_load_transpose_matrix(const float m[16]) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_transpose(_sgl_matrix(ctx), (const _sgl_matrix_t*) &m[0]);
 }
 
@@ -4767,7 +4905,7 @@ SOKOL_API_IMPL void sgl_mult_matrix(const float m[16]) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     const _sgl_matrix_t* m0  = (const _sgl_matrix_t*) &m[0];
     _sgl_mul(_sgl_matrix(ctx), m0);
 }
@@ -4778,7 +4916,7 @@ SOKOL_API_IMPL void sgl_mult_transpose_matrix(const float m[16]) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_matrix_t m0;
     _sgl_transpose(&m0, (const _sgl_matrix_t*) &m[0]);
     _sgl_mul(_sgl_matrix(ctx), &m0);
@@ -4790,7 +4928,7 @@ SOKOL_API_IMPL void sgl_rotate(float angle_rad, float x, float y, float z) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_rotate(_sgl_matrix(ctx), angle_rad, x, y, z);
 }
 
@@ -4800,7 +4938,7 @@ SOKOL_API_IMPL void sgl_scale(float x, float y, float z) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_scale(_sgl_matrix(ctx), x, y, z);
 }
 
@@ -4810,7 +4948,7 @@ SOKOL_API_IMPL void sgl_translate(float x, float y, float z) {
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_translate(_sgl_matrix(ctx), x, y, z);
 }
 
@@ -4820,7 +4958,7 @@ SOKOL_API_IMPL void sgl_frustum(float l, float r, float b, float t, float n, flo
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_frustum(_sgl_matrix(ctx), l, r, b, t, n, f);
 }
 
@@ -4830,7 +4968,7 @@ SOKOL_API_IMPL void sgl_ortho(float l, float r, float b, float t, float n, float
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_ortho(_sgl_matrix(ctx), l, r, b, t, n, f);
 }
 
@@ -4840,7 +4978,7 @@ SOKOL_API_IMPL void sgl_perspective(float fov_y, float aspect, float z_near, flo
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_perspective(_sgl_matrix(ctx), fov_y, aspect, z_near, z_far);
 }
 
@@ -4850,7 +4988,7 @@ SOKOL_API_IMPL void sgl_lookat(float eye_x, float eye_y, float eye_z, float cent
     if (!ctx) {
         return;
     }
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     _sgl_lookat(_sgl_matrix(ctx), eye_x, eye_y, eye_z, center_x, center_y, center_z, up_x, up_y, up_z);
 }
 
@@ -4861,7 +4999,7 @@ SOKOL_GL_API_DECL void sgl_push_matrix(void) {
         return;
     }
     SOKOL_ASSERT((ctx->cur_matrix_mode >= 0) && (ctx->cur_matrix_mode < SGL_NUM_MATRIXMODES));
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     if (ctx->matrix_tos[ctx->cur_matrix_mode] < (_SGL_MAX_STACK_DEPTH - 1)) {
         const _sgl_matrix_t* src = _sgl_matrix(ctx);
         ctx->matrix_tos[ctx->cur_matrix_mode]++;
@@ -4880,7 +5018,7 @@ SOKOL_GL_API_DECL void sgl_pop_matrix(void) {
         return;
     }
     SOKOL_ASSERT((ctx->cur_matrix_mode >= 0) && (ctx->cur_matrix_mode < SGL_NUM_MATRIXMODES));
-    ctx->uniforms_dirty = true;
+    ctx->vertex_uniforms_dirty = true;
     if (ctx->matrix_tos[ctx->cur_matrix_mode] > 0) {
         ctx->matrix_tos[ctx->cur_matrix_mode]--;
     } else {
