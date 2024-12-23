@@ -13,7 +13,7 @@
 #include "r_units.h"
 #include "sk_local.h"
 
-extern int             maximum_texture_size;
+extern int maximum_texture_size;
 
 static SokolRenderState state;
 
@@ -24,7 +24,7 @@ void SokolRenderState::Initialize()
     sg_environment env;
     memset(&env, 0, sizeof(env));
     env.defaults.color_format = SG_PIXELFORMAT_RGBA8;
-    env.defaults.depth_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    env.defaults.depth_format = SG_PIXELFORMAT_DEPTH;
     env.defaults.sample_count = 1;
 
     sg_desc desc{0};
@@ -41,7 +41,7 @@ void SokolRenderState::Initialize()
     sgl_desc_t sgl_desc;
     memset(&sgl_desc, 0, sizeof(sgl_desc));
     sgl_desc.color_format       = SG_PIXELFORMAT_RGBA8;
-    sgl_desc.depth_format       = SG_PIXELFORMAT_DEPTH_STENCIL;
+    sgl_desc.depth_format       = SG_PIXELFORMAT_DEPTH;
     sgl_desc.sample_count       = 1;
     sgl_desc.pipeline_pool_size = 512;
     sgl_desc.logger.func        = slog_func;
@@ -76,7 +76,7 @@ void SokolRenderState::Initialize()
     // 2D
     sgl_context_desc_t context_desc_2d = {0};
     context_desc_2d.color_format       = SG_PIXELFORMAT_RGBA8;
-    context_desc_2d.depth_format       = SG_PIXELFORMAT_DEPTH_STENCIL;
+    context_desc_2d.depth_format       = SG_PIXELFORMAT_DEPTH;
     context_desc_2d.sample_count       = 1;
     context_desc_2d.max_commands       = 16 * 1024;
     context_desc_2d.max_vertices       = 128 * 1024;
@@ -86,7 +86,7 @@ void SokolRenderState::Initialize()
     // 3D
     sgl_context_desc_t context_desc_3d = {0};
     context_desc_3d.color_format       = SG_PIXELFORMAT_RGBA8;
-    context_desc_3d.depth_format       = SG_PIXELFORMAT_DEPTH_STENCIL;
+    context_desc_3d.depth_format       = SG_PIXELFORMAT_DEPTH;
     context_desc_3d.sample_count       = 1;
     context_desc_3d.max_commands       = 16 * 1024;
     context_desc_3d.max_vertices       = 128 * 1024;
@@ -101,17 +101,20 @@ void SokolRenderState::Initialize()
     sg_pipeline_desc pip_3d_add_desc               = {0};
     pip_3d_add_desc.depth.compare                  = SG_COMPAREFUNC_LESS_EQUAL;
     pip_3d_add_desc.depth.write_enabled            = true;
-    pip_3d_add_desc.colors[0].blend.enabled = true;
+    pip_3d_add_desc.colors[0].blend.enabled        = true;
     pip_3d_add_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     pip_3d_add_desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
+    //pip_3d_add_desc.colors[0].write_mask = SG_COLORMASK_RGB;
     pip_3d_add_                                    = sgl_context_make_pipeline(context_3d_, &pip_3d_add_desc);
 
     sg_pipeline_desc pip_3d_alpha_desc               = {0};
     pip_3d_alpha_desc.depth.compare                  = SG_COMPAREFUNC_LESS_EQUAL;
     pip_3d_alpha_desc.depth.write_enabled            = true;
-    pip_3d_add_desc.colors[0].blend.enabled = true;
+    pip_3d_alpha_desc.colors[0].blend.enabled          = true;
     pip_3d_alpha_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
-    pip_3d_alpha_desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE;
+    pip_3d_alpha_desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    //pip_3d_alpha_desc.colors[0].write_mask = SG_COLORMASK_RGB;
+    
     pip_3d_alpha_                                    = sgl_context_make_pipeline(context_3d_, &pip_3d_alpha_desc);
 
     // IMGUI
@@ -140,7 +143,7 @@ void SokolRenderState::StartFrame(void)
     pass.swapchain.width          = w;
     pass.swapchain.height         = h;
     pass.swapchain.color_format   = SG_PIXELFORMAT_RGBA8;
-    pass.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH_STENCIL;
+    pass.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
     pass.swapchain.gl.framebuffer = 0;
 
     sg_begin_pass(&pass);
@@ -165,6 +168,7 @@ void SokolRenderState::FinishFrame(void)
     sgimgui_.buffer_window.open      = false;
     sgimgui_.pipeline_window.open    = false;
     sgimgui_.attachments_window.open = false;
+    sgimgui_.frame_stats_window.open = false;
 
     simgui_new_frame(&frame_desc);
     sgimgui_draw(&sgimgui_);
