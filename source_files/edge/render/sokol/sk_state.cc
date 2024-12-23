@@ -14,7 +14,6 @@
 #include "sk_local.h"
 
 extern int             maximum_texture_size;
-extern ConsoleVariable fliplevels;
 
 static SokolRenderState state;
 

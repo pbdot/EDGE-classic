@@ -15,7 +15,6 @@
 extern bool            custom_skybox;
 extern int             maximum_texture_size;
 extern SkyStretch      current_sky_stretch;
-extern ConsoleVariable fliplevels;
 
 static struct
 {
@@ -60,12 +59,8 @@ void SetupWorldMatrices2D(void)
 
     sgl_matrix_mode_projection();
     sgl_load_identity();
-    if (fliplevels.d_)
-        sgl_ortho((float)view_window_width, (float)view_window_x, (float)view_window_y, (float)view_window_height,
-                  -1.0f, 1.0f);
-    else
-        sgl_ortho((float)view_window_x, (float)view_window_width, (float)view_window_y, (float)view_window_height,
-                  -1.0f, 1.0f);
+    sgl_ortho((float)view_window_x, (float)view_window_width, (float)view_window_y, (float)view_window_height,
+                -1.0f, 1.0f);
 
     sgl_matrix_mode_modelview();
     sgl_load_identity();
@@ -87,14 +82,9 @@ void SetupMatrices3d(void)
     sgl_matrix_mode_projection();
     sgl_load_identity();
 
-    if (fliplevels.d_)
-        sgl_frustum(view_x_slope * renderer_near_clip.f_, -view_x_slope * renderer_near_clip.f_,
-                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
-                    renderer_far_clip.f_);
-    else
-        sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
-                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
-                    renderer_far_clip.f_);
+    sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
+                -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
+                renderer_far_clip.f_);
 
     // calculate look-at matrix
 
@@ -115,14 +105,9 @@ void SetupSkyMatrices(void)
         sgl_push_matrix();
         sgl_load_identity();
 
-        if (fliplevels.d_)
-            sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
-                        -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
-                        renderer_near_clip.f_, renderer_far_clip.f_);
-        else
-            sgl_frustum(view_x_slope * renderer_near_clip.f_, -view_x_slope * renderer_near_clip.f_,
-                        -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
-                        renderer_near_clip.f_, renderer_far_clip.f_);
+        sgl_frustum(view_x_slope * renderer_near_clip.f_, -view_x_slope * renderer_near_clip.f_,
+                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
+                    renderer_near_clip.f_, renderer_far_clip.f_);
 
         sgl_matrix_mode_modelview();
         sgl_push_matrix();
@@ -137,14 +122,9 @@ void SetupSkyMatrices(void)
         sgl_push_matrix();
         sgl_load_identity();
 
-        if (fliplevels.d_)
-            sgl_frustum(view_x_slope * renderer_near_clip.f_, -view_x_slope * renderer_near_clip.f_,
-                        -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
-                        renderer_near_clip.f_, renderer_far_clip.f_ * 4.0);
-        else
-            sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
-                        -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
-                        renderer_near_clip.f_, renderer_far_clip.f_ * 4.0);
+        sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
+                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
+                    renderer_near_clip.f_, renderer_far_clip.f_ * 4.0);
 
         sgl_matrix_mode_modelview();
         sgl_push_matrix();

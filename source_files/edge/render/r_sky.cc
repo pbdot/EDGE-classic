@@ -228,60 +228,6 @@ void DeleteSkyTextures(void)
     }
 }
 
-static void SetupSkyMatrices(void)
-{
-    if (custom_skybox)
-    {
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadIdentity();
-
-        glFrustum(view_x_slope * renderer_near_clip.f_, -view_x_slope * renderer_near_clip.f_,
-                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_,
-                    renderer_near_clip.f_, renderer_far_clip.f_);
-
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-
-        glRotatef(270.0f - epi::DegreesFromBAM(view_vertical_angle), 1.0f, 0.0f, 0.0f);
-        glRotatef(epi::DegreesFromBAM(view_angle), 0.0f, 0.0f, 1.0f);
-    }
-    else
-    {
-        glMatrixMode(GL_PROJECTION);
-        glPushMatrix();
-        glLoadIdentity();
-
-        glFrustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
-                -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
-                renderer_far_clip.f_ * 4.0);
-
-        glMatrixMode(GL_MODELVIEW);
-        glPushMatrix();
-        glLoadIdentity();
-
-        glRotatef(270.0f - epi::DegreesFromBAM(view_vertical_angle), 1.0f, 0.0f, 0.0f);
-        glRotatef(-epi::DegreesFromBAM(view_angle), 0.0f, 0.0f, 1.0f);
-
-        if (current_sky_stretch == kSkyStretchStretch)
-            glTranslatef(0.0f, 0.0f,
-                         (renderer_far_clip.f_ * 2 * 0.15));  // Draw center above horizon a little
-        else
-            glTranslatef(0.0f, 0.0f,
-                         -(renderer_far_clip.f_ * 2 * 0.15)); // Draw center below horizon a little
-    }
-}
-
-static void RendererRevertSkyMatrices(void)
-{
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
-}
-
 static void BeginSkyUnit(void)
 {
     total_sky_verts = 0;

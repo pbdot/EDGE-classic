@@ -116,7 +116,6 @@ set (EDGE_GL_SOURCE_FILES
   render/gl/gl_units.cc
   render/gl/gl_mdl.cc
   render/gl/gl_md2.cc
-  render/gl/gl_hu_draw.cc
   render/gl/gl_render_port.cc
   render/gl/gl_wipe.cc
 )
@@ -128,8 +127,7 @@ set (EDGE_SOKOL_SOURCE_FILES
   render/sokol/sk_state.cc
   render/sokol/sk_units.cc
   render/sokol/sk_mdl.cc
-  render/sokol/sk_md2.cc
-  render/sokol/sk_hu_draw.cc
+  render/sokol/sk_md2.cc  
   render/sokol/sk_render_port.cc
   render/sokol/sk_wipe.cc
 )
