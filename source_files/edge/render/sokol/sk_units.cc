@@ -372,7 +372,7 @@ void RenderCurrentUnits(void)
             {
                 sg_image img1;
                 img1.id = unit->texture[1];
-                sgl_multi_texture(img0, fixme->default_sampler, img1, fixme->clamp_sampler);                
+                sgl_multi_texture(img0, fixme->default_sampler, img1, fixme->clamp_sampler);
             }
         }
 
@@ -459,11 +459,12 @@ void RenderCurrentUnits(void)
         }
         */
 
-       float fogr = float(epi::GetRGBARed(fixme->fog_color_)) / 255.0f;
-       float fogg = float(epi::GetRGBAGreen(fixme->fog_color_)) / 255.0f;
-       float fogb = float(epi::GetRGBABlue(fixme->fog_color_)) / 255.0f;
-              
-       sgl_set_fog(fixme->enable_fog_,fogr, fogg, fogb, 1, std::log1p(fixme->fog_density_), fixme->fog_start_, fixme->fog_end_, 1);       
+        float fogr = float(epi::GetRGBARed(fixme->fog_color_)) / 255.0f;
+        float fogg = float(epi::GetRGBAGreen(fixme->fog_color_)) / 255.0f;
+        float fogb = float(epi::GetRGBABlue(fixme->fog_color_)) / 255.0f;
+
+        sgl_set_fog(fixme->enable_fog_, fogr, fogg, fogb, 1, std::log1p(fixme->fog_density_), fixme->fog_start_,
+                    fixme->fog_end_, 1);
 
         // glBegin(unit->shape);
         if (unit->shape == GL_QUADS)
@@ -506,6 +507,23 @@ void RenderCurrentUnits(void)
             sgl_end();
             continue;
         }
+        else if (unit->shape == GL_LINES)
+        {
+            sgl_disable_texture();
+            sgl_begin_lines();
+            const RendererVertex *V = local_verts + unit->first;
+
+            for (int v_idx = 0, v_last_idx = unit->count; v_idx < v_last_idx; v_idx++, V++)
+            {
+                sgl_v3f_c4b(V->position.X, V->position.Y, V->position.Z, epi::GetRGBARed(V->rgba),
+                            epi::GetRGBAGreen(V->rgba), epi::GetRGBABlue(V->rgba), epi::GetRGBAAlpha(V->rgba));
+            }
+
+            sgl_end();
+
+            continue;
+        }
+
         else
         {
             continue;
@@ -515,12 +533,6 @@ void RenderCurrentUnits(void)
 
         for (int v_idx = 0, v_last_idx = unit->count; v_idx < v_last_idx; v_idx++, V++)
         {
-            // global_render_state->GLColor(V->rgba);
-            // global_render_state->MultiTexCoord(GL_TEXTURE0, &V->texture_coordinates[0]);
-            // global_render_state->MultiTexCoord(GL_TEXTURE1, &V->texture_coordinates[1]);
-            //  vertex must be last
-            // glVertex3fv((const GLfloat *)(&V->position));
-
             sgl_v3f_t4f_c4b(V->position.X, V->position.Y, V->position.Z, V->texture_coordinates[0].X,
                             V->texture_coordinates[0].Y, V->texture_coordinates[1].X, V->texture_coordinates[1].Y,
                             epi::GetRGBARed(V->rgba), epi::GetRGBABlue(V->rgba), epi::GetRGBAGreen(V->rgba),
