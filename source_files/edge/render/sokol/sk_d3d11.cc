@@ -394,10 +394,10 @@ void R_InitD3D11(SDL_Window *window)
     SDL_VERSION(&wmInfo.version);
     SDL_GetWindowWMInfo(window, &wmInfo);
     _sapp.win32.hwnd         = wmInfo.info.win.window;
-    _sapp.framebuffer_width  = 1920;
-    _sapp.framebuffer_height = 1080;
+    _sapp.framebuffer_width  = 1280;
+    _sapp.framebuffer_height = 720;
     _sapp.sample_count       = 1;
-    _sapp.swap_interval      = 100;
+    _sapp.swap_interval      = 0;
 
     _sapp_d3d11_create_device_and_swapchain();
     _sapp_d3d11_create_default_render_target();
