@@ -1,5 +1,3 @@
-#include "sk_state.h"
-
 #include "epi_str_compare.h"
 #include "g_game.h"
 #include "i_defs_gl.h"
@@ -12,6 +10,12 @@
 #include "r_modes.h"
 #include "r_units.h"
 #include "sk_local.h"
+
+#ifdef SOKOL_D3D11
+#include "sk_d3d11.h"
+#endif
+
+#include "sk_state.h"
 
 extern int maximum_texture_size;
 
@@ -27,10 +31,19 @@ void SokolRenderState::Initialize()
     env.defaults.depth_format = SG_PIXELFORMAT_DEPTH;
     env.defaults.sample_count = 1;
 
+#ifdef SOKOL_D3D11
+    R_InitD3D11(program_window);
+#endif
     sg_desc desc{0};
     desc.environment     = env;
     desc.logger.func     = slog_func;
     desc.image_pool_size = 8192;
+
+#ifdef SOKOL_D3D11
+    desc.environment.d3d11.device = sapp_d3d11_get_device();
+    desc.environment.d3d11.device_context = sapp_d3d11_get_device_context();
+#endif
+
     sg_setup(&desc);
 
     if (!sg_isvalid())
@@ -146,6 +159,12 @@ void SokolRenderState::StartFrame(void)
     pass.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
     pass.swapchain.gl.framebuffer = 0;
 
+#ifdef SOKOL_D3D11
+    pass.swapchain.d3d11.render_view = sapp_d3d11_get_render_view();
+    pass.swapchain.d3d11.resolve_view = sapp_d3d11_get_resolve_view();
+    pass.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
+#endif
+
     sg_begin_pass(&pass);
 }
 
@@ -179,4 +198,6 @@ void SokolRenderState::FinishFrame(void)
 
     sg_end_pass();
     sg_commit();
+
+    sapp_d3d11_present(false);
 }

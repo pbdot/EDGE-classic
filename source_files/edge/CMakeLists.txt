@@ -132,6 +132,10 @@ set (EDGE_SOKOL_SOURCE_FILES
   render/sokol/sk_wipe.cc
 )
 
+if (EDGE_SOKOL_D3D11)
+  set (EDGE_SOKOL_SOURCE_FILES ${EDGE_SOKOL_SOURCE_FILES} render/sokol/sk_d3d11.cc)
+endif()
+
 if (NOT EDGE_SOKOL)
   set (EDGE_SOURCE_FILES ${EDGE_SOURCE_FILES} ${EDGE_GL_SOURCE_FILES})
 else()

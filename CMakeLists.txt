@@ -16,6 +16,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 option(EDGE_SOKOL "Enable Sokol Rendering Backend" ON)
+option(EDGE_SOKOL_GL "Sokol GL" OFF)
+option(EDGE_SOKOL_D3D11 "Sokol D3D11" ON)
+
 option(EDGE_GL_ES2 "Enable GLES2 Rendering Backend" OFF)
 option(EDGE_SANITIZE "Enable code sanitizing" OFF)
 option(EDGE_PROFILING "Enable Profiling" OFF)

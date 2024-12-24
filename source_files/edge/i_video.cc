@@ -158,6 +158,7 @@ void StartupGraphics(void)
     if (FindArgument("nograb") > 0)
         grab_mouse = 0;
 
+#ifndef SOKOL_D3D11
     // -AJA- FIXME these are wrong (probably ignored though)
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
@@ -170,6 +171,7 @@ void StartupGraphics(void)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     initialize_gl4es();
+#endif
 #endif
 
     // -DS- 2005/06/27 Detect SDL Resolutions
@@ -273,20 +275,28 @@ static bool InitializeWindow(DisplayMode *mode)
         toggle_windowed_window_mode = kWindowModeWindowed;
     }
 
+#ifndef SOKOL_D3D11
     if (SDL_GL_CreateContext(program_window) == nullptr)
         FatalError("Failed to create OpenGL context.\n");
+#endif
 
     if (vsync.d_ == 2)
     {
+#ifndef SOKOL_D3D11        
         // Fallback to normal VSync if Adaptive doesn't work
         if (SDL_GL_SetSwapInterval(-1) == -1)
         {
             vsync = 1;
             SDL_GL_SetSwapInterval(vsync.d_);
         }
+#endif
     }
     else
+    {
+#ifndef SOKOL_D3D11        
         SDL_GL_SetSwapInterval(vsync.d_);
+#endif
+    }
 
 #ifndef EDGE_SOKOL
 #ifndef EDGE_GL_ES2
@@ -347,7 +357,9 @@ bool SetScreenSize(DisplayMode *mode)
     global_render_state->ClearColor(kRGBABlack);
     global_render_state->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#ifndef SOKOL_D3D11
     SDL_GL_SwapWindow(program_window);
+#endif
 
     return true;
 }
