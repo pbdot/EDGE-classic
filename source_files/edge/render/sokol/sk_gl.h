@@ -2784,6 +2784,7 @@ typedef struct {
 
 typedef struct {
     int32_t flags;
+    uint8_t _pad_4[12];
     float fog_color[4];
     float fog_density;
     float fog_start;
@@ -3804,6 +3805,9 @@ static sgl_desc_t _sgl_desc_defaults(const sgl_desc_t* desc) {
     return res;
 }
 
+#include "HandmadeMath.h"
+#include "shaders/world.h"
+
 // create resources which are shared between all contexts
 static void _sgl_setup_common(void) {
     sg_push_debug_group("sokol-gl");
@@ -3833,6 +3837,9 @@ static void _sgl_setup_common(void) {
 
     // one shader for all contexts
     sg_shader_desc shd_desc;
+    memcpy(&shd_desc, sgl_shader_desc(sg_query_backend()), sizeof(sg_shader_desc));
+
+    /*
     _sgl_clear(&shd_desc, sizeof(shd_desc));
     shd_desc.attrs[0].glsl_name = "position";
     shd_desc.attrs[1].glsl_name = "texcoords";
@@ -3943,6 +3950,7 @@ static void _sgl_setup_common(void) {
         shd_desc.vertex_func.source = _sgl_vs_source_dummy;
         shd_desc.fragment_func.source = _sgl_fs_source_dummy;
     #endif
+    */
     _sgl.shd = sg_make_shader(&shd_desc);
     SOKOL_ASSERT(SG_INVALID_ID != _sgl.shd.id);
     sg_pop_debug_group();
