@@ -250,13 +250,15 @@ static bool InitializeWindow(DisplayMode *mode)
     int resizeable = 0;
 #endif
 
-    program_window =
-        SDL_CreateWindow(temp_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mode->width, mode->height,
-                         SDL_WINDOW_OPENGL |
-                             (mode->window_mode == kWindowModeBorderless
-                                  ? (SDL_WINDOW_FULLSCREEN_DESKTOP)
-                                  : (0)) |
-                             resizeable);
+    uint32_t window_flags =
+        (mode->window_mode == kWindowModeBorderless ? (SDL_WINDOW_FULLSCREEN_DESKTOP) : (0)) | resizeable;
+
+#ifndef SOKOL_D3D11
+    window_flags |= SDL_WINDOW_OPENGL;
+#endif
+
+    program_window = SDL_CreateWindow(temp_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mode->width,
+                                      mode->height, window_flags);
 
     if (program_window == nullptr)
     {
@@ -282,7 +284,7 @@ static bool InitializeWindow(DisplayMode *mode)
 
     if (vsync.d_ == 2)
     {
-#ifndef SOKOL_D3D11        
+#ifndef SOKOL_D3D11
         // Fallback to normal VSync if Adaptive doesn't work
         if (SDL_GL_SetSwapInterval(-1) == -1)
         {
@@ -293,7 +295,7 @@ static bool InitializeWindow(DisplayMode *mode)
     }
     else
     {
-#ifndef SOKOL_D3D11        
+#ifndef SOKOL_D3D11
         SDL_GL_SetSwapInterval(vsync.d_);
 #endif
     }
@@ -316,9 +318,7 @@ bool SetScreenSize(DisplayMode *mode)
     GrabCursor(false);
 
     LogPrint("SetScreenSize: trying %dx%d %dbpp (%s)\n", mode->width, mode->height, mode->depth,
-             mode->window_mode == kWindowModeBorderless
-                 ? "borderless"
-                 : "windowed");
+             mode->window_mode == kWindowModeBorderless ? "borderless" : "windowed");
 
     if (program_window == nullptr)
     {
@@ -374,7 +374,7 @@ void StartFrame(void)
     else
         renderer_far_clip.f_ = 64000.0;
 
-    global_render_state->StartFrame();        
+    global_render_state->StartFrame();
 }
 
 static void SwapBuffers(void)
@@ -382,14 +382,15 @@ static void SwapBuffers(void)
     EDGE_ZoneScoped;
 
     global_render_state->SwapBuffers();
-
+#ifndef SOKOL_D3D11
     SDL_GL_SwapWindow(program_window);
+#endif
 }
 
 void FinishFrame(void)
 {
     global_render_state->FinishFrame();
-    
+
     SwapBuffers();
 
     EDGE_TracyPlot("draw_render_units", (int64_t)ec_frame_stats.draw_render_units);
@@ -440,19 +441,25 @@ void FinishFrame(void)
     {
         if (vsync.d_ == 2)
         {
+#ifndef SOKOL_D3D11
             // Fallback to normal VSync if Adaptive doesn't work
             if (SDL_GL_SetSwapInterval(-1) == -1)
             {
                 vsync = 1;
                 SDL_GL_SetSwapInterval(vsync.d_);
             }
+#endif
         }
         else
+        {
+#ifndef SOKOL_D3D11
             SDL_GL_SetSwapInterval(vsync.d_);
+#endif
+        }
     }
 
     if (monitor_aspect_ratio.CheckModified() || forced_pixel_aspect_ratio.CheckModified())
-        DeterminePixelAspect();    
+        DeterminePixelAspect();
 }
 
 void ShutdownGraphics(void)

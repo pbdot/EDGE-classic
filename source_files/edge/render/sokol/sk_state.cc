@@ -170,6 +170,7 @@ void SokolRenderState::StartFrame(void)
 
 void SokolRenderState::SwapBuffers(void)
 {
+    sapp_d3d11_present(false);
 }
 
 void SokolRenderState::FinishFrame(void)
@@ -197,7 +198,5 @@ void SokolRenderState::FinishFrame(void)
     simgui_render();
 
     sg_end_pass();
-    sg_commit();
-
-    sapp_d3d11_present(false);
+    sg_commit();    
 }
