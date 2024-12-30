@@ -67,6 +67,7 @@ class SokolRenderBackend : public RenderBackend
     void StartFrame(int32_t width, int32_t height)
     {
         frame_number_++;
+
 #ifdef SOKOL_D3D11
         if (deferred_resize)
         {
@@ -81,7 +82,7 @@ class SokolRenderBackend : public RenderBackend
 
         sg_pass_action pass_action;
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+        pass_action.colors[0].clear_value = {0, 0, 0, 1.0f};
 
         pass_action.depth.load_action = SG_LOADACTION_CLEAR;
         pass_action.depth.clear_value = 1.0f;
@@ -100,13 +101,15 @@ class SokolRenderBackend : public RenderBackend
         pass_.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
 #endif
 
-        /*
-                imgui_frame_desc_            = {0};
-                imgui_frame_desc_.width      = width;
-                imgui_frame_desc_.height     = height;
-                imgui_frame_desc_.delta_time = 100;
-                imgui_frame_desc_.dpi_scale  = 1;
-        */
+        imgui_frame_desc_            = {0};
+        imgui_frame_desc_.width      = width;
+        imgui_frame_desc_.height     = height;
+        imgui_frame_desc_.delta_time = 100;
+        imgui_frame_desc_.dpi_scale  = 1;
+
+        EPI_CLEAR_MEMORY(world_render_, WorldRender, kRenderWorldMax);
+
+        sgl_layer(kRenderLayerHUD);
 
         sg_begin_pass(&pass_);
     }
@@ -120,9 +123,29 @@ class SokolRenderBackend : public RenderBackend
 
     void FinishFrame()
     {
-        sgl_context_draw(context_);
 
-        /*
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            WorldRender *world_render = &world_render_[i];
+            if (world_render_->active_)
+            {
+                FatalError("SokolRenderBackend: FinishFrame called with active world");
+            }
+
+            if (!world_render->used_)
+            {
+                break;
+            }
+
+            for (int32_t j = 0; j < kWorldLayerMax; j++)
+            {
+                sgl_context_draw_layer(context_, world_render->layers_[j]);
+            }
+        }
+
+        sgl_context_draw_layer(context_, kRenderLayerHUD);
+        sgl_context_draw_layer(context_, 0);
+
         sg_imgui_.caps_window.open        = false;
         sg_imgui_.buffer_window.open      = false;
         sg_imgui_.pipeline_window.open    = false;
@@ -133,7 +156,6 @@ class SokolRenderBackend : public RenderBackend
         sgimgui_draw(&sg_imgui_);
 
         simgui_render();
-        */
 
         sg_end_pass();
         sg_commit();
@@ -242,17 +264,18 @@ class SokolRenderBackend : public RenderBackend
 
         sgl_set_context(context_);
 
-        /*
-                // IMGUI
-                simgui_desc_t imgui_desc = {0};
-                imgui_desc.logger.func   = slog_func;
-                simgui_setup(&imgui_desc);
+        // IMGUI
+        simgui_desc_t imgui_desc = {0};
+        imgui_desc.logger.func   = slog_func;
+        simgui_setup(&imgui_desc);
 
-                const sgimgui_desc_t sg_imgui_desc = {0};
-                sgimgui_init(&sg_imgui_, &sg_imgui_desc);
-        */
+        const sgimgui_desc_t sg_imgui_desc = {0};
+        sgimgui_init(&sg_imgui_, &sg_imgui_desc);
+
         InitPipelines();
         InitImages();
+
+        EPI_CLEAR_MEMORY(world_render_, WorldRender, kRenderWorldMax);
 
         RenderBackend::Init();
     }
@@ -263,6 +286,94 @@ class SokolRenderBackend : public RenderBackend
         info.height_ = pass_.swapchain.height;
     }
 
+    void SetClearColor(RGBAColor color)
+    {
+        clear_color_ = color;
+    }
+
+    int32_t GetHUDLayer()
+    {
+        return kRenderLayerHUD;
+    }
+
+    virtual void SetWorldLayer(WorldLayer layer, bool clear_depth = false)
+    {
+        WorldRender *world_render = CurrentWorldRender();
+        world_render->current_layer_ = layer;
+        sgl_layer(GetCurrentSokolLayer());
+        if (clear_depth)
+        {            
+            sgl_clear_depth(1.0f);
+        }
+    }
+
+    virtual int32_t GetCurrentSokolLayer()
+    {        
+        const WorldRender *world_render = CurrentWorldRender();
+        if (!world_render)
+        {
+            return kRenderLayerHUD;
+        }
+        return world_render->layers_[world_render->current_layer_];
+    }
+
+    WorldRender *BeginWorldRender()
+    {
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            WorldRender *world_render = &world_render_[i];
+            if (world_render->active_)
+            {
+                FatalError("SokolRenderBackend: BeginWorldRender called with active world");
+            }
+
+            if (!world_render->used_)
+            {
+                world_render->active_ = world_render->used_ = true;
+                int32_t current_layer                       = kRenderLayerHUD + i * kWorldLayerMax + 1;
+                for (int32_t layer = 0; layer < (int32_t)kWorldLayerMax; layer++)
+                {
+                    world_render->layers_[(WorldLayer)layer] = current_layer++;
+                }
+                return world_render;
+            }
+        }
+
+        FatalError("SokolRenderBackend: Max render worlds exceeded");
+
+        return nullptr;
+    }
+
+    WorldRender *CurrentWorldRender()
+    {
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            if (world_render_[i].active_)
+            {
+                return &world_render_[i];
+            }
+        }
+
+        return nullptr;
+    }
+
+    void FinishWorldRender()
+    {
+        sgl_layer(kRenderLayerHUD);
+        SetupWorldMatrices2D();    
+        
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            if (world_render_[i].active_)
+            {
+                world_render_[i].active_ = false;
+                return;
+            }
+        }
+
+        FatalError("SokolRenderBackend: FinishWorldRender called with no active world render");
+    }
+
   private:
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;
@@ -270,14 +381,16 @@ class SokolRenderBackend : public RenderBackend
     int32_t deferred_resize_height = 0;
 #endif
 
-    /*
-        simgui_frame_desc_t imgui_frame_desc_;
-        sgimgui_t           sg_imgui_;
-    */
+    simgui_frame_desc_t imgui_frame_desc_;
+    sgimgui_t           sg_imgui_;
+
+    RGBAColor clear_color_ = kRGBABlack;
 
     sgl_context context_;
 
     sg_pass pass_;
+
+    WorldRender world_render_[kRenderWorldMax];
 };
 
 static SokolRenderBackend sokol_render_backend;
