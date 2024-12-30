@@ -238,7 +238,38 @@ void RenderCurrentUnits(void)
         std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
     }
 
-    render_state->FogMode(GL_EXP);
+    if (draw_culling.d_)
+    {
+        RGBAColor fogColor;
+        switch (cull_fog_color.d_)
+        {
+        case 0:
+            fogColor = culling_fog_color;
+            break;
+        case 1:
+            // Not pure white, but 1.0f felt like a little much - Dasho
+            fogColor = kRGBASilver;
+            break;
+        case 2:
+            fogColor = 0x404040FF; // Find a constant to call this
+            break;
+        case 3:
+            fogColor = kRGBABlack;
+            break;
+        default:
+            fogColor = culling_fog_color;
+            break;
+        }
+
+        render_state->ClearColor(fogColor);
+        render_state->FogMode(GL_LINEAR);
+        render_state->FogColor(fogColor);
+        render_state->FogStart(renderer_far_clip.f_ - 750.0f);
+        render_state->FogEnd(renderer_far_clip.f_ - 250.0f);
+        render_state->Enable(GL_FOG);
+    }
+    else
+        render_state->FogMode(GL_EXP); // if needed
 
     for (int j = 0; j < current_render_unit; j++)
     {
@@ -246,7 +277,21 @@ void RenderCurrentUnits(void)
 
         EPI_ASSERT(unit->count > 0);
 
-        render_state->DepthMask((unit->blending & kBlendingNoZBuffer) ? false : true);
+        if (!draw_culling.d_ && unit->fog_color != kRGBANoValue && !(unit->blending & kBlendingNoFog))
+        {
+            float density = unit->fog_density;
+            render_state->ClearColor(unit->fog_color);
+            render_state->FogColor(unit->fog_color);
+            render_state->FogDensity(std::log1p(density));
+            if (!AlmostEquals(density, 0.0f))
+                render_state->Enable(GL_FOG);
+            else
+                render_state->Disable(GL_FOG);
+        }
+        else if (!draw_culling.d_ || (unit->blending & kBlendingNoFog))
+            render_state->Disable(GL_FOG);
+
+        // render_state->PolygonOffset(0, -unit->pass);
 
         if (unit->blending & kBlendingAdd)
         {
@@ -275,6 +320,18 @@ void RenderCurrentUnits(void)
         }
         else
             render_state->Disable(GL_BLEND);
+
+        /*
+        if (unit->blending & (kBlendingCullBack | kBlendingCullFront))
+        {
+            render_state->Enable(GL_CULL_FACE);
+            render_state->CullFace((unit->blending & kBlendingCullFront) ? GL_FRONT : GL_BACK);
+        }
+        else
+            render_state->Disable(GL_CULL_FACE);
+        */
+
+        render_state->DepthMask((unit->blending & kBlendingNoZBuffer) ? false : true);
 
         if (unit->blending & kBlendingLess)
         {

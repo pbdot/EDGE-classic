@@ -686,8 +686,8 @@ void EdgeDisplay(void)
         {
             // -AJA- Wipe code for GL.  Sorry for all this ugliness, but it just
             //       didn't fit into the existing wipe framework.
-            //
             if (DoWipe())
+            //
             {
                 StopWipe();
                 wipe_gl_active = false;
