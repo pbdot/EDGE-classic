@@ -31,6 +31,7 @@
 #include "i_defs_gl.h"
 #include "im_data.h"
 #include "m_argv.h"
+#include "r_backend.h"
 #include "r_colormap.h"
 #include "r_gldefs.h"
 #include "r_image.h"
@@ -238,7 +239,9 @@ void RenderCurrentUnits(void)
         std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
     }
 
-    if (draw_culling.d_)
+    bool culling = render_backend->GetRenderMode() == kRenderMode3D && draw_culling.d_;
+
+    if (culling)
     {
         RGBAColor fogColor;
         switch (cull_fog_color.d_)
@@ -261,7 +264,9 @@ void RenderCurrentUnits(void)
             break;
         }
 
-        render_state->ClearColor(fogColor);
+        // render_state->ClearColor(fogColor);
+        //  Note: This is global on the entire pass
+        render_backend->SetClearColor(fogColor);
         render_state->FogMode(GL_LINEAR);
         render_state->FogColor(fogColor);
         render_state->FogStart(renderer_far_clip.f_ - 750.0f);
@@ -269,7 +274,9 @@ void RenderCurrentUnits(void)
         render_state->Enable(GL_FOG);
     }
     else
-        render_state->FogMode(GL_EXP); // if needed
+        render_state->Disable(GL_FOG);
+
+    int32_t layer = 0;
 
     for (int j = 0; j < current_render_unit; j++)
     {
@@ -277,9 +284,22 @@ void RenderCurrentUnits(void)
 
         EPI_ASSERT(unit->count > 0);
 
-        if (!draw_culling.d_ && unit->fog_color != kRGBANoValue && !(unit->blending & kBlendingNoFog))
+        if (render_backend->GetRenderMode() == kRenderMode2D)
+        {
+            layer = unit->pass + 8;
+            sgl_layer(layer);
+        }
+        else
+        {            
+            layer = unit->pass;
+
+            sgl_layer(layer);
+        }
+
+        if (!culling && unit->fog_color != kRGBANoValue && !(unit->blending & kBlendingNoFog))
         {
             float density = unit->fog_density;
+            render_state->FogMode(GL_EXP);
             render_state->ClearColor(unit->fog_color);
             render_state->FogColor(unit->fog_color);
             render_state->FogDensity(std::log1p(density));
@@ -288,7 +308,7 @@ void RenderCurrentUnits(void)
             else
                 render_state->Disable(GL_FOG);
         }
-        else if (!draw_culling.d_ || (unit->blending & kBlendingNoFog))
+        else if (!culling || (unit->blending & kBlendingNoFog))
             render_state->Disable(GL_FOG);
 
         // render_state->PolygonOffset(0, -unit->pass);
@@ -353,26 +373,23 @@ void RenderCurrentUnits(void)
         else
             render_state->Disable(GL_ALPHA_TEST);
 
-        if (unit->fog_color != kRGBANoValue && !(unit->blending & kBlendingNoFog))
-        {
-            float density = unit->fog_density;
-            // TODO: This is on the pass and we can't arbitratily clear
-            // render_state->ClearColor(unit->fog_color);
-            render_state->FogColor(unit->fog_color);
-            render_state->FogDensity(std::log1p(density));
-            if (!AlmostEquals(density, 0.0f))
-                render_state->Enable(GL_FOG);
-            else
-                render_state->Disable(GL_FOG);
-        }
-        else
-            render_state->Disable(GL_FOG);
-
         if (unit->blending & kBlendingLess)
         {
             // NOTE: assumes alpha is constant over whole polygon
             float a = epi::GetRGBAAlpha(local_verts[unit->first].rgba) / 255.0f;
             render_state->AlphaFunction(GL_GREATER, a * 0.66f);
+        }
+
+        if (render_backend->GetRenderMode() == kRenderMode2D)
+        {
+            render_state->Disable(GL_FOG);
+        }
+        else if (draw_culling.d_ && !(unit->blending & kBlendingNoFog))
+        {
+            if (unit->pass > 0)
+                render_state->Disable(GL_FOG);
+            else
+                render_state->Enable(GL_FOG);
         }
 
         uint32_t pipeline_flags = 0;

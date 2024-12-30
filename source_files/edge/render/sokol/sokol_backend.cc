@@ -20,6 +20,8 @@ class SokolRenderBackend : public RenderBackend
   public:
     void SetupMatrices2D()
     {
+        render_mode_ = kRenderMode2D;
+
         sgl_viewport(0, 0, current_screen_width, current_screen_height, false);
 
         sgl_matrix_mode_projection();
@@ -32,6 +34,8 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupWorldMatrices2D()
     {
+        render_mode_ = kRenderMode2D;
+
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         sgl_matrix_mode_projection();
@@ -45,6 +49,8 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupMatrices3D()
     {
+        render_mode_ = kRenderMode3D;
+
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         // calculate perspective matrix
@@ -81,7 +87,7 @@ class SokolRenderBackend : public RenderBackend
 
         sg_pass_action pass_action;
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+        pass_action.colors[0].clear_value = {0, 0, 0, 1.0f};
 
         pass_action.depth.load_action = SG_LOADACTION_CLEAR;
         pass_action.depth.clear_value = 1.0f;
@@ -100,13 +106,11 @@ class SokolRenderBackend : public RenderBackend
         pass_.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
 #endif
 
-        /*
-                imgui_frame_desc_            = {0};
-                imgui_frame_desc_.width      = width;
-                imgui_frame_desc_.height     = height;
-                imgui_frame_desc_.delta_time = 100;
-                imgui_frame_desc_.dpi_scale  = 1;
-        */
+        imgui_frame_desc_            = {0};
+        imgui_frame_desc_.width      = width;
+        imgui_frame_desc_.height     = height;
+        imgui_frame_desc_.delta_time = 100;
+        imgui_frame_desc_.dpi_scale  = 1;
 
         sg_begin_pass(&pass_);
     }
@@ -120,9 +124,11 @@ class SokolRenderBackend : public RenderBackend
 
     void FinishFrame()
     {
-        sgl_context_draw(context_);
+        for (int32_t i = 0; i < 16; i++)
+        {
+            sgl_context_draw_layer(context_, i);
+        }
 
-        /*
         sg_imgui_.caps_window.open        = false;
         sg_imgui_.buffer_window.open      = false;
         sg_imgui_.pipeline_window.open    = false;
@@ -133,7 +139,6 @@ class SokolRenderBackend : public RenderBackend
         sgimgui_draw(&sg_imgui_);
 
         simgui_render();
-        */
 
         sg_end_pass();
         sg_commit();
@@ -242,15 +247,14 @@ class SokolRenderBackend : public RenderBackend
 
         sgl_set_context(context_);
 
-        /*
-                // IMGUI
-                simgui_desc_t imgui_desc = {0};
-                imgui_desc.logger.func   = slog_func;
-                simgui_setup(&imgui_desc);
+        // IMGUI
+        simgui_desc_t imgui_desc = {0};
+        imgui_desc.logger.func   = slog_func;
+        simgui_setup(&imgui_desc);
 
-                const sgimgui_desc_t sg_imgui_desc = {0};
-                sgimgui_init(&sg_imgui_, &sg_imgui_desc);
-        */
+        const sgimgui_desc_t sg_imgui_desc = {0};
+        sgimgui_init(&sg_imgui_, &sg_imgui_desc);
+
         InitPipelines();
         InitImages();
 
@@ -263,6 +267,11 @@ class SokolRenderBackend : public RenderBackend
         info.height_ = pass_.swapchain.height;
     }
 
+    void SetClearColor(RGBAColor color)
+    {
+        clear_color_ = color;
+    }
+
   private:
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;
@@ -270,10 +279,10 @@ class SokolRenderBackend : public RenderBackend
     int32_t deferred_resize_height = 0;
 #endif
 
-    /*
-        simgui_frame_desc_t imgui_frame_desc_;
-        sgimgui_t           sg_imgui_;
-    */
+    simgui_frame_desc_t imgui_frame_desc_;
+    sgimgui_t           sg_imgui_;
+
+    RGBAColor clear_color_ = kRGBABlack;
 
     sgl_context context_;
 

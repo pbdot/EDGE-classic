@@ -3293,7 +3293,7 @@ static void DoWeaponModel(void)
     // know how any better way to prevent clipping -- the model
     // needs the depth buffer for overlapping parts of itself.
 
-    render_state->Clear(GL_DEPTH_BUFFER_BIT);
+    //render_state->Clear(GL_DEPTH_BUFFER_BIT);
 
     solid_mode = false;
     StartUnitBatch(solid_mode);
@@ -3437,7 +3437,7 @@ static void RenderTrueBsp(void)
     if (FlashFirst == true)
     {
         render_backend->SetupMatrices3D();
-        render_state->Clear(GL_DEPTH_BUFFER_BIT);
+        //render_state->Clear(GL_DEPTH_BUFFER_BIT);
         render_state->Enable(GL_DEPTH_TEST);
         DoWeaponModel();
         render_state->Disable(GL_DEPTH_TEST);

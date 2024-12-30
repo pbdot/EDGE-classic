@@ -19,6 +19,8 @@ class GLRenderBackend : public RenderBackend
   public:
     void SetupMatrices2D()
     {
+        render_mode_ = kRenderMode2D;
+
         glViewport(0, 0, current_screen_width, current_screen_height);
 
         glMatrixMode(GL_PROJECTION);
@@ -31,6 +33,8 @@ class GLRenderBackend : public RenderBackend
 
     void SetupWorldMatrices2D()
     {
+        render_mode_ = kRenderMode2D;
+
         glViewport(view_window_x, view_window_y, view_window_width, view_window_height);
 
         glMatrixMode(GL_PROJECTION);
@@ -44,6 +48,8 @@ class GLRenderBackend : public RenderBackend
 
     void SetupMatrices3D()
     {
+        render_mode_ = kRenderMode3D;
+
         glViewport(view_window_x, view_window_y, view_window_width, view_window_height);
 
         // calculate perspective matrix
@@ -131,6 +137,10 @@ class GLRenderBackend : public RenderBackend
     }
 
     void Shutdown()
+    {
+    }
+
+    void SetClearColor(RGBAColor color)
     {
     }
 

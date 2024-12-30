@@ -611,7 +611,20 @@ class SokolRenderState : public RenderState
         float fogg = float(epi::GetRGBAGreen(fog_color_)) / 255.0f;
         float fogb = float(epi::GetRGBABlue(fog_color_)) / 255.0f;
 
-        sgl_set_fog(enable_fog_, fogr, fogg, fogb, 1, fog_density_, fog_start_, fog_end_, 1);
+        sgl_fog_mode_t fog_mode = SGL_FOG_NONE;
+        if (enable_fog_)
+        {
+            if (fog_mode_ == GL_LINEAR)
+            {
+                fog_mode = SGL_FOG_LINEAR;
+            }
+            else if (fog_mode_ == GL_EXP)
+            {
+                fog_mode = SGL_FOG_EXP;
+            }
+        }
+
+        sgl_set_fog(fog_mode, fogr, fogg, fogb, 1, fog_density_, fog_start_, fog_end_, 1);
 
         float alpha_test = enable_alpha_test_ ? alpha_test_ : 0.0f;
         sgl_set_alpha_test(alpha_test);
