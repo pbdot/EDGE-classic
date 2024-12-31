@@ -18,8 +18,7 @@ enum WorldLayer
 {
     kWorldLayerSky = 0,
     kWorldLayerSolid,
-    kWorldLayerTransparent, // Transparent - additive renders on this layer
-    kWorldLayerAlpha, // Sub-layer of Transparent - non-additive alpha renders on this layer
+    kWorldLayerTransparent, // Transparent - additive renders on this layer    
     kWorldLayerWeapon,
     kWorldLayerMax
 };

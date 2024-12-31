@@ -184,7 +184,9 @@ class RenderState
 
     virtual void Flush() = 0;
 
-    virtual void SetPipeline(uint32_t flags) = 0;
+    virtual void LockPipeline(bool locked) = 0;
+
+    virtual void SetPipeline(uint32_t flags) = 0;    
 };
 
 extern RenderState *render_state;

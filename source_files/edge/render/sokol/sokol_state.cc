@@ -74,6 +74,11 @@ class SokolRenderState : public RenderState
         case GL_CLIP_PLANE3:
         case GL_CLIP_PLANE4:
         case GL_CLIP_PLANE5:
+            if (pipeline_lock_)
+            {
+                FatalError("SokolRenderState: Clipplane set during locked pipeline");
+            }
+
             sgl_set_clipplane_enabled(cap - GL_CLIP_PLANE0, enabled);
             break;
         default:
@@ -130,9 +135,14 @@ class SokolRenderState : public RenderState
         case GL_CLIP_PLANE5:
             if (world_render)
             {
+                if (pipeline_lock_)
+                {
+                    FatalError("SokolRenderState: Clipplane changed during locked pipeline");
+                }
+
                 sgl_set_clipplane_enabled(cap - GL_CLIP_PLANE0, false);
             }
-            
+
             break;
         default:
             FatalError("Unknown GL State %i", cap);
@@ -168,6 +178,11 @@ class SokolRenderState : public RenderState
 
     void Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
     {
+        if (pipeline_lock_)
+        {
+            FatalError("SokolRenderState: scissor changed during locked pipeline");
+        }
+
         WorldRender *world_render = render_backend->CurrentWorldRender();
         if (world_render)
         {
@@ -193,7 +208,12 @@ class SokolRenderState : public RenderState
     }
 
     void Clear(GLbitfield mask)
-    {        
+    {
+        if (pipeline_lock_)
+        {
+            FatalError("SokolRenderState: Clear called during locked pipeline");
+        }
+
         if (mask & GL_DEPTH_BUFFER_BIT)
         {
             sgl_layer(render_backend->GetCurrentSokolLayer());
@@ -602,8 +622,18 @@ class SokolRenderState : public RenderState
     {
     }
 
+    void LockPipeline(bool locked)
+    {
+        pipeline_lock_ = locked;
+    }
+
     void ClipPlane(GLenum plane, GLdouble *equation)
     {
+        if (pipeline_lock_)
+        {
+            FatalError("SokolRenderState: Clipplane called during locked pipeline");
+        }
+
         sgl_layer(render_backend->GetCurrentSokolLayer());
         sgl_set_clipplane(int(plane) - int(GL_CLIP_PLANE0), float(equation[0]), float(equation[1]), float(equation[2]),
                           float(equation[3]));
@@ -680,6 +710,8 @@ class SokolRenderState : public RenderState
     std::unordered_map<uint32_t, TexInfo *> tex_infos_;
 
     GLuint texture_bound_ = kRenderStateInvalid;
+
+    bool pipeline_lock_ = false;
 
     GLint texture_min_filter_;
     GLint texture_mag_filter_;

@@ -1,4 +1,5 @@
 add_subdirectory(almostequals)
+add_subdirectory(thread)
 if (EDGE_SID_SUPPORT)
   add_subdirectory(crsid)
 endif()

@@ -849,6 +849,7 @@ SOKOL_GL_API_DECL sgl_error_t sgl_context_error(sgl_context ctx);
 SOKOL_GL_API_DECL sgl_context sgl_make_context(const sgl_context_desc_t* desc);
 SOKOL_GL_API_DECL void sgl_destroy_context(sgl_context ctx);
 SOKOL_GL_API_DECL void sgl_set_context(sgl_context ctx);
+SOKOL_GL_API_DECL void sgl_rewind_context(sgl_context ctx);
 SOKOL_GL_API_DECL sgl_context sgl_get_context(void);
 SOKOL_GL_API_DECL sgl_context sgl_default_context(void);
 
@@ -3509,7 +3510,7 @@ static void _sgl_rewind(_sgl_context_t* ctx) {
 static void _sgl_commit_listener(void* userdata) {
     _sgl_context_t* ctx = _sgl_lookup_context((uint32_t)(uintptr_t)userdata);
     if (ctx) {
-        _sgl_rewind(ctx);
+        //_sgl_rewind(ctx);
     }
 }
 
@@ -4206,6 +4207,15 @@ SOKOL_API_IMPL void sgl_set_context(sgl_context ctx_id) {
 SOKOL_API_IMPL sgl_context sgl_get_context(void) {
     SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
     return _sgl.cur_ctx_id;
+}
+
+SOKOL_API_IMPL void sgl_rewind_context(sgl_context ctx_id) {
+    SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
+    _sgl_context_t* ctx = _sgl_lookup_context(ctx_id.id);
+    if (ctx)
+    {
+        _sgl_rewind(ctx);
+    }
 }
 
 SOKOL_API_IMPL sgl_context sgl_default_context(void) {

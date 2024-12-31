@@ -234,6 +234,8 @@ void RenderCurrentUnits(void)
     for (int i = 0; i < current_render_unit; i++)
         local_unit_map[i] = &local_units[i];
 
+    render_state->LockPipeline(true);
+
     if (batch_sort)
     {
         std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
@@ -361,8 +363,6 @@ void RenderCurrentUnits(void)
             }
         }
 
-        sgl_layer(layer);
-
         render_state->DepthMask((unit->blending & kBlendingNoZBuffer) ? false : true);
 
         if (unit->blending & kBlendingLess)
@@ -410,17 +410,20 @@ void RenderCurrentUnits(void)
                 else
                 {
                     render_state->Enable(GL_FOG);
-                    
                 }
             }
             else if (world_render->current_layer_ == kWorldLayerTransparent)
             {
                 if (unit->blending & kBlendingAdd)
                 {
-                    //render_state->Disable(GL_FOG);
+                    // render_state->Disable(GL_FOG);
                 }
             }
         }
+
+        render_state->LockPipeline(false);
+
+        sgl_layer(layer);
 
         uint32_t pipeline_flags = 0;
 

@@ -18,6 +18,7 @@ EDGE_DEFINE_CONSOLE_VARIABLE(cull_fog_color, "0", kConsoleVariableFlagArchive)
 
 void RenderBackend::SoftInit(void)
 {
+    render_state->LockPipeline(false);
     render_state->Disable(GL_BLEND);
     render_state->Disable(GL_LIGHTING);
     render_state->Disable(GL_COLOR_MATERIAL);

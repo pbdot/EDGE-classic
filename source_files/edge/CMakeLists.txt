@@ -207,8 +207,9 @@ set (EDGE_LINK_LIBRARIES
   pl_mpeg
   prns
   stb
-  tsf
-  xxhash
+  thread
+  tsf  
+  xxhash  
 )
 
 if (EDGE_COAL_SUPPORT)
