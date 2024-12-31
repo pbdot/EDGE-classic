@@ -3061,6 +3061,8 @@ static void RenderSubList(std::list<DrawSubsector *> &dsubs, bool for_mirror = f
 {
     // draw all solid walls and planes
     solid_mode = true;
+    //if (!for_mirror)
+        render_backend->SetWorldLayer(kWorldLayerSolid, false);
     StartUnitBatch(solid_mode);
 
     std::list<DrawSubsector *>::iterator FI; // Forward Iterator
@@ -3072,6 +3074,8 @@ static void RenderSubList(std::list<DrawSubsector *> &dsubs, bool for_mirror = f
 
     // draw all sprites and masked/translucent walls/planes
     solid_mode = false;
+    //if (!for_mirror)
+        render_backend->SetWorldLayer(kWorldLayerTransparent, false);
     StartUnitBatch(solid_mode);
 
     std::list<DrawSubsector *>::reverse_iterator RI;
@@ -3385,6 +3389,8 @@ static void RenderTrueBsp(void)
     // handle powerup effects and BOOM colormaps
     RendererRainbowEffect(v_player);
 
+    render_backend->SetWorldLayer(kWorldLayerSky);
+
     render_backend->SetupMatrices3D();
 
     render_state->Clear(GL_DEPTH_BUFFER_BIT);
@@ -3416,6 +3422,7 @@ static void RenderTrueBsp(void)
 
     if (FlashFirst == false)
     {
+        render_backend->SetWorldLayer(kWorldLayerWeapon);
         DoWeaponModel();
     }
 
@@ -3436,8 +3443,9 @@ static void RenderTrueBsp(void)
 
     if (FlashFirst == true)
     {
+        render_backend->SetWorldLayer(kWorldLayerWeapon);
         render_backend->SetupMatrices3D();
-        //render_state->Clear(GL_DEPTH_BUFFER_BIT);
+        render_state->Clear(GL_DEPTH_BUFFER_BIT);
         render_state->Enable(GL_DEPTH_TEST);
         DoWeaponModel();
         render_state->Disable(GL_DEPTH_TEST);
@@ -3607,7 +3615,7 @@ static void InitializeCamera(MapObject *mo, bool full_height, float expand_w)
 
 void RenderView(int x, int y, int w, int h, MapObject *camera, bool full_height, float expand_w)
 {
-    EDGE_ZoneScoped;
+    EDGE_ZoneScoped;    
 
     view_window_x      = x;
     view_window_y      = y;
@@ -3624,7 +3632,7 @@ void RenderView(int x, int y, int w, int h, MapObject *camera, bool full_height,
     valid_count++;
 
     seen_dynamic_lights.clear();
-    RenderTrueBsp();
+    RenderTrueBsp();    
 }
 
 //--- editor settings ---

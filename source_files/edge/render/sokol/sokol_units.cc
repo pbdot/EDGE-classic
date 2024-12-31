@@ -239,7 +239,9 @@ void RenderCurrentUnits(void)
         std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
     }
 
-    bool culling = render_backend->GetRenderMode() == kRenderMode3D && draw_culling.d_;
+    WorldRender *world_render = render_backend->CurrentWorldRender();
+
+    bool culling = world_render && draw_culling.d_;
 
     if (culling)
     {
@@ -275,7 +277,6 @@ void RenderCurrentUnits(void)
     }
     else
         render_state->Disable(GL_FOG);
-    
 
     for (int j = 0; j < current_render_unit; j++)
     {
@@ -300,13 +301,17 @@ void RenderCurrentUnits(void)
 
         // render_state->PolygonOffset(0, -unit->pass);
 
+        bool blend = false;
+
         if (unit->blending & kBlendingAdd)
         {
+            blend = true;
             render_state->Enable(GL_BLEND);
             render_state->BlendFunction(GL_SRC_ALPHA, GL_ONE);
         }
         else if (unit->blending & kBlendingAlpha)
         {
+            blend = true;
             render_state->Enable(GL_BLEND);
             render_state->BlendFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
@@ -340,32 +345,23 @@ void RenderCurrentUnits(void)
 
         int32_t layer = 0;
 
-        if (render_backend->GetRenderMode() == kRenderMode2D)
+        if (!world_render)
         {
-            layer = unit->pass + 8;
-            sgl_layer(layer);
+            layer = kRenderLayerHUD;
         }
         else
         {
 
-            // Shine flashlight beneath the water
-            layer = unit->pass;
+            layer = render_backend->GetCurrentSokolLayer();
 
-            if (((unit->blending & kBlendingAlpha)))// || (unit->blending & kBlendingAlpha)))
+            if (((unit->blending & kBlendingAlpha)))
             {
-                unit->blending |= kBlendingNoZBuffer;
-                layer = 5;
+                // messes up mirrors
+                // layer++;
             }
-
-            if (((unit->blending & kBlendingAdd)))// || (unit->blending & kBlendingAlpha)))
-            {
-                unit->blending |= kBlendingNoZBuffer;
-                layer = 4;
-            }
-
-            sgl_layer(layer);
         }
 
+        sgl_layer(layer);
 
         render_state->DepthMask((unit->blending & kBlendingNoZBuffer) ? false : true);
 
@@ -396,16 +392,34 @@ void RenderCurrentUnits(void)
             render_state->AlphaFunction(GL_GREATER, a * 0.66f);
         }
 
-        if (render_backend->GetRenderMode() == kRenderMode2D)
+        if (!world_render || world_render->current_layer_ == kWorldLayerWeapon)
         {
             render_state->Disable(GL_FOG);
         }
-        else if (draw_culling.d_ && !(unit->blending & kBlendingNoFog))
+        else
         {
-            if (unit->pass > 0)
-                render_state->Disable(GL_FOG);
-            else
-                render_state->Enable(GL_FOG);
+
+            if (draw_culling.d_ && !(unit->blending & kBlendingNoFog) &&
+                (world_render->current_layer_ == kWorldLayerSolid ||
+                 world_render->current_layer_ == kWorldLayerTransparent))
+            {
+                if (unit->pass > 0)
+                {
+                    render_state->Disable(GL_FOG);
+                }
+                else
+                {
+                    render_state->Enable(GL_FOG);
+                    
+                }
+            }
+            else if (world_render->current_layer_ == kWorldLayerTransparent)
+            {
+                if (unit->blending & kBlendingAdd)
+                {
+                    //render_state->Disable(GL_FOG);
+                }
+            }
         }
 
         uint32_t pipeline_flags = 0;

@@ -20,8 +20,6 @@ class SokolRenderBackend : public RenderBackend
   public:
     void SetupMatrices2D()
     {
-        render_mode_ = kRenderMode2D;
-
         sgl_viewport(0, 0, current_screen_width, current_screen_height, false);
 
         sgl_matrix_mode_projection();
@@ -34,8 +32,6 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupWorldMatrices2D()
     {
-        render_mode_ = kRenderMode2D;
-
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         sgl_matrix_mode_projection();
@@ -49,8 +45,6 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupMatrices3D()
     {
-        render_mode_ = kRenderMode3D;
-
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         // calculate perspective matrix
@@ -73,6 +67,7 @@ class SokolRenderBackend : public RenderBackend
     void StartFrame(int32_t width, int32_t height)
     {
         frame_number_++;
+
 #ifdef SOKOL_D3D11
         if (deferred_resize)
         {
@@ -112,6 +107,10 @@ class SokolRenderBackend : public RenderBackend
         imgui_frame_desc_.delta_time = 100;
         imgui_frame_desc_.dpi_scale  = 1;
 
+        EPI_CLEAR_MEMORY(world_render_, WorldRender, kRenderWorldMax);
+
+        sgl_layer(kRenderLayerHUD);
+
         sg_begin_pass(&pass_);
     }
 
@@ -124,10 +123,28 @@ class SokolRenderBackend : public RenderBackend
 
     void FinishFrame()
     {
-        for (int32_t i = 0; i < 16; i++)
+
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
         {
-            sgl_context_draw_layer(context_, i);
+            WorldRender *world_render = &world_render_[i];
+            if (world_render_->active_)
+            {
+                FatalError("SokolRenderBackend: FinishFrame called with active world");
+            }
+
+            if (!world_render->used_)
+            {
+                break;
+            }
+
+            for (int32_t j = 0; j < kWorldLayerMax; j++)
+            {
+                sgl_context_draw_layer(context_, world_render->layers_[j]);
+            }
         }
+
+        sgl_context_draw_layer(context_, kRenderLayerHUD);
+        sgl_context_draw_layer(context_, 0);
 
         sg_imgui_.caps_window.open        = false;
         sg_imgui_.buffer_window.open      = false;
@@ -258,6 +275,8 @@ class SokolRenderBackend : public RenderBackend
         InitPipelines();
         InitImages();
 
+        EPI_CLEAR_MEMORY(world_render_, WorldRender, kRenderWorldMax);
+
         RenderBackend::Init();
     }
 
@@ -270,6 +289,89 @@ class SokolRenderBackend : public RenderBackend
     void SetClearColor(RGBAColor color)
     {
         clear_color_ = color;
+    }
+
+    int32_t GetHUDLayer()
+    {
+        return kRenderLayerHUD;
+    }
+
+    virtual void SetWorldLayer(WorldLayer layer, bool clear_depth = false)
+    {
+        WorldRender *world_render = CurrentWorldRender();
+        world_render->current_layer_ = layer;
+        sgl_layer(GetCurrentSokolLayer());
+        if (clear_depth)
+        {            
+            sgl_clear_depth(1.0f);
+        }
+    }
+
+    virtual int32_t GetCurrentSokolLayer()
+    {        
+        const WorldRender *world_render = CurrentWorldRender();
+        if (!world_render)
+        {
+            return kRenderLayerHUD;
+        }
+        return world_render->layers_[world_render->current_layer_];
+    }
+
+    WorldRender *BeginWorldRender()
+    {
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            WorldRender *world_render = &world_render_[i];
+            if (world_render->active_)
+            {
+                FatalError("SokolRenderBackend: BeginWorldRender called with active world");
+            }
+
+            if (!world_render->used_)
+            {
+                world_render->active_ = world_render->used_ = true;
+                int32_t current_layer                       = kRenderLayerHUD + i * kWorldLayerMax + 1;
+                for (int32_t layer = 0; layer < (int32_t)kWorldLayerMax; layer++)
+                {
+                    world_render->layers_[(WorldLayer)layer] = current_layer++;
+                }
+                return world_render;
+            }
+        }
+
+        FatalError("SokolRenderBackend: Max render worlds exceeded");
+
+        return nullptr;
+    }
+
+    WorldRender *CurrentWorldRender()
+    {
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            if (world_render_[i].active_)
+            {
+                return &world_render_[i];
+            }
+        }
+
+        return nullptr;
+    }
+
+    void FinishWorldRender()
+    {
+        sgl_layer(kRenderLayerHUD);
+        SetupWorldMatrices2D();    
+        
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            if (world_render_[i].active_)
+            {
+                world_render_[i].active_ = false;
+                return;
+            }
+        }
+
+        FatalError("SokolRenderBackend: FinishWorldRender called with no active world render");
     }
 
   private:
@@ -287,6 +389,8 @@ class SokolRenderBackend : public RenderBackend
     sgl_context context_;
 
     sg_pass pass_;
+
+    WorldRender world_render_[kRenderWorldMax];
 };
 
 static SokolRenderBackend sokol_render_backend;

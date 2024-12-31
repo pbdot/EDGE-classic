@@ -11,10 +11,25 @@ struct PassInfo
     int32_t height_;
 };
 
-enum RenderMode
+constexpr int32_t kRenderLayerHUD = 1;
+constexpr int32_t kRenderWorldMax = 8;
+
+enum WorldLayer
 {
-    kRenderMode2D = 0,
-    kRenderMode3D
+    kWorldLayerSky = 0,
+    kWorldLayerSolid,
+    kWorldLayerTransparent, // Transparent - additive renders on this layer
+    kWorldLayerAlpha, // Sub-layer of Transparent - non-additive alpha renders on this layer
+    kWorldLayerWeapon,
+    kWorldLayerMax
+};
+
+struct WorldRender
+{
+    bool       active_;
+    bool       used_;
+    WorldLayer current_layer_;
+    int32_t    layers_[kWorldLayerMax];
 };
 
 typedef std::function<void()> FrameFinishedCallback;
@@ -45,6 +60,13 @@ class RenderBackend
         on_frame_finished_.push_back(callback);
     }
 
+    virtual WorldRender *BeginWorldRender()   = 0;
+    virtual WorldRender *CurrentWorldRender() = 0;
+    virtual void         FinishWorldRender()  = 0;
+
+    virtual void         SetWorldLayer(WorldLayer layer, bool clear_depth = false)  = 0;
+    virtual int32_t      GetCurrentSokolLayer()  = 0;
+
     virtual void Resize(int32_t width, int32_t height) = 0;
 
     virtual void Shutdown() = 0;
@@ -56,11 +78,6 @@ class RenderBackend
     virtual void GetPassInfo(PassInfo &info) = 0;
 
     virtual void CaptureScreen(int32_t width, int32_t height, int32_t stride, uint8_t *dest) = 0;
-
-    RenderMode GetRenderMode()
-    {
-        return render_mode_;
-    }
 
     int64_t GetFrameNumber()
     {
@@ -75,8 +92,6 @@ class RenderBackend
   protected:
     int32_t max_texture_size_ = 0;
     int64_t frame_number_;
-
-    RenderMode render_mode_ = kRenderMode2D;
 
     std::vector<FrameFinishedCallback> on_frame_finished_;
 };

@@ -1194,9 +1194,7 @@ void MD2RenderModel(MD2Model *md, const Image *skin_img, bool is_weapon, int fra
             blending &= ~kBlendingAlpha;
             blending |= kBlendingAdd;
             render_state->Disable(GL_FOG);
-        }
-
-        sgl_layer(pass);
+        }        
 
         data.is_additive_ = (pass > 0 && pass == num_pass - 1);
 

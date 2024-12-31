@@ -85,6 +85,8 @@ class SokolRenderState : public RenderState
     {
         PassInfo pass_info;
 
+        WorldRender *world_render = render_backend->CurrentWorldRender();
+
         switch (cap)
         {
         case GL_TEXTURE_2D:
@@ -126,7 +128,11 @@ class SokolRenderState : public RenderState
         case GL_CLIP_PLANE3:
         case GL_CLIP_PLANE4:
         case GL_CLIP_PLANE5:
-            sgl_set_clipplane_enabled(cap - GL_CLIP_PLANE0, false);
+            if (world_render)
+            {
+                sgl_set_clipplane_enabled(cap - GL_CLIP_PLANE0, false);
+            }
+            
             break;
         default:
             FatalError("Unknown GL State %i", cap);
@@ -151,7 +157,7 @@ class SokolRenderState : public RenderState
     void AlphaFunction(GLenum func, GLfloat ref)
     {
         EPI_UNUSED(func);
-        
+
         alpha_test_ = ref;
     }
 
@@ -162,8 +168,22 @@ class SokolRenderState : public RenderState
 
     void Scissor(GLint x, GLint y, GLsizei width, GLsizei height)
     {
-        // can't currently disable
-        sgl_scissor_rect(x, y, width, height, false);
+        WorldRender *world_render = render_backend->CurrentWorldRender();
+        if (world_render)
+        {
+            int32_t current_layer = world_render->layers_[world_render->current_layer_];
+            for (int32_t i = 0; i < kWorldLayerMax; i++)
+            {
+                sgl_layer(world_render->layers_[i]);
+                sgl_scissor_rect(x, y, width, height, false);
+            }
+
+            sgl_layer(current_layer);
+        }
+        else
+        {
+            sgl_scissor_rect(x, y, width, height, false);
+        }
     }
 
     void PolygonOffset(GLfloat factor, GLfloat units)
@@ -173,9 +193,10 @@ class SokolRenderState : public RenderState
     }
 
     void Clear(GLbitfield mask)
-    {
+    {        
         if (mask & GL_DEPTH_BUFFER_BIT)
         {
+            sgl_layer(render_backend->GetCurrentSokolLayer());
             sgl_clear_depth(1.0f);
         }
     }
@@ -363,11 +384,11 @@ class SokolRenderState : public RenderState
 
         sg_image_desc img_desc;
         EPI_CLEAR_MEMORY(&img_desc, sg_image_desc, 1);
-        img_desc.usage         = texture_usage_;
-        img_desc.width         = mip_levels_[0].width_;
-        img_desc.height        = mip_levels_[0].height_;
-        img_desc.pixel_format  = texture_format_;
-        img_desc.num_mipmaps   = (int)mip_levels_.size();
+        img_desc.usage        = texture_usage_;
+        img_desc.width        = mip_levels_[0].width_;
+        img_desc.height       = mip_levels_[0].height_;
+        img_desc.pixel_format = texture_format_;
+        img_desc.num_mipmaps  = (int)mip_levels_.size();
 
         if (texture_usage_ != SG_USAGE_DYNAMIC)
         {
@@ -414,7 +435,7 @@ class SokolRenderState : public RenderState
             break;
         case GL_LINEAR:
         case GL_NEAREST_MIPMAP_LINEAR:
-            sampler_desc.min_filter = SG_FILTER_LINEAR;
+            sampler_desc.min_filter    = SG_FILTER_LINEAR;
             sampler_desc.mipmap_filter = SG_FILTER_LINEAR;
             break;
         }
@@ -427,7 +448,7 @@ class SokolRenderState : public RenderState
             break;
         case GL_LINEAR:
         case GL_NEAREST_MIPMAP_LINEAR:
-            sampler_desc.mag_filter = SG_FILTER_LINEAR;
+            sampler_desc.mag_filter    = SG_FILTER_LINEAR;
             sampler_desc.mipmap_filter = SG_FILTER_LINEAR;
             break;
         }
@@ -547,7 +568,7 @@ class SokolRenderState : public RenderState
 
         sg_image_data image_data;
         EPI_CLEAR_MEMORY(&image_data, sg_image_data, 1);
-        sg_range      range;
+        sg_range range;
         range.ptr                 = pixels;
         range.size                = width * height * bpp;
         image_data.subimage[0][0] = range;
@@ -568,7 +589,7 @@ class SokolRenderState : public RenderState
     {
 #ifdef SOKOL_GLCORE
         sg_gl_read_pixels(x, y, width, height, format, type, pixels);
-#endif        
+#endif
     }
 
     void PixelZoom(GLfloat xfactor, GLfloat yfactor)
@@ -583,6 +604,7 @@ class SokolRenderState : public RenderState
 
     void ClipPlane(GLenum plane, GLdouble *equation)
     {
+        sgl_layer(render_backend->GetCurrentSokolLayer());
         sgl_set_clipplane(int(plane) - int(GL_CLIP_PLANE0), float(equation[0]), float(equation[1]), float(equation[2]),
                           float(equation[3]));
     }
