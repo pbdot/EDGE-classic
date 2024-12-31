@@ -275,26 +275,13 @@ void RenderCurrentUnits(void)
     }
     else
         render_state->Disable(GL_FOG);
-
-    int32_t layer = 0;
+    
 
     for (int j = 0; j < current_render_unit; j++)
     {
         RendererUnit *unit = local_unit_map[j];
 
         EPI_ASSERT(unit->count > 0);
-
-        if (render_backend->GetRenderMode() == kRenderMode2D)
-        {
-            layer = unit->pass + 8;
-            sgl_layer(layer);
-        }
-        else
-        {            
-            layer = unit->pass;
-
-            sgl_layer(layer);
-        }
 
         if (!culling && unit->fog_color != kRGBANoValue && !(unit->blending & kBlendingNoFog))
         {
@@ -350,6 +337,35 @@ void RenderCurrentUnits(void)
         else
             render_state->Disable(GL_CULL_FACE);
         */
+
+        int32_t layer = 0;
+
+        if (render_backend->GetRenderMode() == kRenderMode2D)
+        {
+            layer = unit->pass + 8;
+            sgl_layer(layer);
+        }
+        else
+        {
+
+            // Shine flashlight beneath the water
+            layer = unit->pass;
+
+            if (((unit->blending & kBlendingAlpha)))// || (unit->blending & kBlendingAlpha)))
+            {
+                unit->blending |= kBlendingNoZBuffer;
+                layer = 5;
+            }
+
+            if (((unit->blending & kBlendingAdd)))// || (unit->blending & kBlendingAlpha)))
+            {
+                unit->blending |= kBlendingNoZBuffer;
+                layer = 4;
+            }
+
+            sgl_layer(layer);
+        }
+
 
         render_state->DepthMask((unit->blending & kBlendingNoZBuffer) ? false : true);
 
