@@ -59,15 +59,7 @@ class RenderBackend
 
     virtual RenderLayer GetRenderLayer() = 0;
 
-    void LockRenderUnits(bool locked) 
-    {
-        units_locked_ = locked;
-    }
-
-    bool RenderUnitsLocked() 
-    {
-        return units_locked_;
-    }
+    virtual void LockRenderUnits(bool locked) = 0;
 
     virtual void Resize(int32_t width, int32_t height) = 0;
 

@@ -12,11 +12,14 @@
 
 #include "epi.h"
 #include "i_video.h"
+#include "thread.h"
 
 // clang-format on
 
 void BSPStartThread();
 void BSPStopThread();
+void RenderStartThread();
+void RenderStopThread();
 
 constexpr int32_t kWorldStateInvalid = -1;
 
@@ -191,9 +194,10 @@ class SokolRenderBackend : public RenderBackend
     {
 #ifdef SOKOL_D3D11
         sapp_d3d11_destroy_device_and_swapchain();
-#endif
-
+#endif        
+        RenderStopThread();
         BSPStopThread();
+        thread_mutex_term(&render_unit_mutex_);
     }
 
 #ifdef SOKOL_GLCORE
@@ -287,11 +291,13 @@ class SokolRenderBackend : public RenderBackend
         EPI_CLEAR_MEMORY(world_state_, WorldState, kRenderWorldMax);
 
         EPI_CLEAR_MEMORY(&render_state_, RenderState, 1);
-        render_state_.world_state_ = kWorldStateInvalid;        
+        render_state_.world_state_ = kWorldStateInvalid;
 
         RenderBackend::Init();
 
+        thread_mutex_init(&render_unit_mutex_);
         BSPStartThread();
+        RenderStartThread();
     }
 
     // FIXME: go away!
@@ -386,6 +392,18 @@ class SokolRenderBackend : public RenderBackend
         SetupMatrices2D();
     }
 
+    void LockRenderUnits(bool locked)
+    {
+        if (locked)
+        {
+            thread_mutex_lock(&render_unit_mutex_);
+        }
+        else
+        {
+            thread_mutex_unlock(&render_unit_mutex_);
+        }
+    }
+
   private:
     struct WorldState
     {
@@ -412,6 +430,8 @@ class SokolRenderBackend : public RenderBackend
     sg_pass pass_;
 
     WorldState world_state_[kRenderWorldMax];
+
+    thread_mutex_t render_unit_mutex_;
 
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;

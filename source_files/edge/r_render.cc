@@ -67,10 +67,6 @@ extern float sprite_skew;
 
 extern ViewHeightZone view_height_zone;
 
-static Subsector     *current_subsector;
-static DrawSubsector *current_draw_subsector;
-static Seg           *current_seg;
-
 extern unsigned int root_node;
 
 EDGE_DEFINE_CONSOLE_VARIABLE(force_flat_lighting, "0", kConsoleVariableFlagArchive)
@@ -101,11 +97,45 @@ static bool thick_liquid = false;
 static float wave_now;    // value for doing wave table lookups
 static float plane_z_bob; // for floor/ceiling bob DDFSECT stuff
 
+static Subsector     *current_subsector;
+static DrawSubsector *current_draw_subsector;
+static Seg           *current_seg;
+
 MirrorSet render_mirror_set(kMirrorSetRender);
 
 #ifndef EDGE_SOKOL
 extern std::list<DrawSubsector *> draw_subsector_list;
+#else
+#define RENDER_MULTITHREAD
 #endif
+
+#ifdef RENDER_MULTITHREAD
+#include "thread.h"
+
+constexpr int32_t kMaxRenderBatch = 65536 / 4;
+
+struct RenderThread
+{
+    thread_ptr_t    thread_;
+    thread_signal_t signal_start_;
+    thread_signal_t signal_stop_;
+
+    thread_queue_t      queue_;
+    RenderBatch        *batch_queue_[kMaxRenderBatch];
+    thread_atomic_int_t exit_flag_;
+    thread_atomic_int_t rendering_;
+};
+
+constexpr int32_t                  kNumRenderThreads = 1;
+static std::vector<RenderThread *> render_threads_;
+
+static void RenderQueueBatch(RenderBatch *batch);
+static bool RenderActive();
+
+#endif
+
+static void InitializeCamera(MapObject *mo, bool full_height, float expand_w);
+static void DoWeaponModel(void);
 
 static float Slope_GetHeight(SlopePlane *slope, float x, float y)
 {
@@ -1813,7 +1843,295 @@ static void RenderSubsector(DrawSubsector *dsub, bool mirror_sub)
     }
 }
 
-static void DoWeaponModel(void)
+//
+// RenderTrueBsp
+//
+// OpenGL BSP rendering.  Initialises all structures, then walks the
+// BSP tree collecting information, then renders each subsector:
+// firstly front to back (drawing all solid walls & planes) and then
+// from back to front (drawing everything else, sprites etc..).
+//
+void RenderTrueBsp(void)
+{
+    EDGE_ZoneScoped;
+
+    FuzzUpdate();
+
+    ClearBSP();
+    OcclusionClear();
+
+#ifndef EDGE_SOKOL
+    draw_subsector_list.clear();
+#endif
+
+    Player *v_player = view_camera_map_object->player_;
+
+    // handle powerup effects and BOOM colormaps
+    RendererRainbowEffect(v_player);
+
+    render_backend->SetRenderLayer(kRenderLayerSky);
+
+    render_backend->SetupMatrices3D();
+
+    render_state->Clear(GL_DEPTH_BUFFER_BIT);
+    render_state->Enable(GL_DEPTH_TEST);
+
+#ifdef EDGE_SOKOL
+
+    // needed for drawing the sky
+    BeginSky();
+
+    // draw all solid walls and planes
+
+    solid_mode = true;
+    render_backend->SetRenderLayer(kRenderLayerSolid, false);
+    StartUnitBatch(solid_mode);
+
+    BSPTraverse();
+
+    // Threaded rendering begin
+
+    std::list<RenderItem *> items;
+    std::list<RenderItem *> sky_items;
+    while (BSPTraversing())
+    {
+        RenderBatch *batch = BSPReadRenderBatch();
+        if (!batch)
+        {
+            continue;
+        }
+
+        for (int32_t i = 0; i < batch->num_items_; i++)
+        {
+            RenderItem *item = &batch->items_[i];
+
+            if (item->type_ == kRenderSubsector)
+            {
+                items.push_back(item);
+            }
+
+            RenderQueueBatch(batch);
+        }
+    }
+
+    while (RenderActive())
+    {
+    }
+
+    FinishUnitBatch();
+
+    // Threaded rendering end
+
+    // draw all sprites and masked/translucent walls/planes
+    solid_mode = false;
+    render_backend->SetRenderLayer(kRenderLayerTransparent, false);
+
+    StartUnitBatch(solid_mode);
+    std::list<RenderItem *>::reverse_iterator RI;
+
+    for (RI = items.rbegin(); RI != items.rend(); RI++)
+    {
+        if ((*RI)->type_ == kRenderSubsector)
+        {
+            if ((*RI)->subsector_->solid)
+            {
+                continue;
+            }
+
+            RenderSubsector((*RI)->subsector_, false);
+        }
+    }
+
+    FinishUnitBatch();
+    render_backend->SetRenderLayer(kRenderLayerSky);
+
+    FinishSky();
+
+#else
+    // needed for drawing the sky
+    BeginSky();
+
+    // walk the bsp tree
+    BspWalkNode(root_node);
+
+    FinishSky();
+
+    RenderSubList(draw_subsector_list);
+
+#endif
+
+    // Lobo 2022:
+    // Allow changing the order of weapon model rendering to be
+    // after RenderWeaponSprites() so that FLASH states are
+    // drawn in front of the weapon
+    bool FlashFirst = false;
+
+    if (v_player)
+    {
+        if (v_player->ready_weapon_ >= 0)
+        {
+            FlashFirst = v_player->weapons_[v_player->ready_weapon_].info->render_invert_;
+        }
+    }
+
+    if (FlashFirst == false)
+    {
+        render_backend->SetRenderLayer(kRenderLayerWeapon);
+        DoWeaponModel();
+    }
+
+    render_state->Disable(GL_DEPTH_TEST);
+
+    // now draw 2D stuff like psprites, and add effects
+    render_backend->SetupWorldMatrices2D();
+
+    if (v_player)
+    {
+        RenderWeaponSprites(v_player);
+
+        RendererColourmapEffect(v_player);
+        RendererPaletteEffect(v_player);
+        render_backend->SetupMatrices2D();
+        RenderCrosshair(v_player);
+    }
+
+    if (FlashFirst == true)
+    {
+        render_backend->SetRenderLayer(kRenderLayerWeapon);
+        render_backend->SetupMatrices3D();
+        render_state->Enable(GL_DEPTH_TEST);
+        DoWeaponModel();
+        render_state->Disable(GL_DEPTH_TEST);
+        render_backend->SetupMatrices2D();
+    }
+
+#if (DEBUG >= 3)
+    LogDebug("\n\n");
+#endif
+}
+
+void RenderView(int x, int y, int w, int h, MapObject *camera, bool full_height, float expand_w)
+{
+    EDGE_ZoneScoped;
+
+    view_window_x      = x;
+    view_window_y      = y;
+    view_window_width  = w;
+    view_window_height = h;
+
+    view_camera_map_object = camera;
+
+    // Load the details for the camera
+    InitializeCamera(camera, full_height, expand_w);
+
+    // Profiling
+    render_frame_count++;
+    valid_count++;
+
+    seen_dynamic_lights.clear();
+    RenderTrueBsp();
+}
+
+// Threading
+
+#ifdef RENDER_MULTITHREAD
+
+static int32_t RenderThreadProc(void *thread_data)
+{
+    RenderThread *thread = (RenderThread *)thread_data;
+
+    while (thread_atomic_int_load(&thread->exit_flag_) == 0)
+    {
+        RenderBatch *batch = (RenderBatch *)thread_queue_consume(&thread->queue_, 0);
+        if (batch)
+        {
+            thread_atomic_int_store(&thread->rendering_, 1);
+            for (int32_t i = 0; i < batch->num_items_; i++)
+            {
+                RenderItem *item = &batch->items_[i];
+
+                switch (item->type_)
+                {
+                case kRenderSubsector:
+                    RenderSubsector(item->subsector_, false);
+                    break;
+                case kRenderSkyWall:
+                    RenderSkyWall(item->wallSeg_, item->height1_, item->height2_);
+                    break;
+                case kRenderSkyPlane:
+                    RenderSkyPlane(item->wallPlane_, item->height1_);
+                    break;
+                }
+            }
+            thread_atomic_int_store(&thread->rendering_, 0);
+        }
+    }
+
+    return 0;
+}
+
+static int32_t current_render_thread = 0;
+
+void RenderQueueBatch(RenderBatch *batch)
+{
+    RenderThread *thread = render_threads_[current_render_thread++];
+    current_render_thread %= kNumRenderThreads;
+    thread_queue_produce(&thread->queue_, batch, 100);
+}
+
+bool RenderActive()
+{
+    for (size_t i = 0; i < render_threads_.size(); i++)
+    {
+        RenderThread *render_thread = render_threads_[i];
+
+        if (thread_queue_count(&render_thread->queue_))
+        {
+            return true;
+        }
+
+        // todo: better sync
+        if (thread_atomic_int_load(&render_thread->rendering_))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void RenderStartThread()
+{
+    for (int32_t i = 0; i < kNumRenderThreads; i++)
+    {
+        RenderThread *render_thread = new RenderThread;
+        EPI_CLEAR_MEMORY(render_thread, RenderThread, 1);
+        render_threads_.push_back(render_thread);
+
+        thread_atomic_int_store(&render_thread->exit_flag_, 0);
+        thread_signal_init(&render_thread->signal_start_);
+        thread_signal_init(&render_thread->signal_stop_);
+        thread_queue_init(&render_thread->queue_, kMaxRenderBatch, (void **)render_thread->batch_queue_, 0);
+        render_thread->thread_ = thread_create(RenderThreadProc, render_thread, THREAD_STACK_SIZE_DEFAULT);
+    }
+}
+void RenderStopThread()
+{
+    for (size_t i = 0; i < render_threads_.size(); i++)
+    {
+        RenderThread *render_thread = render_threads_[i];
+        thread_atomic_int_store(&render_thread->exit_flag_, 1);
+        thread_join(render_thread->thread_);
+        thread_signal_term(&render_thread->signal_start_);
+        thread_signal_term(&render_thread->signal_stop_);
+    }
+
+    render_threads_.clear();
+}
+
+#endif
+
+void DoWeaponModel(void)
 {
     Player *pl = view_camera_map_object->player_;
 
@@ -1835,7 +2153,7 @@ static void DoWeaponModel(void)
     FinishUnitBatch();
 }
 
-static void InitializeCamera(MapObject *mo, bool full_height, float expand_w)
+void InitializeCamera(MapObject *mo, bool full_height, float expand_w)
 {
     float fov = HMM_Clamp(5, field_of_view.f_, 175);
 
@@ -1989,193 +2307,6 @@ static void InitializeCamera(MapObject *mo, bool full_height, float expand_w)
         clip_left  = 0 + kBAMAngle45;
         clip_right = uint32_t(0 - kBAMAngle45);
     }
-}
-
-//
-// RenderTrueBsp
-//
-// OpenGL BSP rendering.  Initialises all structures, then walks the
-// BSP tree collecting information, then renders each subsector:
-// firstly front to back (drawing all solid walls & planes) and then
-// from back to front (drawing everything else, sprites etc..).
-//
-void RenderTrueBsp(void)
-{
-    EDGE_ZoneScoped;
-
-    FuzzUpdate();
-
-    ClearBSP();
-    OcclusionClear();
-
-#ifndef EDGE_SOKOL
-    draw_subsector_list.clear();
-#endif
-
-    Player *v_player = view_camera_map_object->player_;
-
-    // handle powerup effects and BOOM colormaps
-    RendererRainbowEffect(v_player);
-
-    render_backend->SetRenderLayer(kRenderLayerSky);
-
-    render_backend->SetupMatrices3D();
-
-    render_state->Clear(GL_DEPTH_BUFFER_BIT);
-    render_state->Enable(GL_DEPTH_TEST);
-
-#ifdef EDGE_SOKOL
-
-    // needed for drawing the sky
-    BeginSky();
-
-    // draw all solid walls and planes
-
-    solid_mode = true;
-    render_backend->SetRenderLayer(kRenderLayerSolid, false);
-    StartUnitBatch(solid_mode);
-
-    BSPTraverse();
-
-    std::list<RenderItem *> items;
-    std::list<RenderItem *> sky_items;
-    while (BSPTraversing())
-    {
-        RenderBatch *batch = BSPReadRenderBatch();
-        if (!batch)
-        {
-            continue;
-        }
-
-        for (int32_t i = 0; i < batch->num_items_; i++)
-        {
-            RenderItem *item = &batch->items_[i];
-
-            switch (item->type_)
-            {
-            case kRenderSubsector:
-                items.push_back(item);
-                RenderSubsector(item->subsector_, false);
-                break;
-            case kRenderSkyWall:
-                RenderSkyWall(item->wallSeg_, item->height1_, item->height2_);
-                break;
-            case kRenderSkyPlane:
-                RenderSkyPlane(item->wallPlane_, item->height1_);
-                break;
-            }
-        }
-    }
-    FinishUnitBatch();
-
-    // draw all sprites and masked/translucent walls/planes
-    solid_mode = false;
-    render_backend->SetRenderLayer(kRenderLayerTransparent, false);
-
-    StartUnitBatch(solid_mode);
-    std::list<RenderItem *>::reverse_iterator RI;
-
-    for (RI = items.rbegin(); RI != items.rend(); RI++)
-    {
-        if ((*RI)->type_ == kRenderSubsector)
-        {
-            if ((*RI)->subsector_->solid)
-            {
-                continue;
-            }
-
-            RenderSubsector((*RI)->subsector_, false);
-        }
-    }
-
-    FinishUnitBatch();
-    render_backend->SetRenderLayer(kRenderLayerSky);
-
-    FinishSky();
-
-#else
-    // needed for drawing the sky
-    BeginSky();
-
-    // walk the bsp tree
-    BspWalkNode(root_node);
-
-    FinishSky();
-
-    RenderSubList(draw_subsector_list);
-
-#endif
-
-    // Lobo 2022:
-    // Allow changing the order of weapon model rendering to be
-    // after RenderWeaponSprites() so that FLASH states are
-    // drawn in front of the weapon
-    bool FlashFirst = false;
-
-    if (v_player)
-    {
-        if (v_player->ready_weapon_ >= 0)
-        {
-            FlashFirst = v_player->weapons_[v_player->ready_weapon_].info->render_invert_;
-        }
-    }
-
-    if (FlashFirst == false)
-    {
-        render_backend->SetRenderLayer(kRenderLayerWeapon);
-        DoWeaponModel();
-    }
-
-    render_state->Disable(GL_DEPTH_TEST);
-
-    // now draw 2D stuff like psprites, and add effects
-    render_backend->SetupWorldMatrices2D();
-
-    if (v_player)
-    {
-        RenderWeaponSprites(v_player);
-
-        RendererColourmapEffect(v_player);
-        RendererPaletteEffect(v_player);
-        render_backend->SetupMatrices2D();
-        RenderCrosshair(v_player);
-    }
-
-    if (FlashFirst == true)
-    {
-        render_backend->SetRenderLayer(kRenderLayerWeapon);
-        render_backend->SetupMatrices3D();
-        render_state->Enable(GL_DEPTH_TEST);
-        DoWeaponModel();
-        render_state->Disable(GL_DEPTH_TEST);
-        render_backend->SetupMatrices2D();
-    }
-
-#if (DEBUG >= 3)
-    LogDebug("\n\n");
-#endif
-}
-
-void RenderView(int x, int y, int w, int h, MapObject *camera, bool full_height, float expand_w)
-{
-    EDGE_ZoneScoped;
-
-    view_window_x      = x;
-    view_window_y      = y;
-    view_window_width  = w;
-    view_window_height = h;
-
-    view_camera_map_object = camera;
-
-    // Load the details for the camera
-    InitializeCamera(camera, full_height, expand_w);
-
-    // Profiling
-    render_frame_count++;
-    valid_count++;
-
-    seen_dynamic_lights.clear();
-    RenderTrueBsp();
 }
 
 #ifdef _DISABLE_FLOODPLANES
