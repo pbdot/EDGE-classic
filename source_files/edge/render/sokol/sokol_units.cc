@@ -36,6 +36,7 @@
 #include "r_gldefs.h"
 #include "r_image.h"
 #include "r_misc.h"
+#include "r_render.h"
 #include "r_shader.h"
 #include "r_sky.h"
 #include "r_texgl.h"
@@ -51,50 +52,12 @@ EDGE_DEFINE_CONSOLE_VARIABLE(renderer_dumb_clamp, "1", kConsoleVariableFlagNone)
 EDGE_DEFINE_CONSOLE_VARIABLE(renderer_dumb_clamp, "0", kConsoleVariableFlagNone)
 #endif
 
-static constexpr uint16_t kMaximumLocalUnits = 1024;
-
 extern ConsoleVariable draw_culling;
 extern ConsoleVariable cull_fog_color;
 
 std::unordered_map<GLuint, GLint> texture_clamp_s;
 std::unordered_map<GLuint, GLint> texture_clamp_t;
-
-// a single unit (polygon, quad, etc) to pass to the GL
-struct RendererUnit
-{
-    // unit mode (e.g. GL_TRIANGLE_FAN)
-    GLuint shape;
-
-    // environment modes (GL_REPLACE, GL_MODULATE, GL_DECAL, GL_ADD)
-    GLuint environment_mode[2];
-
-    // texture(s) used
-    GLuint texture[2];
-
-    // pass number (multiple pass rendering)
-    int pass;
-
-    // blending flags
-    int blending;
-
-    // range of local vertices
-    int first, count;
-
-    RGBAColor fog_color   = kRGBANoValue;
-    float     fog_density = 0;
-};
-
-static RendererVertex local_verts[kMaximumLocalVertices];
-static RendererUnit   local_units[kMaximumLocalUnits];
-
-static std::vector<RendererUnit *> local_unit_map;
-
-static int current_render_vert;
-static int current_render_unit;
-
-static bool batch_sort;
-
-RGBAColor culling_fog_color;
+RGBAColor                         culling_fog_color;
 
 //
 // StartUnitBatch
@@ -105,14 +68,16 @@ RGBAColor culling_fog_color;
 // texture changes to a minimum.  Otherwise, the batch is
 // drawn in the same order as given.
 //
-void StartUnitBatch(bool sort_em)
+void StartUnitBatch(UnitContext *context, bool sort_em)
 {
-    render_backend->LockRenderUnits(true);
-    current_render_vert = current_render_unit = 0;
+    context->current_render_vert = context->current_render_unit = 0;
 
-    batch_sort = sort_em;
+    context->batch_sort = sort_em;
 
-    local_unit_map.resize(kMaximumLocalUnits);
+    if (context->local_unit_map.size() < kMaximumLocalUnits)
+    {
+        context->local_unit_map.resize(kMaximumLocalUnits);
+    }
 }
 
 //
@@ -120,11 +85,9 @@ void StartUnitBatch(bool sort_em)
 //
 // Finishes a batch of units, drawing any that haven't been drawn yet.
 //
-void FinishUnitBatch(void)
+void FinishUnitBatch(UnitContext *context)
 {
-    RenderCurrentUnits();
-
-    render_backend->LockRenderUnits(false);
+    RenderCurrentUnits(context);
 }
 
 //
@@ -137,8 +100,8 @@ void FinishUnitBatch(void)
 // contains "holes" (like sprites).  `blended' should be true if the
 // texture should be blended (like for translucent water or sprites).
 //
-RendererVertex *BeginRenderUnit(GLuint shape, int max_vert, GLuint env1, GLuint tex1, GLuint env2, GLuint tex2,
-                                int pass, int blending, RGBAColor fog_color, float fog_density)
+RendererVertex *BeginRenderUnit(UnitContext *context, GLuint shape, int max_vert, GLuint env1, GLuint tex1, GLuint env2,
+                                GLuint tex2, int pass, int blending, RGBAColor fog_color, float fog_density)
 {
     RendererUnit *unit;
 
@@ -148,12 +111,13 @@ RendererVertex *BeginRenderUnit(GLuint shape, int max_vert, GLuint env1, GLuint 
     EPI_ASSERT((blending & (kBlendingCullBack | kBlendingCullFront)) != (kBlendingCullBack | kBlendingCullFront));
 
     // check we have enough space left
-    if (current_render_vert + max_vert > kMaximumLocalVertices || current_render_unit >= kMaximumLocalUnits)
+    if (context->current_render_vert + max_vert > kMaximumLocalVertices ||
+        context->current_render_unit >= kMaximumLocalUnits)
     {
-        RenderCurrentUnits();
+        RenderCurrentUnits(context);
     }
 
-    unit = local_units + current_render_unit;
+    unit = context->local_units + context->current_render_unit;
 
     if (env1 == kTextureEnvironmentDisable)
         tex1 = 0;
@@ -168,18 +132,18 @@ RendererVertex *BeginRenderUnit(GLuint shape, int max_vert, GLuint env1, GLuint 
 
     unit->pass     = pass;
     unit->blending = blending;
-    unit->first    = current_render_vert; // count set later
+    unit->first    = context->current_render_vert; // count set later
 
     unit->fog_color   = fog_color;
     unit->fog_density = fog_density;
 
-    return local_verts + current_render_vert;
+    return context->local_verts + context->current_render_vert;
 }
 
 //
 // EndRenderUnit
 //
-void EndRenderUnit(int actual_vert)
+void EndRenderUnit(UnitContext *context, int actual_vert)
 {
     RendererUnit *unit;
 
@@ -188,15 +152,15 @@ void EndRenderUnit(int actual_vert)
     if (actual_vert == 0)
         return;
 
-    unit = local_units + current_render_unit;
+    unit = context->local_units + context->current_render_unit;
 
     unit->count = actual_vert;
 
-    current_render_vert += actual_vert;
-    current_render_unit++;
+    context->current_render_vert += actual_vert;
+    context->current_render_unit++;
 
-    EPI_ASSERT(current_render_vert <= kMaximumLocalVertices);
-    EPI_ASSERT(current_render_unit <= kMaximumLocalUnits);
+    EPI_ASSERT(context->current_render_vert <= kMaximumLocalVertices);
+    EPI_ASSERT(context->current_render_unit <= kMaximumLocalUnits);
 }
 
 struct Compare_Unit_pred
@@ -228,20 +192,23 @@ struct Compare_Unit_pred
 // Forces the set of current units to be drawn.  This call is
 // optional (it never _needs_ to be called by client code).
 //
-void RenderCurrentUnits(void)
+void RenderCurrentUnits(UnitContext *context)
 {
     EDGE_ZoneScoped;
 
-    if (current_render_unit == 0)
+    if (context->current_render_unit == 0)
         return;
 
-    for (int i = 0; i < current_render_unit; i++)
-        local_unit_map[i] = &local_units[i];
+    for (int i = 0; i < context->current_render_unit; i++)
+        context->local_unit_map[i] = &context->local_units[i];
 
-    if (batch_sort)
+    if (context->batch_sort)
     {
-        std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
+        std::sort(context->local_unit_map.begin(), context->local_unit_map.begin() + context->current_render_unit,
+                  Compare_Unit_pred());
     }
+
+    render_backend->LockRenderUnits(true);
 
     RenderLayer render_layer = render_backend->GetRenderLayer();
 
@@ -284,9 +251,9 @@ void RenderCurrentUnits(void)
     else
         render_state->Disable(GL_FOG);
 
-    for (int j = 0; j < current_render_unit; j++)
+    for (int j = 0; j < context->current_render_unit; j++)
     {
-        RendererUnit *unit = local_unit_map[j];
+        RendererUnit *unit = context->local_unit_map[j];
 
         EPI_ASSERT(unit->count > 0);
 
@@ -366,7 +333,8 @@ void RenderCurrentUnits(void)
         else if (unit->blending & kBlendingGEqual)
         {
             render_state->Enable(GL_ALPHA_TEST);
-            render_state->AlphaFunction(GL_GEQUAL, 1.0f - (epi::GetRGBAAlpha(local_verts[unit->first].rgba) / 255.0f));
+            render_state->AlphaFunction(GL_GEQUAL,
+                                        1.0f - (epi::GetRGBAAlpha(context->local_verts[unit->first].rgba) / 255.0f));
         }
         else
             render_state->Disable(GL_ALPHA_TEST);
@@ -374,7 +342,7 @@ void RenderCurrentUnits(void)
         if (unit->blending & kBlendingLess)
         {
             // NOTE: assumes alpha is constant over whole polygon
-            float a = epi::GetRGBAAlpha(local_verts[unit->first].rgba) / 255.0f;
+            float a = epi::GetRGBAAlpha(context->local_verts[unit->first].rgba) / 255.0f;
             render_state->AlphaFunction(GL_GREATER, a * 0.66f);
         }
 
@@ -405,7 +373,7 @@ void RenderCurrentUnits(void)
             unit->texture[1]          = 0;
             unit->environment_mode[1] = kTextureEnvironmentDisable;
 
-            RendererVertex *v = local_verts + unit->first;
+            RendererVertex *v = context->local_verts + unit->first;
 
             for (int k = 0; k < unit->count; k++, v++)
             {
@@ -454,7 +422,7 @@ void RenderCurrentUnits(void)
         {
             // TODO: can be strips
 
-            const RendererVertex *V = local_verts + unit->first;
+            const RendererVertex *V = context->local_verts + unit->first;
 
             sgl_begin_triangles();
 
@@ -486,7 +454,7 @@ void RenderCurrentUnits(void)
         {
             sgl_disable_texture();
             sgl_begin_lines();
-            const RendererVertex *V = local_verts + unit->first;
+            const RendererVertex *V = context->local_verts + unit->first;
 
             for (int v_idx = 0, v_last_idx = unit->count; v_idx < v_last_idx; v_idx++, V++)
             {
@@ -505,7 +473,7 @@ void RenderCurrentUnits(void)
 
             for (int k = 0; k < unit->count; k++)
             {
-                const RendererVertex *V = local_verts + unit->first + k;
+                const RendererVertex *V = context->local_verts + unit->first + k;
 
                 sgl_v3f_t4f_c4b(V->position.X, V->position.Y, V->position.Z, V->texture_coordinates[0].X,
                                 V->texture_coordinates[0].Y, V->texture_coordinates[1].X, V->texture_coordinates[1].Y,
@@ -517,7 +485,7 @@ void RenderCurrentUnits(void)
             continue;
         }
 
-        const RendererVertex *V = local_verts + unit->first;
+        const RendererVertex *V = context->local_verts + unit->first;
 
         for (int v_idx = 0, v_last_idx = unit->count; v_idx < v_last_idx; v_idx++, V++)
         {
@@ -531,5 +499,35 @@ void RenderCurrentUnits(void)
     }
 
     // all done
-    current_render_vert = current_render_unit = 0;
+    context->current_render_vert = context->current_render_unit = 0;
+
+    render_backend->LockRenderUnits(false);
+}
+
+static UnitContext render_context;
+
+// None context overloads
+void StartUnitBatch(bool sort_em)
+{
+    StartUnitBatch(&render_context, sort_em);
+}
+void FinishUnitBatch()
+{
+    FinishUnitBatch(&render_context);
+}
+void RenderCurrentUnits()
+{
+    RenderCurrentUnits(&render_context);
+}
+
+RendererVertex *BeginRenderUnit(GLuint shape, int max_vert, GLuint env1, GLuint tex1, GLuint env2, GLuint tex2,
+                                int pass, int blending, RGBAColor fog_color, float fog_density)
+{
+    return BeginRenderUnit(&render_context, shape, max_vert, env1, tex1, env2, tex2, pass, blending, fog_color,
+                           fog_density);
+}
+
+void EndRenderUnit(int actual_vert)
+{
+    EndRenderUnit(&render_context, actual_vert);
 }

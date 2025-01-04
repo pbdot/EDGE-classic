@@ -57,9 +57,7 @@ class RenderBackend
 
     virtual void SetRenderLayer(RenderLayer layer, bool clear_depth = false) = 0;
 
-    virtual RenderLayer GetRenderLayer() = 0;
-
-    virtual void LockRenderUnits(bool locked) = 0;
+    virtual RenderLayer GetRenderLayer() = 0;    
 
     virtual void Resize(int32_t width, int32_t height) = 0;
 
@@ -82,6 +80,12 @@ class RenderBackend
     {
         return max_texture_size_;
     }
+
+    // Threading
+    virtual void LockRenderUnits(bool locked) = 0;
+    virtual void LockImageCache(bool locked) = 0;    
+    virtual void LockShaderUpdate(bool locked) = 0;    
+
 
   protected:
 

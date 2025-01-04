@@ -1139,7 +1139,7 @@ static void DLIT_Thing(MapObject *mo, void *dataptr)
     }
 }
 
-static bool RenderThing(DrawThing *dthing, bool solid)
+static bool RenderThing(RenderContext* context, DrawThing *dthing, bool solid)
 {
     EDGE_ZoneScoped;
 
@@ -1350,7 +1350,7 @@ static bool RenderThing(DrawThing *dthing, bool solid)
         GLuint fuzz_tex = is_fuzzy ? ImageCache(fuzz_image, false) : 0;
 
         RendererVertex *glvert =
-            BeginRenderUnit(GL_POLYGON, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
+            BeginRenderUnit(&context->unit_context_, GL_POLYGON, 4, is_additive ? (GLuint)kTextureEnvironmentSkipRGB : GL_MODULATE, tex_id,
                             is_fuzzy ? GL_MODULATE : (GLuint)kTextureEnvironmentDisable, fuzz_tex, pass, blending,
                             pass > 0 ? kRGBANoValue : fc_to_use, fd_to_use);
 
@@ -1390,13 +1390,13 @@ static bool RenderThing(DrawThing *dthing, bool solid)
             epi::SetRGBAAlpha(dest->rgba, trans);
         }
 
-        EndRenderUnit(4);
+        EndRenderUnit(&context->unit_context_, 4);
     }
 
     return solid;
 }
 
-bool RenderThings(DrawFloor *dfloor, bool solid)
+bool RenderThings(RenderContext* context, DrawFloor *dfloor, bool solid)
 {
     //
     // As part my move to strip out Z_Zone usage and replace
@@ -1437,7 +1437,7 @@ bool RenderThings(DrawFloor *dfloor, bool solid)
     {
         while(head_dt)
         {
-            if (!RenderThing(head_dt, solid))
+            if (!RenderThing(context, head_dt, solid))
             {
                 all_solid = false;
             }
@@ -1519,7 +1519,7 @@ bool RenderThings(DrawFloor *dfloor, bool solid)
     // Draw...
     for (dt = head_dt; dt; dt = dt->render_next)
     {
-        if (!RenderThing(dt, solid))
+        if (!RenderThing(context, dt, solid))
         {
             all_solid = false;
         }

@@ -140,7 +140,7 @@ void RenderMirror(DrawMirror *mir)
 
     render_mirror_set.Push(mir);
     {
-        RenderSubList(mir->draw_subsectors, true);
+        //RenderSubList(mir->draw_subsectors, true);
     }
     render_mirror_set.Pop();
 

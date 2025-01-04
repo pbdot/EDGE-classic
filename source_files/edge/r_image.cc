@@ -58,6 +58,7 @@
 #include "m_argv.h"
 #include "m_misc.h"
 #include "p_local.h"
+#include "r_backend.h"
 #include "r_colormap.h"
 #include "r_defs.h"
 #include "r_gldefs.h"
@@ -1790,6 +1791,8 @@ static CachedImage *ImageCacheOGL(Image *rim, const Colormap *trans, bool do_whi
 //
 GLuint ImageCache(const Image *image, bool anim, const Colormap *trans, bool do_whiten)
 {
+    render_backend->LockImageCache(true);
+
     // Intentional Const Override
     Image *rim = (Image *)image;
 
@@ -1806,6 +1809,8 @@ GLuint ImageCache(const Image *image, bool anim, const Colormap *trans, bool do_
     CachedImage *rc = ImageCacheOGL(rim, trans, do_whiten);
 
     EPI_ASSERT(rc->parent);
+
+    render_backend->LockImageCache(false);
 
     return rc->texture_id;
 }

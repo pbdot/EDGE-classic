@@ -29,8 +29,10 @@
 #include "r_defs.h"
 #include "r_gldefs.h"
 
+struct RenderContext;
+
 void BSPWalkThing(DrawSubsector *dsub, MapObject *mo);
-bool RenderThings(DrawFloor *dfloor, bool solid);
+bool RenderThings(RenderContext* context, DrawFloor *dfloor, bool solid);
 
 void RenderWeaponSprites(Player *p);
 void RenderWeaponModel(Player *p);

@@ -27,7 +27,7 @@ inline BlendingMode GetBlending(float alpha, ImageOpacity opacity)
 
 #ifdef EDGE_SOKOL
 
-constexpr int32_t kRenderItemBatchSize = 16;
+constexpr int32_t kRenderItemBatchSize = 32;
 
 enum kRenderType
 {
@@ -58,5 +58,33 @@ struct RenderBatch
 void         BSPTraverse();
 bool         BSPTraversing();
 RenderBatch *BSPReadRenderBatch();
+
+struct RenderContext
+{
+    Sector *front_sector;
+    Sector *back_sector;
+
+    int  swirl_pass   = 0;
+    bool thick_liquid = false;
+
+    Subsector     *current_subsector;
+    DrawSubsector *current_draw_subsector;
+    Seg           *current_seg;
+
+    void Clear()
+    {
+        front_sector = nullptr;
+        back_sector  = nullptr;
+
+        swirl_pass   = 0;
+        thick_liquid = false;
+
+        current_subsector      = nullptr;
+        current_draw_subsector = nullptr;
+        current_seg            = nullptr;
+    }
+
+    UnitContext unit_context_;
+};
 
 #endif

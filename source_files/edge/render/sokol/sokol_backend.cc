@@ -194,10 +194,12 @@ class SokolRenderBackend : public RenderBackend
     {
 #ifdef SOKOL_D3D11
         sapp_d3d11_destroy_device_and_swapchain();
-#endif        
+#endif
         RenderStopThread();
         BSPStopThread();
+        thread_mutex_term(&shader_update_mutex_);
         thread_mutex_term(&render_unit_mutex_);
+        thread_mutex_term(&image_cache_mutex_);
     }
 
 #ifdef SOKOL_GLCORE
@@ -296,6 +298,8 @@ class SokolRenderBackend : public RenderBackend
         RenderBackend::Init();
 
         thread_mutex_init(&render_unit_mutex_);
+        thread_mutex_init(&shader_update_mutex_);
+        thread_mutex_init(&image_cache_mutex_);
         BSPStartThread();
         RenderStartThread();
     }
@@ -404,6 +408,30 @@ class SokolRenderBackend : public RenderBackend
         }
     }
 
+    void LockImageCache(bool locked)
+    {
+        if (locked)
+        {
+            thread_mutex_lock(&image_cache_mutex_);
+        }
+        else
+        {
+            thread_mutex_unlock(&image_cache_mutex_);
+        }
+    }
+
+    void LockShaderUpdate(bool locked)
+    {
+        if (locked)
+        {
+            thread_mutex_lock(&shader_update_mutex_);
+        }
+        else
+        {
+            thread_mutex_unlock(&shader_update_mutex_);
+        }
+    }
+
   private:
     struct WorldState
     {
@@ -432,6 +460,9 @@ class SokolRenderBackend : public RenderBackend
     WorldState world_state_[kRenderWorldMax];
 
     thread_mutex_t render_unit_mutex_;
+    thread_mutex_t image_cache_mutex_;
+    thread_mutex_t shader_update_mutex_;
+    
 
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;

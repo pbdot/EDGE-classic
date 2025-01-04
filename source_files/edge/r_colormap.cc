@@ -38,10 +38,12 @@
 #include "i_defs_gl.h"
 #include "i_system.h"
 #include "m_argv.h"
+#include "r_backend.h"
 #include "r_gldefs.h"
 #include "r_image.h"
 #include "r_misc.h"
 #include "r_modes.h"
+#include "r_render.h"
 #include "r_shader.h"
 #include "r_texgl.h"
 #include "r_units.h"
@@ -626,7 +628,7 @@ class ColormapShader : public AbstractShader
         Sample(col, mx, my, mz);
     }
 
-    virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
+    virtual void WorldMix(RenderContext* context, GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, ShaderCoordinateFunction func)
     {
         EPI_UNUSED(masked);
@@ -647,7 +649,7 @@ class ColormapShader : public AbstractShader
             }
         }
 
-        RendererVertex *glvert = BeginRenderUnit(shape, num_vert, GL_MODULATE, tex, GL_MODULATE, fade_texture_,
+        RendererVertex *glvert = BeginRenderUnit(&context->unit_context_, shape, num_vert, GL_MODULATE, tex, GL_MODULATE, fade_texture_,
                                                  *pass_var, blending, fc_to_use, fd_to_use);
 
         for (int v_idx = 0; v_idx < num_vert; v_idx++)
@@ -658,13 +660,13 @@ class ColormapShader : public AbstractShader
 
             HMM_Vec3 lit_pos;
 
-            (*func)(data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
+            (*func)(context, data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
                     &lit_pos);
 
             TextureCoordinates(dest, 1, &lit_pos);
         }
 
-        EndRenderUnit(num_vert);
+        EndRenderUnit(&context->unit_context_, num_vert);
 
         (*pass_var) += 1;
     }
@@ -809,6 +811,8 @@ static ColormapShader *standard_colormap_shader;
 
 AbstractShader *GetColormapShader(const struct RegionProperties *props, int light_add, Sector *sec)
 {
+    render_backend->LockShaderUpdate(true);
+
     if (!standard_colormap_shader)
         standard_colormap_shader = new ColormapShader(nullptr);
 
@@ -846,6 +850,8 @@ AbstractShader *GetColormapShader(const struct RegionProperties *props, int ligh
     shader->SetFog(props->fog_color, props->fog_density);
 
     shader->SetSector(sec);
+
+    render_backend->LockShaderUpdate(false);
 
     return shader;
 }

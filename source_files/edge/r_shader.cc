@@ -28,6 +28,7 @@
 #include "r_image.h"
 #include "r_mirror.h"
 #include "r_misc.h"
+#include "r_render.h"
 #include "r_state.h"
 #include "r_texgl.h"
 #include "r_units.h"
@@ -307,7 +308,7 @@ class dynlight_shader_c : public AbstractShader
         }
     }
 
-    virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
+    virtual void WorldMix(RenderContext* context, GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, ShaderCoordinateFunction func)
     {
         if (WhatType() == kDynamicLightTypeNone)
@@ -324,7 +325,7 @@ class dynlight_shader_c : public AbstractShader
         float B = L * epi::GetRGBABlue(col);
 
         RendererVertex *glvert =
-            BeginRenderUnit(shape, num_vert,
+            BeginRenderUnit(&context->unit_context_, shape, num_vert,
                             (is_additive && masked) ? (GLuint)kTextureEnvironmentSkipRGB
                             : is_additive           ? (GLuint)kTextureEnvironmentDisable
                                                     : GL_MODULATE,
@@ -338,7 +339,7 @@ class dynlight_shader_c : public AbstractShader
 
             HMM_Vec3 lit_pos;
 
-            (*func)(data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
+            (*func)(context, data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
                     &lit_pos);
 
             float dist = TexCoord(&dest->texture_coordinates[1], WhatRadius(), &lit_pos, &dest->normal);
@@ -348,7 +349,7 @@ class dynlight_shader_c : public AbstractShader
             dest->rgba = epi::MakeRGBA((uint8_t)(R * ity), (uint8_t)(G * ity), (uint8_t)(B * ity), (uint8_t)(alpha * 255.0f));
         }
 
-        EndRenderUnit(num_vert);
+        EndRenderUnit(&context->unit_context_, num_vert);
 
         (*pass_var) += 1;
     }
@@ -479,7 +480,7 @@ class plane_glow_c : public AbstractShader
         }
     }
 
-    virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
+    virtual void WorldMix(RenderContext* context, GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, ShaderCoordinateFunction func)
     {
         const Sector *sec = mo->subsector_->sector;
@@ -498,7 +499,7 @@ class plane_glow_c : public AbstractShader
         float B = L * epi::GetRGBABlue(col);
 
         RendererVertex *glvert =
-            BeginRenderUnit(shape, num_vert,
+            BeginRenderUnit(&context->unit_context_, shape, num_vert,
                             (is_additive && masked) ? (GLuint)kTextureEnvironmentSkipRGB
                             : is_additive           ? (GLuint)kTextureEnvironmentDisable
                                                     : GL_MODULATE,
@@ -512,7 +513,7 @@ class plane_glow_c : public AbstractShader
 
             HMM_Vec3 lit_pos;
 
-            (*func)(data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
+            (*func)(context, data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
                     &lit_pos);
 
             TexCoord(&dest->texture_coordinates[1], WhatRadius(), sec, &lit_pos, &dest->normal);
@@ -520,7 +521,7 @@ class plane_glow_c : public AbstractShader
             dest->rgba = epi::MakeRGBA((uint8_t)R, (uint8_t)G, (uint8_t)B, (uint8_t)(alpha * 255.0f));
         }
 
-        EndRenderUnit(num_vert);
+        EndRenderUnit(&context->unit_context_, num_vert);
 
         (*pass_var) += 1;
     }
@@ -637,7 +638,7 @@ class wall_glow_c : public AbstractShader
         }
     }
 
-    virtual void WorldMix(GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
+    virtual void WorldMix(RenderContext* context, GLuint shape, int num_vert, GLuint tex, float alpha, int *pass_var, int blending, bool masked,
                           void *data, ShaderCoordinateFunction func)
     {
         const Sector *sec = mo->subsector_->sector;
@@ -656,7 +657,7 @@ class wall_glow_c : public AbstractShader
         float B = L * epi::GetRGBABlue(col);
 
         RendererVertex *glvert =
-            BeginRenderUnit(shape, num_vert,
+            BeginRenderUnit(&context->unit_context_, shape, num_vert,
                             (is_additive && masked) ? (GLuint)kTextureEnvironmentSkipRGB
                             : is_additive           ? (GLuint)kTextureEnvironmentDisable
                                                     : GL_MODULATE,
@@ -670,7 +671,7 @@ class wall_glow_c : public AbstractShader
 
             HMM_Vec3 lit_pos;
 
-            (*func)(data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
+            (*func)(context, data, v_idx, &dest->position, &dest->rgba, &dest->texture_coordinates[0], &dest->normal,
                     &lit_pos);
 
             TexCoord(&dest->texture_coordinates[1], WhatRadius(), sec, &lit_pos, &dest->normal);
@@ -679,7 +680,7 @@ class wall_glow_c : public AbstractShader
                 (uint8_t)(B * render_view_blue_multiplier), (uint8_t)(alpha * 255.0f));
         }
 
-        EndRenderUnit(num_vert);
+        EndRenderUnit(&context->unit_context_, num_vert);
 
         (*pass_var) += 1;
     }
