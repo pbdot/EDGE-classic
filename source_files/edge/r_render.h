@@ -27,7 +27,7 @@ inline BlendingMode GetBlending(float alpha, ImageOpacity opacity)
 
 #ifdef EDGE_SOKOL
 
-constexpr int32_t kRenderItemBatchSize = 32;
+constexpr int32_t kRenderItemBatchSize = 128;
 
 enum kRenderType
 {

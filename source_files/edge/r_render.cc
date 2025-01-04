@@ -1935,7 +1935,7 @@ void RenderTrueBsp(void)
             if (item->type_ == kRenderSubsector)
             {
                 items.push_back(item);
-            }            
+            }
         }
 
         RenderQueueBatch(batch);
@@ -2068,19 +2068,50 @@ void RenderView(int x, int y, int w, int h, MapObject *camera, bool full_height,
 
 #ifdef RENDER_MULTITHREAD
 
+constexpr int32_t kQueueBatchSize = 16;
+constexpr int32_t kQueueBatchMax  = 65536;
+
+struct QueueBatch
+{
+    RenderBatch *batches_[kQueueBatchSize];
+    int32_t      num_batches_;
+};
+
+static QueueBatch  queue_batches_[kQueueBatchMax];
+static QueueBatch *current_queue_batch = nullptr;
+static uint32_t    queue_batch_counter = 0;
+
+static QueueBatch *GetQueueBatch()
+{
+    QueueBatch *batch = &queue_batches_[queue_batch_counter++];
+    EPI_CLEAR_MEMORY(batch, QueueBatch, 1);
+    queue_batch_counter %= kQueueBatchMax;
+    return batch;
+}
+
 static int32_t RenderThreadProc(void *thread_data)
 {
+    thread_set_high_priority();
+
     RenderThread *thread = (RenderThread *)thread_data;
 
     while (thread_atomic_int_load(&thread->exit_flag_) == 0)
     {
-        RenderBatch *batch = (RenderBatch *)thread_queue_consume(&thread->queue_, 0);
-        if (batch)
+        QueueBatch *queue = (QueueBatch *)thread_queue_consume(&thread->queue_, 0);
+        if (!queue)
         {
-            thread_atomic_int_store(&thread->rendering_, 1);
-            for (int32_t i = 0; i < batch->num_items_; i++)
+            continue;
+        }
+
+        thread_atomic_int_store(&thread->rendering_, 1);
+
+        for (int32_t i = 0; i < queue->num_batches_; i++)
+        {
+            RenderBatch *batch = queue->batches_[i];
+
+            for (int32_t j = 0; j < batch->num_items_; j++)
             {
-                RenderItem *item = &batch->items_[i];
+                RenderItem *item = &batch->items_[j];
 
                 switch (item->type_)
                 {
@@ -2096,8 +2127,9 @@ static int32_t RenderThreadProc(void *thread_data)
                     break;
                 }
             }
-            thread_atomic_int_store(&thread->rendering_, 0);
         }
+
+        thread_atomic_int_store(&thread->rendering_, 0);
     }
 
     return 0;
@@ -2105,11 +2137,59 @@ static int32_t RenderThreadProc(void *thread_data)
 
 static int32_t current_render_thread = 0;
 
+void PostQueueBatch(QueueBatch *batch)
+{
+    for (size_t i = 0; i < render_threads_.size(); i++)
+    {
+        RenderThread *render_thread = render_threads_[i];
+        if (!thread_atomic_int_load(&render_thread->rendering_))
+        {
+            thread_queue_produce(&render_thread->queue_, batch, 100);
+            return;
+        }
+    }
+
+    int32_t       best   = kMaxRenderBatch;
+    RenderThread *thread = nullptr;
+
+    for (size_t i = 0; i < render_threads_.size(); i++)
+    {
+        RenderThread *render_thread = render_threads_[i];
+        int32_t       count         = thread_queue_count(&render_thread->queue_);
+        if (count < best)
+        {
+            best   = count;
+            thread = render_thread;
+        }
+    }
+
+    if (!thread)
+    {
+        thread = render_threads_[current_render_thread++];
+        current_render_thread %= kNumRenderThreads;
+    }
+
+    thread_queue_produce(&thread->queue_, batch, 100);
+}
+
 void RenderQueueBatch(RenderBatch *batch)
 {
-    RenderThread *thread = render_threads_[current_render_thread++];    
-    thread_queue_produce(&thread->queue_, batch, 100);
-    current_render_thread %= kNumRenderThreads;
+
+    if (!current_queue_batch)
+    {
+        current_queue_batch = GetQueueBatch();
+    }
+
+    current_queue_batch->batches_[current_queue_batch->num_batches_++] = batch;
+
+    if (current_queue_batch->num_batches_ < kQueueBatchSize)
+    {
+        return;
+    }
+
+    PostQueueBatch(current_queue_batch);
+
+    current_queue_batch = nullptr;
 }
 
 bool RenderActive()
@@ -2118,13 +2198,13 @@ bool RenderActive()
     {
         RenderThread *render_thread = render_threads_[i];
 
-        if (thread_queue_count(&render_thread->queue_))
+        // todo: better sync
+        if (thread_atomic_int_load(&render_thread->rendering_))
         {
             return true;
         }
 
-        // todo: better sync
-        if (thread_atomic_int_load(&render_thread->rendering_))
+        if (thread_queue_count(&render_thread->queue_))
         {
             return true;
         }

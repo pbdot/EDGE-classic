@@ -973,6 +973,8 @@ static int32_t BspTraverseProc(void *thread_data)
 {
     EPI_UNUSED(thread_data);
 
+    thread_set_high_priority();
+
     while (thread_atomic_int_load(&bsp_thread.exit_flag_) == 0)
     {
         if (thread_signal_wait(&bsp_thread.signal_start_, 0))
@@ -982,7 +984,7 @@ static int32_t BspTraverseProc(void *thread_data)
             // walk the bsp tree
             BspWalkNode(root_node);
 
-            if (current_batch->num_items_)
+            if (current_batch && current_batch->num_items_)
             {
                 BSPQueueRenderBatch(current_batch);
             }
@@ -1013,13 +1015,8 @@ static RenderBatch *GetRenderBatch()
 
 static RenderItem *GetRenderItem()
 {
-    if (!current_batch || current_batch->num_items_ == kRenderItemBatchSize)
+    if (!current_batch)
     {
-        if (current_batch)
-        {
-            BSPQueueRenderBatch(current_batch);
-        }
-
         current_batch = GetRenderBatch();
     }
 
@@ -1034,6 +1031,12 @@ void BSPQueueSkyWall(Seg *seg, float h1, float h2)
     item->height1_ = h1;
     item->height2_ = h2;
     item->wallSeg_ = seg;
+
+    if (current_batch->num_items_ == kRenderItemBatchSize)
+    {
+        BSPQueueRenderBatch(current_batch);
+        current_batch = nullptr;
+    }
 }
 
 void BSPQueueSkyPlane(Subsector *sub, float h)
@@ -1043,6 +1046,12 @@ void BSPQueueSkyPlane(Subsector *sub, float h)
     item->type_      = kRenderSkyPlane;
     item->height1_   = h;
     item->wallPlane_ = sub;
+
+    if (current_batch->num_items_ == kRenderItemBatchSize)
+    {
+        BSPQueueRenderBatch(current_batch);
+        current_batch = nullptr;
+    }
 }
 
 void BSPQueueDrawSubsector(DrawSubsector *subsector)
@@ -1051,6 +1060,13 @@ void BSPQueueDrawSubsector(DrawSubsector *subsector)
     RenderItem *item = GetRenderItem();
     item->type_      = kRenderSubsector;
     item->subsector_ = subsector;
+
+    if (current_batch->num_items_ == kRenderItemBatchSize)
+    {
+        BSPQueueRenderBatch(current_batch);
+        current_batch = nullptr;
+    }
+
 }
 
 static bool traverse_stop_signalled;
@@ -1088,7 +1104,7 @@ void BSPStartThread()
     thread_signal_init(&bsp_thread.signal_start_);
     thread_signal_init(&bsp_thread.signal_stop_);
     thread_queue_init(&bsp_thread.queue_, kMaxRenderBatch, (void **)bsp_thread.render_queue_, 0);
-    bsp_thread.thread_ = thread_create(BspTraverseProc, nullptr, THREAD_STACK_SIZE_DEFAULT);
+    bsp_thread.thread_ = thread_create(BspTraverseProc, nullptr, THREAD_STACK_SIZE_DEFAULT);    
 }
 void BSPStopThread()
 {
