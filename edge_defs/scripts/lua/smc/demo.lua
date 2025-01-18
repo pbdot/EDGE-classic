@@ -85,8 +85,6 @@ function SMC_SetContext(ctx_in)
 end
 
 function SMC_Frame()
-   nk.input_begin(ctx)
-   nk.input_end(ctx)
    --backend.new_frame()
    demogui(ctx)
    --backend.render()

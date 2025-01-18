@@ -29,6 +29,10 @@
 #include "m_argv.h"
 #include "r_modes.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc.h"
+#endif
+
 // FIXME: Combine all these SDL bool vars into an int/enum'd flags structure
 
 // Work around for alt-tabbing
@@ -765,13 +769,25 @@ void ControlGetEvents(void)
 
     SDL_Event sdl_ev;
 
+#ifdef EDGE_SNAPMAP
+    smc::SMC_InputBegin();
+#endif
+
     while (SDL_PollEvent(&sdl_ev))
     {
         if (app_state & kApplicationActive)
             ActiveEventProcess(&sdl_ev);
         else
             InactiveEventProcess(&sdl_ev);
+
+#ifdef EDGE_SNAPMAP
+        smc::SMC_InputEvent((void*) &sdl_ev);
+#endif
     }
+
+#ifdef EDGE_SNAPMAP
+    smc::SMC_InputEnd();
+#endif
 }
 
 void ShutdownControl(void)
