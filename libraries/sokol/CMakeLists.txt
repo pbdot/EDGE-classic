@@ -1,7 +1,7 @@
 
 add_library(sokol sokol.cc)
 
-set (SOKOL_LINK_LIBRARIES imgui)
+set (SOKOL_LINK_LIBRARIES HandmadeMath imgui)
 
 if (EDGE_SOKOL_GL)
     set (SOKOL_LINK_LIBRARIES ${SOKOL_LINK_LIBRARIES} ${OPENGL_LIBRARIES})

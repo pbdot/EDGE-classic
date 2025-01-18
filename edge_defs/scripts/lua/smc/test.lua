@@ -1,3 +1,3 @@
 
-dbg()
-print("hi")
+require("smc.demo")
+

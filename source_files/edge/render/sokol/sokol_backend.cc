@@ -13,6 +13,10 @@
 #include "epi.h"
 #include "i_video.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc.h"
+#endif
+
 // clang-format on
 
 extern ConsoleVariable vsync;
@@ -155,6 +159,10 @@ class SokolRenderBackend : public RenderBackend
 
         // default layer
         sgl_context_draw_layer(context_, 0);
+
+#ifdef EDGE_SNAPMAP
+        smc::SMC_Frame();
+#endif
 
         sg_imgui_.caps_window.open        = false;
         sg_imgui_.buffer_window.open      = false;

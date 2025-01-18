@@ -6,6 +6,7 @@
 namespace smc
 {
 
-void SMC_Init(const epi::LuaConfig &lua_config);
+void SMC_Init(epi::LuaConfig &lua_config);
+void SMC_Frame();
 
 }

@@ -28,7 +28,8 @@ set (MOONNUKLEAR_SOURCES
         src/window.c )
 
 add_library(moonnuklear ${MOONNUKLEAR_SOURCES})
+target_link_libraries(moonnuklear lua stb)
 
-target_link_libraries(moonnuklear lua)
+target_compile_definitions(moonnuklear PRIVATE NK_NO_STB_TRUETYPE_IMPLEMENTATION NK_NO_STB_RECT_PACK_IMPLEMENTATION)
 
 

@@ -9,7 +9,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/edge-classic.exe",
-            "args": [],
+            "args": ["-warp", "map01"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": []

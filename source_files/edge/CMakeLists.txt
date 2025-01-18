@@ -122,7 +122,6 @@ set (EDGE_GL_SOURCE_FILES
 
 set (EDGE_SOKOL_SOURCE_FILES
   render/sokol/sokol_backend.cc
-  render/sokol/sokol_gl.cc  
   render/sokol/sokol_images.cc
   render/sokol/sokol_md2.cc
   render/sokol/sokol_mdl.cc

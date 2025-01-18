@@ -43,8 +43,6 @@ class LuaState : public ILuaState
         state_lookup_[state_]             = this;
         states_[config_.name_.GetIndex()] = this;
 
-        LuaRegisterCoreLibraries(state_);
-
         const luaL_Reg loadedlibs[] = {
             {LUA_GNAME, luaopen_base},          {LUA_LOADLIBNAME, luaopen_package}, {LUA_OSLIBNAME, luaopen_os},
             {LUA_COLIBNAME, luaopen_coroutine}, {LUA_TABLIBNAME, luaopen_table},    {LUA_STRLIBNAME, luaopen_string},
@@ -56,6 +54,14 @@ class LuaState : public ILuaState
         {
             luaL_requiref(state_, lib->name, lib->func, 1);
             lua_pop(state_, 1); /* remove lib */
+        }
+
+        LuaRegisterCoreLibraries(state_);
+
+        for (size_t i = 0; i < config_.modules_.size(); i++)
+        {
+            config_.modules_[i].lua_open_func_(state_);
+            lua_setglobal(state_, config_.modules_[i].name_.c_str());
         }
 
         // replace searchers with only preload and custom searcher
@@ -85,6 +91,11 @@ class LuaState : public ILuaState
         }
 
         EPI_ASSERT(!lua_gettop(state_));
+    }
+
+    lua_State* GetLuaState()
+    {
+        return state_;
     }
 
     // NOP dbg() for when debugger is disabled and someone has left some breakpoints
@@ -242,6 +253,33 @@ class LuaState : public ILuaState
         }
 
         return lua_gettop(state_) - top;
+    }
+
+    void CallGlobalFunction(const char *function_name)
+    {
+        int top = lua_gettop(state_);
+        lua_getglobal(state_, function_name);
+        int status = 0;
+        if (config_.debug_enabled_)
+        {
+            status = dbg_pcall(state_, 0, 0, 0);
+        }
+        else
+        {
+            int base = lua_gettop(state_);                 // function index
+            lua_pushcfunction(state_, LuaMsgHandler); // push message handler */
+            lua_insert(state_, base);                 // put it under function and args */
+
+            status = lua_pcall(state_, 0, 0, base);
+        }
+
+        if (status != LUA_OK)
+        {
+            LuaError(epi::StringFormat("Error calling global function %s\n", function_name).c_str(),
+                     lua_tostring(state_, -1));
+        }
+
+        lua_settop(state_, top);
     }
 
     bool DoFile(const char *filename)
