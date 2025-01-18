@@ -14,8 +14,8 @@ extern "C"
 namespace smc
 {
 
-static epi::ILuaState *lua_state = nullptr;
-static bool moon_context_set = false;
+static epi::ILuaState *lua_state        = nullptr;
+static bool            moon_context_set = false;
 
 void SMC_Frame()
 {
@@ -31,15 +31,15 @@ void SMC_Frame()
     if (!moon_context_set)
     {
         moon_context_set = true;
-
-        lua_State *L = lua_state->GetLuaState();        
+        lua_State *L     = lua_state->GetLuaState();
+        int        top   = lua_gettop(L);
         lua_getglobal(L, "SMC_SetContext");
-        lua_pushlightuserdata(L, (void*) ctx);
-        lua_call(L, 1, 0);        
-    }    
+        lua_pushlightuserdata(L, (void *)ctx);
+        lua_call(L, 1, 0);
+        EPI_ASSERT(top == lua_gettop(L));
+    }
 
     lua_state->CallGlobalFunction("SMC_Frame");
-
 
     snk_render(1920, 1080);
 }
@@ -53,7 +53,7 @@ void SMC_Init(epi::LuaConfig &lua_config)
 
     lua_config.modules_.push_back({luaopen_moonnuklear, "nk"});
 
-    lua_state = epi::ILuaState::CreateVM(lua_config);    
+    lua_state = epi::ILuaState::CreateVM(lua_config);
 
     lua_state->DoFile("scripts/lua/smc/test.lua");
 }
