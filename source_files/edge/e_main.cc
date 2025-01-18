@@ -90,6 +90,9 @@
 #ifdef EDGE_CLASSIC
 #include "vm_coal.h"
 #endif
+#ifdef EDGE_SNAPMAP
+#include "smc_editor.h"
+#endif
 #include "w_files.h"
 #include "w_model.h"
 #include "w_sprite.h"
@@ -2041,7 +2044,7 @@ static void AddCommandLineFiles(void)
             // sanity check...
             if (epi::StringCaseCompareASCII(ext, ".wad") == 0 || epi::StringCaseCompareASCII(ext, ".pk3") == 0 ||
                 epi::StringCaseCompareASCII(ext, ".zip") == 0 || epi::StringCaseCompareASCII(ext, ".epk") == 0 ||
-                epi::StringCaseCompareASCII(ext, ".ddf") == 0 || epi::StringCaseCompareASCII(ext, ".deh") == 0 || 
+                epi::StringCaseCompareASCII(ext, ".ddf") == 0 || epi::StringCaseCompareASCII(ext, ".deh") == 0 ||
                 epi::StringCaseCompareASCII(ext, ".bex") == 0)
             {
                 FatalError("Illegal filename for -script: %s\n", program_argument_list[p].c_str());
@@ -2300,6 +2303,11 @@ static void EdgeStartup(void)
     LuaInit();
     LuaLoadScripts();
 #endif
+
+#ifdef EDGE_SNAPMAP
+    SMC_Editor_Init();
+#endif
+
 }
 
 static void InitialState(void)

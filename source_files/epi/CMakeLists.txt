@@ -9,13 +9,14 @@ add_library(
   epi_ename.cc
   epi_file.cc
   epi_filesystem.cc
+  epi_lua.cc
   epi_md5.cc
   epi_str_compare.cc
   epi_str_util.cc
   epi_scanner.cpp
 )
 
-set (EPI_LIBRARIES almostequals HandmadeMath stb xxhash)
+set (EPI_LIBRARIES almostequals HandmadeMath jlsignal lua LuaBridge stb xxhash)
 
 if (NOT EMSCRIPTEN)
   list(APPEND EPI_LIBRARIES mimalloc)

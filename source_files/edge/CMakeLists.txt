@@ -83,7 +83,7 @@ set (EDGE_SOURCE_FILES
   s_music.cc
   s_ogg.cc
   s_sound.cc
-  s_wav.cc
+  s_wav.cc  
   sv_chunk.cc
   sv_glob.cc
   sv_level.cc
@@ -161,6 +161,13 @@ else()
   )
 endif()
 
+if (EDGE_SNAPMAP)
+list (APPEND
+  EDGE_SOURCE_FILES 
+  smc_editor.cc  
+)
+endif()
+
 if (EMSCRIPTEN)
   list (APPEND EDGE_SOURCE_FILES i_web.cc)
 else()
@@ -221,6 +228,10 @@ if (EDGE_CLASSIC)
     m4p
     opalmidi
   )
+endif()
+
+if (EDGE_SNAPMAP)
+  list (APPEND EDGE_LINK_LIBRARIES smc)
 endif()
 
 if (EDGE_PROFILING)

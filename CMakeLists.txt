@@ -28,6 +28,8 @@ endif()
 
 # Optional Features
 option(EDGE_CLASSIC "Enable default features for EDGE-Classic" ON)
+option(EDGE_SNAPMAP "Enable SnapMap Classic" ON)
+
 
 # Development 
 option(EDGE_SANITIZE "Enable code sanitizing" OFF)
@@ -162,6 +164,10 @@ endif()
 
 if (EDGE_CLASSIC)
   add_definitions(-DEDGE_CLASSIC)
+endif()
+
+if (EDGE_SNAPMAP)
+  add_definitions(-DEDGE_SNAPMAP)
 endif()
 
 if (EDGE_PROFILING)
