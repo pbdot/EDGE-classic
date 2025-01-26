@@ -23,6 +23,8 @@ option(EDGE_SOKOL_GLES3 "Sokol GLES3" OFF)
 option(EDGE_SOKOL_D3D11 "Sokol D3D11" OFF)
 option(EDGE_LEGACY_GL "Legacy GL Renderer" OFF)
 
+option(EDGE_SNAPMAP "Enable SnapMap-Classic Editor" ON)
+
 # If the legacy GL renderer has not been selected and
 # a Sokol backend is not already specified by CMake params, 
 # choose a default based on platform
