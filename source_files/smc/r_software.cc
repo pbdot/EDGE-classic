@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2019 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,7 +25,9 @@
 #include <algorithm>
 
 #ifndef NO_OPENGL
+#ifdef _FLTK_DISABLED
 #include "FL/gl.h"
+#endif
 #endif
 
 #include "im_color.h"
@@ -565,7 +567,9 @@ public:
 	// these used by Highlight()
 	int hl_ox, hl_oy;
 	int hl_thick;
+#ifdef _FLTK_DISABLED	
 	Fl_Color hl_color;
+#endif
 
 private:
 	static void DeleteWall(DrawWall *P)
@@ -603,6 +607,7 @@ public:
 			sx2 *= 2;  sy2 *= 2;
 		}
 
+#ifdef _FLTK_DISABLED
 		fl_color(hl_color);
 
 		if (hl_thick)
@@ -612,6 +617,7 @@ public:
 
 		if (hl_thick)
 			fl_line_style(0);
+#endif			
 	}
 
 	static inline float PointToAngle(float x, float y)
@@ -1102,11 +1108,15 @@ public:
 				if (parts2 == 1)
 				{
 					parts2 = 0;
+#ifdef _FLTK_DISABLED					
 					hl_color = SEL_COL;
+#endif					
 				}
 				else
 				{
+#ifdef _FLTK_DISABLED					
 					hl_color = SEL3D_COL;
+#endif					
 				}
 			}
 
@@ -1217,11 +1227,15 @@ public:
 				if (parts == 1)
 				{
 					parts = PART_FLOOR | PART_CEIL;
+#ifdef _FLTK_DISABLED					
 					hl_color = SEL_COL;
+#endif					
 				}
 				else
 				{
+#ifdef _FLTK_DISABLED					
 					hl_color = SEL3D_COL;
+#endif					
 				}
 
 				if (parts & PART_FLOOR)
@@ -1329,6 +1343,7 @@ public:
 		switch (edit.mode)
 		{
 		case OBJ_THINGS:
+#ifdef _FLTK_DISABLED		
 			hl_color = SEL_COL;
 			HighlightThings(-1);
 
@@ -1344,9 +1359,11 @@ public:
 
 				HighlightThings(edit.highlight.num);
 			}
+#endif
 			break;
 
 		case OBJ_SECTORS:
+#ifdef _FLTK_DISABLED		
 			HighlightSectors(-1, -1);
 
 			hl_color = HI_COL;
@@ -1361,9 +1378,11 @@ public:
 
 				HighlightSectors(edit.highlight.num, edit.highlight.parts);
 			}
+#endif			
 			break;
 
 		case OBJ_LINEDEFS:
+#ifdef _FLTK_DISABLED		
 			HighlightLines(-1, -1);
 
 			hl_color = HI_COL;
@@ -1374,6 +1393,7 @@ public:
 
 				HighlightLines(edit.highlight.num, edit.highlight.parts);
 			}
+#endif			
 			break;
 
 		default: break;
@@ -2038,6 +2058,7 @@ public:
 
 static void BlitHires(int ox, int oy, int ow, int oh)
 {
+#ifdef _FLTK_DISABLED	
 	u8_t line_rgb[r_view.screen_w * 3];
 
 	for (int ry = 0 ; ry < r_view.screen_h ; ry++)
@@ -2054,11 +2075,13 @@ static void BlitHires(int ox, int oy, int ow, int oh)
 
 		fl_draw_image(line_rgb, ox, oy+ry, r_view.screen_w, 1);
 	}
+#endif	
 }
 
 
 static void BlitLores(int ox, int oy, int ow, int oh)
 {
+#ifdef _FLTK_DISABLED		
 	// if destination width is odd, we store an extra pixel here
 	u8_t line_rgb[(ow + 1) * 3];
 
@@ -2082,11 +2105,13 @@ static void BlitLores(int ox, int oy, int ow, int oh)
 			fl_draw_image(line_rgb, ox, oy + ry*2 + 1, ow, 1);
 		}
 	}
+#endif	
 }
 
 
 void SW_RenderWorld(int ox, int oy, int ow, int oh)
 {
+#ifdef _FLTK_DISABLED
 	RendInfo rend;
 
 	fl_push_clip(ox, oy, ow, oh);
@@ -2101,6 +2126,7 @@ void SW_RenderWorld(int ox, int oy, int ow, int oh)
 	rend.Highlight(ox, oy);
 
 	fl_pop_clip();
+#endif
 }
 
 

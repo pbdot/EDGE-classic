@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2019 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -34,7 +34,9 @@
 #ifdef __APPLE__
 #include <OpenGL/OpenGL.h>
 #else
+#ifdef _FLTK_DISABLED
 #include "GL/glext.h"
+#endif
 #endif
 #endif
 
@@ -81,15 +83,17 @@ inline rgb_color_t IM_PixelToRGB(img_pixel_t p)
 //
 // default constructor, creating a null image
 //
-Img_c::Img_c() : pixels(NULL), w(0), h(0), gl_tex(0)
+// _FLTK_DISABLED
+Img_c::Img_c() : pixels(NULL), w(0), h(0)/*, gl_tex(0)*/
 { }
 
 
 //
 // a constructor with dimensions
 //
+// _FLTK_DISABLED
 Img_c::Img_c(int width, int height, bool _dummy) :
-	pixels(NULL), w(0), h(0), gl_tex(0)
+	pixels(NULL), w(0), h(0)/*, gl_tex(0)*/
 {
 	resize(width, height);
 }
@@ -370,10 +374,12 @@ void Img_c::bind_gl() {}
 
 void Img_c::load_gl()
 {
+#ifdef _FLTK_DISABLED	
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glGenTextures(1, &gl_tex);
 	glBindTexture(GL_TEXTURE_2D, gl_tex);
+#endif
 
 	// construct a power-of-two sized bottom-up RGBA image
 	int tw = RoundPOW2(w);
@@ -422,30 +428,34 @@ void Img_c::load_gl()
 		}
 	}
 
+#ifdef _FLTK_DISABLED
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glTexImage2D(GL_TEXTURE_2D, 0 /* mip */,
 		GL_RGBA8, tw, th, 0 /* border */,
 		GL_BGRA_EXT, GL_UNSIGNED_INT_8_8_8_8_REV, rgba);
-
+#endif
 	delete[] rgba;
 }
 
 
 void Img_c::unload_gl(bool can_delete)
 {
+#ifdef _FLTK_DISABLED	
 	if (can_delete && gl_tex != 0)
 	{
 		glDeleteTextures(1, &gl_tex);
 	}
 
 	gl_tex = 0;
+#endif	
 }
 
 
 void Img_c::bind_gl()
 {
+#ifdef _FLTK_DISABLED	
 	// create the GL texture if we haven't already
 	if (gl_tex == 0)
 	{
@@ -455,6 +465,7 @@ void Img_c::bind_gl()
 	}
 
 	glBindTexture(GL_TEXTURE_2D, gl_tex);
+#endif
 }
 
 #endif
@@ -717,7 +728,7 @@ static Img_c * IM_CreateFont(int W, int H, const char **text,
 	return result;
 }
 
-
+#ifdef _FLTK_DISABLED
 Img_c * IM_ConvertRGBImage(Fl_RGB_Image *src)
 {
 	int W  = src->w();
@@ -762,6 +773,7 @@ Img_c * IM_ConvertRGBImage(Fl_RGB_Image *src)
 
 	return img;
 }
+#endif
 
 
 Img_c * IM_ConvertTGAImage(const rgba_color_t * data, int W, int H)

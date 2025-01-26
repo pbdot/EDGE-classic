@@ -21,8 +21,11 @@
 #ifndef __EUREKA_UI_VERTEX_H__
 #define __EUREKA_UI_VERTEX_H__
 
-
+#ifdef _FLTK_DISABLED
 class UI_VertexBox : public Fl_Group
+#else
+class UI_VertexBox
+#endif
 {
 private:
 	int obj;
@@ -31,6 +34,7 @@ private:
 public:
 	UI_Nombre *which;
 
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *pos_x;
 	Fl_Int_Input *pos_y;
 
@@ -38,6 +42,7 @@ public:
 	Fl_Button *move_right;
 	Fl_Button *move_up;
 	Fl_Button *move_down;
+#endif
 
 public:
 	UI_VertexBox(int X, int Y, int W, int H, const char *label = NULL);
@@ -58,9 +63,11 @@ public:
 	void UpdateTotal();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void x_callback(Fl_Widget *, void *);
 	static void y_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
+#endif
 };
 
 

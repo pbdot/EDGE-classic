@@ -33,6 +33,7 @@
 
 static int dialog_result;
 
+#ifdef _FLTK_DISABLED
 static void dialog_close_callback(Fl_Widget *w, void *data)
 {
 	dialog_result = 0;
@@ -42,6 +43,7 @@ static void dialog_button_callback(Fl_Widget *w, void *data)
 {
 	dialog_result = (int)(long)data;
 }
+#endif
 
 
 static int DialogShowAndRun(char icon_type, const char *message, const char *title,
@@ -54,8 +56,10 @@ static int DialogShowAndRun(char icon_type, const char *message, const char *tit
 	int mesg_W = 480;  // NOTE: fl_measure will wrap to this!
 	int mesg_H = 0;
 
+#ifdef _FLTK_DISABLED
 	fl_font(FL_HELVETICA, FONT_SIZE);
 	fl_measure(message, mesg_W, mesg_H);
+#endif
 
 	if (mesg_W < 200)
 		mesg_W = 200;
@@ -79,6 +83,7 @@ static int DialogShowAndRun(char icon_type, const char *message, const char *tit
 	// create window...
 	UI_Escapable_Window *dialog = new UI_Escapable_Window(total_W, total_H, title);
 
+#ifdef _FLTK_DISABLED
 	dialog->size_range(total_W, total_H, total_W, total_H);
 	dialog->callback((Fl_Callback *) dialog_close_callback);
 
@@ -193,6 +198,9 @@ static int DialogShowAndRun(char icon_type, const char *message, const char *tit
 	delete dialog;
 
 	return dialog_result;
+#else 
+	return 0;
+#endif
 }
 
 

@@ -22,7 +22,8 @@
 #ifndef __EUREKA_UI_HYPER_H__
 #define __EUREKA_UI_HYPER_H__
 
-class UI_HyperLink : public Fl_Button
+// _FLTK_DISABLED
+class UI_HyperLink /*: public Fl_Button*/
 {
 private:
   // true when mouse is over this widget
@@ -49,7 +50,10 @@ public:
 private:
   void checkLink();
 
+#ifdef _FLTK_DISABLED
   static void callback_Link(Fl_Widget *w, void *data);
+#endif
+
 };
 
 #endif /* __EUREKA_UI_HYPER_H__ */

@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2018 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -69,7 +69,11 @@ void CMD_MetaKey()
 
 	Status_Set("META...");
 
+#ifdef _FLTK_DISABLED
 	edit.sticky_mod = MOD_META;
+#else
+	edit.sticky_mod = false;
+#endif
 }
 
 
@@ -239,7 +243,11 @@ void CMD_SetVar()
 		Editor_ClearAction();
 
 		int want_vis   = bool_val ? 1 : 0;
+#ifdef _FLTK_DISABLED
 		int is_visible = main_win->browser->visible() ? 1 : 0;
+#else
+		int is_visible = 0;
+#endif
 
 		if (want_vis != is_visible)
 			main_win->BrowserMode('/');
@@ -381,6 +389,7 @@ void CMD_BrowserMode()
 		return;
 	}
 
+#ifdef _FLTK_DISABLED
 	// if that browser is already open, close it now
 	if (main_win->browser->visible() &&
 		main_win->browser->GetMode() == mode &&
@@ -390,6 +399,7 @@ void CMD_BrowserMode()
 		main_win->BrowserMode(0);
 		return;
 	}
+#endif
 
 	main_win->BrowserMode(mode);
 
@@ -544,8 +554,13 @@ void CheckBeginDrag()
 	if (edit.render3d && !(edit.mode == OBJ_THINGS || edit.mode == OBJ_SECTORS))
 		return;
 
+#ifdef _FLTK_DISABLED
 	int pixel_dx = Fl::event_x() - edit.click_screen_x;
 	int pixel_dy = Fl::event_y() - edit.click_screen_y;
+#else
+	int pixel_dx = 0;
+	int pixel_dy = 0;
+#endif
 
 	if (MAX(abs(pixel_dx), abs(pixel_dy)) < minimum_drag_pixels)
 		return;
@@ -620,7 +635,9 @@ static void DoBeginDrag()
 
 	Editor_SetAction(ACT_DRAG);
 
+#ifdef _FLTK_DISABLED
 	main_win->canvas->redraw();
+#endif
 }
 
 
@@ -746,9 +763,14 @@ void CMD_ACT_Click()
 	edit.click_check_drag   = ! Exec_HasFlag("/nodrag");
 	edit.click_force_single = false;
 
+#ifdef _FLTK_DISABLED
 	// remember some state (for drag detection)
 	edit.click_screen_x = Fl::event_x();
 	edit.click_screen_y = Fl::event_y();
+#else
+	edit.click_screen_x = 0;
+	edit.click_screen_y = 0;
+#endif
 
 	edit.click_map_x = edit.map_x;
 	edit.click_map_y = edit.map_y;
@@ -925,7 +947,9 @@ void Transform_Update()
 			break;
 	}
 
+#ifdef _FLTK_DISABLED
 	main_win->canvas->redraw();
+#endif
 }
 
 
@@ -1029,6 +1053,7 @@ void CMD_WHEEL_Scroll()
 {
 	float speed = atof(EXEC_Param[0]);
 
+#ifdef _FLTK_DISABLED
 	if (Exec_HasFlag("/LAX"))
 	{
 		keycode_t mod = Fl::event_state() & MOD_ALL_MASK;
@@ -1038,6 +1063,7 @@ void CMD_WHEEL_Scroll()
 		else if (mod & MOD_COMMAND)
 			speed *= 3.0;
 	}
+#endif
 
 	float delta_x =     wheel_dx;
 	float delta_y = 0 - wheel_dy;
@@ -1306,6 +1332,7 @@ void CMD_GRID_Zoom()
 
 void CMD_BR_CycleCategory()
 {
+#ifdef _FLTK_DISABLED	
 	if (! main_win->browser->visible())
 	{
 		Beep("Browser not open");
@@ -1315,11 +1342,13 @@ void CMD_BR_CycleCategory()
 	int dir = (atoi(EXEC_Param[0]) >= 0) ? +1 : -1;
 
 	main_win->browser->CycleCategory(dir);
+#endif
 }
 
 
 void CMD_BR_ClearSearch()
 {
+#ifdef _FLTK_DISABLED	
 	if (! main_win->browser->visible())
 	{
 		Beep("Browser not open");
@@ -1327,11 +1356,13 @@ void CMD_BR_ClearSearch()
 	}
 
 	main_win->browser->ClearSearchBox();
+#endif
 }
 
 
 void CMD_BR_Scroll()
 {
+#ifdef _FLTK_DISABLED	
 	if (! main_win->browser->visible())
 	{
 		Beep("Browser not open");
@@ -1347,6 +1378,7 @@ void CMD_BR_Scroll()
 	int delta = atoi(EXEC_Param[0]);
 
 	main_win->browser->Scroll(delta);
+#endif
 }
 
 
@@ -1383,11 +1415,13 @@ void CMD_LogViewer()
 
 void CMD_OnlineDocs()
 {
+#ifdef _FLTK_DISABLED	
 	int rv = fl_open_uri("http://eureka-editor.sourceforge.net/?n=Docs.Index");
 	if (rv == 1)
 		Status_Set("Opened web browser");
 	else
 		Beep("Failed to open web browser");
+#endif
 }
 
 

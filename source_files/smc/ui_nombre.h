@@ -22,7 +22,8 @@
 #define __EUREKA_UI_NOMBRE_H__
 
 
-class UI_Nombre : public Fl_Box
+// _FLTK_DISABLED
+class UI_Nombre /* : public Fl_Box */
 {
 private:
 	int index;

@@ -25,10 +25,13 @@
 #define SBAR_W  16
 
 
-class UI_Scroll : public Fl_Group
+// _FLTK_DISABLED
+class UI_Scroll /* : public Fl_Group */
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Scrollbar * scrollbar;
+#endif
 
 	int bar_side;
 
@@ -48,13 +51,17 @@ public:
 public:
 	void resize_horiz(bool r) { resize_horiz_ = r; }
 
+#ifdef _FLTK_DISABLED
 	void Add(Fl_Widget *w);
 	void Remove(Fl_Widget *w);
+#endif
 	void Remove_first();
 	void Remove_all();
 
 	int Children() const;
+#ifdef _FLTK_DISABLED	
 	Fl_Widget * Child(int i) const;
+#endif
 
 	void Init_sizes();
 
@@ -80,7 +87,9 @@ private:
 	void calc_extents();
 	void reposition_all(int start_y);
 
+#ifdef _FLTK_DISABLED
 	static void bar_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -89,7 +98,8 @@ private:
 
 class UI_Canvas;
 
-class UI_CanvasScroll : public Fl_Group
+// _FLTK_DISABLED
+class UI_CanvasScroll /*: public Fl_Group*/
 {
 public:
 	UI_Canvas * canvas;
@@ -97,8 +107,10 @@ public:
 	UI_StatusBar * status;
 
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Scrollbar * horiz;
 	Fl_Scrollbar * vert;
+#endif
 
 	bool enable_bars;
 
@@ -128,7 +140,9 @@ private:
 	void Scroll_X();  // callback helpers
 	void Scroll_Y();
 
+#ifdef _FLTK_DISABLED
 	static void bar_callback(Fl_Widget *, void *);
+#endif
 };
 
 

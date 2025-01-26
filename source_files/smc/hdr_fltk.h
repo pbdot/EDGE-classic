@@ -23,6 +23,7 @@
 
 /* FLTK - Widget Library */
 
+#ifdef _FLTK_DISABLED
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Browser.H>
@@ -67,6 +68,8 @@
 #include <FL/fl_draw.H>
 #include <FL/filename.H>
 #include <FL/x.H>
+
+#endif
 
 #endif /* __EUREKA_HDR_FLTK__ */
 

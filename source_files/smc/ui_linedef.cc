@@ -56,11 +56,13 @@ public:
 // UI_LineBox Constructor
 //
 UI_LineBox::UI_LineBox(int X, int Y, int W, int H, const char *label) :
-    Fl_Group(X, Y, W, H, label),
+#ifdef _FLTK_DISABLED
+ Fl_Group(X, Y, W, H, label),
+#endif
     obj(-1), count(0)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX); // (FL_THIN_UP_BOX);
-
 
 	X += 6;
 	Y += 6;
@@ -225,6 +227,7 @@ UI_LineBox::UI_LineBox(int X, int Y, int W, int H, const char *label) :
 	end();
 
 	resizable(NULL);
+#endif
 }
 
 
@@ -235,6 +238,7 @@ UI_LineBox::~UI_LineBox()
 { }
 
 
+#ifdef _FLTK_DISABLED
 void UI_LineBox::type_callback(Fl_Widget *w, void *data)
 {
 	UI_LineBox *box = (UI_LineBox *)data;
@@ -284,11 +288,15 @@ void UI_LineBox::dyntype_callback(Fl_Widget *w, void *data)
 
 	main_win->browser->UpdateGenType(new_type);
 }
-
+#endif
 
 void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 {
+#ifdef _FLTK_DISABLED
 	bool opposite = (e_state & FL_SHIFT);
+#else
+	bool opposite = false;
+#endif
 
 	LineDef *L = LineDefs[ld];
 
@@ -319,6 +327,7 @@ void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 		return;
 	}
 
+#ifdef _FLTK_DISABLED
 	// middle click : set mid-masked texture on both sides
 	if (e_state & FL_BUTTON2)
 	{
@@ -337,6 +346,7 @@ void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 		BA_ChangeSD(L->right, SideDef::F_MID_TEX, new_tex);
 		return;
 	}
+#endif
 
 	// one-sided case: set the middle texture only
 	if (! L->TwoSided())
@@ -354,6 +364,7 @@ void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 	int sd1 = L->right;
 	int sd2 = L->left;
 
+#ifdef _FLTK_DISABLED
 	if (e_state & FL_BUTTON3)
 	{
 		// back ceiling is higher?
@@ -367,6 +378,7 @@ void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 	}
 	// modify a lower texture
 	else
+#else
 	{
 		// back floor is lower?
 		if (L->Left()->SecRef()->floorh < L->Right()->SecRef()->floorh)
@@ -388,6 +400,7 @@ void UI_LineBox::SetTexOnLine(int ld, int new_tex, int e_state, int parts)
 
 		BA_ChangeSD(sd1, SideDef::F_LOWER_TEX, new_tex);
 	}
+#endif
 }
 
 
@@ -423,7 +436,9 @@ void UI_LineBox::SetTexture(const char *tex_name, int e_state, int parts)
 	UpdateField();
 	UpdateSides();
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 
@@ -438,13 +453,16 @@ void UI_LineBox::SetLineType(int new_type)
 	char buffer[64];
 	snprintf(buffer, sizeof(buffer), "%d", new_type);
 
+#ifdef _FLTK_DISABLED
 	type->value(buffer);
 	type->do_callback();
+#endif
 }
 
 
 void UI_LineBox::CB_Copy(int parts)
 {
+#ifdef _FLTK_DISABLED	
 	// determine which sidedef texture to grab from
 	const char *name = NULL;
 
@@ -477,11 +495,13 @@ void UI_LineBox::CB_Copy(int parts)
 	Texboard_SetTex(name);
 
 	Status_Set("copied %s", name);
+#endif
 }
 
 
 void UI_LineBox::CB_Paste(int parts, int new_tex)
 {
+#ifdef _FLTK_DISABLED	
 	// iterate over selected linedefs
 	if (edit.Selected->empty())
 		return;
@@ -526,6 +546,7 @@ void UI_LineBox::CB_Paste(int parts, int new_tex)
 	UpdateSides();
 
 	redraw();
+#endif
 }
 
 
@@ -584,6 +605,7 @@ void UI_LineBox::BrowsedItem(char kind, int number, const char *name, int e_stat
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_LineBox::tag_callback(Fl_Widget *w, void *data)
 {
 	UI_LineBox *box = (UI_LineBox *)data;
@@ -678,7 +700,7 @@ void UI_LineBox::button_callback(Fl_Widget *w, void *data)
 		return;
 	}
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
@@ -698,7 +720,9 @@ void UI_LineBox::SetObj(int _index, int _count)
 	if (obj < 0)
 		UnselectPics();
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 
@@ -708,24 +732,31 @@ void UI_LineBox::UpdateField(int field)
 	{
 		if (is_linedef(obj))
 			CalcLength();
+#ifdef _FLTK_DISABLED
 		else
 			length->value("");
+#endif
+
 	}
 
 	if (field < 0 || (field >= LineDef::F_TAG && field <= LineDef::F_ARG5))
 	{
 		for (int a = 0 ; a < 5 ; a++)
 		{
+#ifdef _FLTK_DISABLED			
 			args[a]->value("");
 			args[a]->tooltip(NULL);
 			args[a]->textcolor(FL_BLACK);
+#endif
 		}
 
 		if (is_linedef(obj))
 		{
 			const LineDef *L = LineDefs[obj];
 
+#ifdef _FLTK_DISABLED
 			tag->value(Int_TmpStr(LineDefs[obj]->tag));
+#endif
 
 			const linetype_t *info = M_GetLineType(L->type);
 
@@ -733,6 +764,7 @@ void UI_LineBox::UpdateField(int field)
 			{
 				for (int a = 0 ; a < 5 ; a++)
 				{
+#ifdef _FLTK_DISABLED					
 					int arg_val = L->Arg(1 + a);
 
 					if (arg_val || L->type)
@@ -743,13 +775,16 @@ void UI_LineBox::UpdateField(int field)
 						args[a]->copy_tooltip(info->args[a]);
 					else
 						args[a]->textcolor(fl_rgb_color(160,160,160));
+#endif						
 				}
 			}
 		}
 		else
 		{
+#ifdef _FLTK_DISABLED			
 			length->value("");
 			tag->value("");
+#endif			
 		}
 	}
 
@@ -778,27 +813,35 @@ void UI_LineBox::UpdateField(int field)
 		{
 			int type_num = LineDefs[obj]->type;
 
+#ifdef _FLTK_DISABLED
 			type->value(Int_TmpStr(type_num));
+#endif
 
 			const char *gen_desc = GeneralizedDesc(type_num);
 
 			if (gen_desc)
 			{
+#ifdef _FLTK_DISABLED				
 				desc->value(gen_desc);
+#endif
 			}
 			else
 			{
 				const linetype_t *info = M_GetLineType(type_num);
+#ifdef _FLTK_DISABLED				
 				desc->value(info->desc);
+#endif
 			}
 
 			main_win->browser->UpdateGenType(type_num);
 		}
 		else
 		{
+#ifdef _FLTK_DISABLED			
 			type->value("");
 			desc->value("");
 			choose->label("Choose");
+#endif			
 
 			main_win->browser->UpdateGenType(0);
 		}
@@ -808,16 +851,19 @@ void UI_LineBox::UpdateField(int field)
 	{
 		if (is_linedef(obj))
 		{
+#ifdef _FLTK_DISABLED			
 			actkind->activate();
+#endif
 
 			FlagsFromInt(LineDefs[obj]->flags);
 		}
 		else
 		{
 			FlagsFromInt(0);
-
+#ifdef _FLTK_DISABLED
 			actkind->value(12);  // show as "??"
 			actkind->deactivate();
+#endif			
 		}
 	}
 }
@@ -848,7 +894,9 @@ void UI_LineBox::CalcLength()
 	char buffer[128];
 	snprintf(buffer, sizeof(buffer), "%1.0f", len_f);
 
+#ifdef _FLTK_DISABLED
 	length->value(buffer);
+#endif	
 }
 
 
@@ -864,9 +912,12 @@ void UI_LineBox::FlagsFromInt(int lineflags)
 		// show "??" for unknown values
 		if (new_act > 12) new_act = 12;
 
+#ifdef _FLTK_DISABLED
 		actkind->value(new_act);
+#endif		
 	}
 
+#ifdef _FLTK_DISABLED
 	if (lineflags & MLF_Secret)
 		f_automap->value(3);
 	else if (lineflags & MLF_DontDraw)
@@ -889,11 +940,13 @@ void UI_LineBox::FlagsFromInt(int lineflags)
 	f_mons  ->value((lineflags & MLF_BlockMonsters) ? 1 : 0);
 	f_sound ->value((lineflags & MLF_SoundBlock)    ? 1 : 0);
 	f_flyers->value((lineflags & MLF_Strife_BlockFloaters) ? 1 : 0);
+#endif	
 }
 
 
 int UI_LineBox::CalcFlags() const
 {
+#ifdef _FLTK_DISABLED	
 	int lineflags = 0;
 
 	switch (f_automap->value())
@@ -943,6 +996,10 @@ int UI_LineBox::CalcFlags() const
 	}
 
 	return lineflags;
+#else
+	return 0;
+#endif
+
 }
 
 
@@ -985,6 +1042,7 @@ int UI_LineBox::SolidMask(const LineDef *L, int side) const
 
 void UI_LineBox::UpdateGameInfo()
 {
+#ifdef _FLTK_DISABLED	
 	choose->label("Choose");
 
 	if (Level_format != MAPF_Doom)
@@ -1047,6 +1105,7 @@ void UI_LineBox::UpdateGameInfo()
 	}
 
 	redraw();
+#endif
 }
 
 

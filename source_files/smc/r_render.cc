@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2019 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,7 +25,9 @@
 #include <algorithm>
 
 #ifndef NO_OPENGL
+#ifdef _FLTK_DISABLED
 #include "FL/gl.h"
+#endif
 #endif
 
 #include "e_basis.h"
@@ -575,7 +577,11 @@ static void AdjustOfs_Delta(int dx, int dy)
 
 	keycode_t mod = edit.adjust_lax ? M_ReadLaxModifiers() : 0;
 
+#ifdef _FLTK_DISABLED
 	float factor = (mod & MOD_SHIFT) ? 0.5 : 2.0;
+#else
+	float factor = 2.0f;
+#endif
 
 	if (!render_high_detail)
 		factor = factor * 0.5;
@@ -636,7 +642,7 @@ void Render3D_Draw(int ox, int oy, int ow, int oh)
 
 
 bool Render3D_Query(Objid& hl, int sx, int sy)
-{
+{	
 	int ow = main_win->canvas->w();
 	int oh = main_win->canvas->h();
 
@@ -729,7 +735,9 @@ void Render3D_Enable(bool _enable)
 	edit.dragged.clear();
 
 	// give keyboard focus to the appropriate large widget
+#ifdef _FLTK_DISABLED	
 	Fl::focus(main_win->canvas);
+#endif
 
 	main_win->scroll->UpdateRenderMode();
 	main_win->info_bar->UpdateSecRend();
@@ -765,12 +773,16 @@ void Render3D_ScrollMap(int dx, int dy, keycode_t mod)
 		else
 			dx = 0;
 	}
-
+#ifdef _FLTK_DISABLED
 	bool is_strafe = (mod & MOD_ALT) ? true : false;
 
 	float mod_factor = 1.0;
 	if (mod & MOD_SHIFT)   mod_factor = 0.4;
 	if (mod & MOD_COMMAND) mod_factor = 2.5;
+#else
+	bool is_strafe = false;
+	float mod_factor = 1.0f;
+#endif	
 
 	float speed = edit.panning_speed * mod_factor;
 
@@ -1029,8 +1041,10 @@ void Render3D_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
 		if (edit.mode == OBJ_THINGS)
 			DragThings_Update();
 
+#ifdef _FLTK_DISABLED
 		main_win->canvas->redraw();
 		main_win->status_bar->redraw();
+#endif		
 		return;
 	}
 
@@ -1056,9 +1070,11 @@ void Render3D_UpdateHighlight()
 	}
 
 	main_win->canvas->UpdateHighlight();
+#ifdef _FLTK_DISABLED	
 	main_win->canvas->redraw();
 
 	main_win->status_bar->redraw();
+#endif	
 }
 
 
@@ -1074,8 +1090,11 @@ void Render3D_Navigate()
 		mod = M_ReadLaxModifiers();
 
 	float mod_factor = 1.0;
+
+#ifdef _FLTK_DISABLED	
 	if (mod & MOD_SHIFT)   mod_factor = 0.5;
 	if (mod & MOD_COMMAND) mod_factor = 2.0;
+#endif
 
 	if (edit.nav_fwd || edit.nav_back || edit.nav_right || edit.nav_left)
 	{
@@ -1986,6 +2005,7 @@ void R3D_Toggle()
 
 void R3D_WHEEL_Move()
 {
+#ifdef _FLTK_DISABLED	
 	float dx = Fl::event_dx();
 	float dy = Fl::event_dy();
 
@@ -2008,6 +2028,7 @@ void R3D_WHEEL_Move()
 
 	main_win->info_bar->SetMouse(r_view.x, r_view.y);
 	RedrawMap();
+#endif	
 }
 
 

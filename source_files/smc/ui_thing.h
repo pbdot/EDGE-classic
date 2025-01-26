@@ -25,8 +25,8 @@
 
 class Sticker;
 
-
-class UI_ThingBox : public Fl_Group
+// _FLTK_DISABLED
+class UI_ThingBox /*: public Fl_Group*/
 {
 private:
 	int obj;
@@ -35,6 +35,7 @@ private:
 	UI_Nombre *which;
 
 	UI_DynInput  *type;
+#ifdef _FLTK_DISABLED	
 	Fl_Output    *desc;
 	Fl_Button    *choose;
 
@@ -74,14 +75,17 @@ private:
 	Fl_Check_Button *o_sf_stand;   // Strife
 	Fl_Check_Button *o_sf_ambush;  //
 	Fl_Check_Button *o_sf_friend;  //
+#endif
 
 	UI_Pic *sprite;
 
 	// more Hexen stuff
 	UI_DynInput  *spec_type;
+#ifdef _FLTK_DISABLED	
 	Fl_Button    *spec_choose;
 	Fl_Output    *spec_desc;
 	Fl_Int_Input *args[5];
+#endif	
 
 public:
 	UI_ThingBox(int X, int Y, int W, int H, const char *label = NULL);
@@ -115,6 +119,7 @@ private:
 	void OptionsFromInt(int options);
 
 private:
+#ifdef _FLTK_DISABLED
 	static void       x_callback(Fl_Widget *w, void *data);
 	static void       y_callback(Fl_Widget *w, void *data);
 	static void       z_callback(Fl_Widget *w, void *data);
@@ -129,6 +134,7 @@ private:
 	static void    spec_callback(Fl_Widget *w, void *data);
 	static void dynspec_callback(Fl_Widget *w, void *data);
 	static void    args_callback(Fl_Widget *w, void *data);
+#endif
 };
 
 #endif  /* __EUREKA_UI_THING_H__ */

@@ -25,7 +25,8 @@ class Wad_file;
 class UI_TedStatusBar;
 class UI_TedWrapper;
 
-class UI_TextEditor : public Fl_Double_Window
+// _FLTK_DISABLED
+class UI_TextEditor /*: public Fl_Double_Window */
 {
 private:
 	bool want_close;
@@ -36,12 +37,16 @@ private:
 	bool has_changes;
 
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Menu_Bar *menu_bar;
+#endif	
 
 	UI_TedStatusBar *status;
 
 	UI_TedWrapper  *ted;
+#ifdef _FLTK_DISABLED	
 	Fl_Text_Buffer *tbuf;
+#endif
 
 	// use SetFindString() to set this
 	const char *find_string;
@@ -88,12 +93,15 @@ private:
 
 	bool ContainsUnicode() const;
 
+#ifdef _FLTK_DISABLED
 	static void  close_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
+#endif	
 
 	static void text_modified_callback(int, int nInserted, int nDeleted, int, const char*, void *);
 
 public:
+#ifdef _FLTK_DISABLED
 	// File menu
 	static void menu_do_save(Fl_Widget *w, void *data);
 	static void menu_do_insert(Fl_Widget *w, void *data);
@@ -115,6 +123,7 @@ public:
 	static void menu_do_find_prev(Fl_Widget *w, void *data);
 	static void menu_do_goto_top(Fl_Widget *w, void *data);
 	static void menu_do_goto_bottom(Fl_Widget *w, void *data);
+#endif
 };
 
 #endif  /* __EUREKA_UI_EDITOR_H__ */

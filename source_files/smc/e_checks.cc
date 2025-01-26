@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2018 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -56,13 +56,14 @@ static char check_buffer [MSG_BUF_LEN];
 //  BASE CLASS
 //------------------------------------------------------------------------
 
+#ifdef _FLTK_DISABLED
 void UI_Check_base::close_callback(Fl_Widget *w, void *data)
 {
 	UI_Check_base *dialog = (UI_Check_base *)data;
 
 	dialog->want_close = true;
 }
-
+#endif
 
 UI_Check_base::UI_Check_base(int W, int H, bool all_mode,
                              const char *L, const char *header_txt) :
@@ -72,6 +73,7 @@ UI_Check_base::UI_Check_base(int W, int H, bool all_mode,
 {
 	cy = 10;
 
+#ifdef _FLTK_DISABLED
 	callback(close_callback, this);
 
 	int ey = h() - 66;
@@ -104,6 +106,7 @@ UI_Check_base::UI_Check_base(int W, int H, bool all_mode,
 	}
 
 	end();
+	#endif
 }
 
 
@@ -118,9 +121,11 @@ void UI_Check_base::Reset()
 
 	cy = 45;
 
+#ifdef _FLTK_DISABLED
 	line_group->clear();
 
 	redraw();
+#endif
 }
 
 
@@ -129,7 +134,7 @@ void UI_Check_base::AddGap(int H)
 	cy += H;
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_Check_base::AddLine(
 		const char *msg, int severity, int W,
 		 const char *button1, Fl_Callback *cb1,
@@ -193,10 +198,11 @@ void UI_Check_base::AddLine(
 	if (severity > worst_severity)
 		worst_severity = severity;
 }
-
+#endif
 
 check_result_e UI_Check_base::Run()
 {
+#ifdef _FLTK_DISABLED	
 	set_modal();
 
 	show();
@@ -213,6 +219,9 @@ check_result_e UI_Check_base::Run()
 		case 1:  return CKR_MinorProblem;
 		default: return CKR_MajorProblem;
 	}
+#else
+	return CKR_OK;
+#endif
 }
 
 
@@ -447,6 +456,7 @@ public:
 	{ }
 
 public:
+#ifdef _FLTK_DISABLED
 	static void action_merge(Fl_Widget *w, void *data)
 	{
 		UI_Check_Vertices *dialog = (UI_Check_Vertices *)data;
@@ -481,6 +491,7 @@ public:
 		Vertex_ShowDanglers();
 		dialog->user_action = CKR_Highlight;
 	}
+#endif	
 
 };
 
@@ -495,6 +506,7 @@ check_result_e CHECK_Vertices(int min_severity = 0)
 	{
 		Vertex_FindOverlaps(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No overlapping vertices");
 		else
@@ -505,10 +517,12 @@ check_result_e CHECK_Vertices(int min_severity = 0)
 			                "Show",  &UI_Check_Vertices::action_highlight,
 			                "Merge", &UI_Check_Vertices::action_merge);
 		}
+#endif		
 
 
 		Vertex_FindDanglers(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No dangling vertices");
 		else
@@ -518,10 +532,12 @@ check_result_e CHECK_Vertices(int min_severity = 0)
 			dialog->AddLine(check_message, 2, 210,
 			                "Show",  &UI_Check_Vertices::action_show_danglers);
 		}
+#endif		
 
 
 		Vertex_FindUnused(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unused vertices");
 		else
@@ -532,6 +548,7 @@ check_result_e CHECK_Vertices(int min_severity = 0)
 			                "Show",   &UI_Check_Vertices::action_show_unused,
 			                "Remove", &UI_Check_Vertices::action_remove);
 		}
+#endif		
 
 
 		// in "ALL" mode, just continue if not too severe
@@ -1072,6 +1089,7 @@ public:
 	{ }
 
 public:
+#ifdef _FLTK_DISABLED
 	static void action_remove(Fl_Widget *w, void *data)
 	{
 		UI_Check_Sectors *dialog = (UI_Check_Sectors *)data;
@@ -1167,6 +1185,7 @@ public:
 		Sectors_ClearUnknown();
 		dialog->user_action = CKR_TookAction;
 	}
+#endif	
 };
 
 
@@ -1182,6 +1201,7 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 	{
 		Sectors_FindUnclosed(sel, other);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unclosed sectors");
 		else
@@ -1192,10 +1212,12 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			                "Show",  &UI_Check_Sectors::action_show_unclosed,
 			                "Verts", &UI_Check_Sectors::action_show_un_verts);
 		}
+#endif		
 
 
 		Sectors_FindMismatches(sel, other);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No mismatched sectors");
 		else
@@ -1206,10 +1228,12 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			                "Show",  &UI_Check_Sectors::action_show_mismatch,
 			                "Lines", &UI_Check_Sectors::action_show_mis_lines);
 		}
+#endif		
 
 
 		Sectors_FindBadCeil(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No sectors with ceil < floor");
 		else
@@ -1220,12 +1244,14 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			                "Show", &UI_Check_Sectors::action_show_ceil,
 			                "Fix",  &UI_Check_Sectors::action_fix_ceil);
 		}
+#endif		
 
 		dialog->AddGap(10);
 
 
 		Sectors_FindUnknown(sel, types);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unknown sector types");
 		else
@@ -1237,10 +1263,12 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			                "Log",    &UI_Check_Sectors::action_log_unknown,
 			                "Clear",  &UI_Check_Sectors::action_clear_unknown);
 		}
+#endif		
 
 
 		SideDefs_FindPacking(sel, other);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No shared sidedefs");
 		else
@@ -1253,10 +1281,12 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			                "Show",   &UI_Check_Sectors::action_show_packed,
 			                "Unpack", &UI_Check_Sectors::action_unpack);
 		}
+#endif		
 
 
 		Sectors_FindUnused(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unused sectors");
 		else
@@ -1266,10 +1296,12 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			dialog->AddLine(check_message, 1, 170,
 			                "Remove", &UI_Check_Sectors::action_remove);
 		}
+#endif		
 
 
 		SideDefs_FindUnused(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unused sidedefs");
 		else
@@ -1279,6 +1311,7 @@ check_result_e CHECK_Sectors(int min_severity = 0)
 			dialog->AddLine(check_message, 1, 170,
 			                "Remove", &UI_Check_Sectors::action_remove_sidedefs);
 		}
+#endif		
 
 
 		// in "ALL" mode, just continue if not too severe
@@ -1828,6 +1861,8 @@ public:
 	{ }
 
 public:
+
+#ifdef _FLTK_DISABLED
 	static void action_show_unknown(Fl_Widget *w, void *data)
 	{
 		UI_Check_Things *dialog = (UI_Check_Things *)data;
@@ -1885,6 +1920,8 @@ public:
 		Things_FixDuds();
 		dialog->user_action = CKR_TookAction;
 	}
+#endif
+
 };
 
 
@@ -1900,6 +1937,7 @@ check_result_e CHECK_Things(int min_severity = 0)
 	{
 		Things_FindUnknown(sel, types);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unknown thing types");
 		else
@@ -1911,10 +1949,12 @@ check_result_e CHECK_Things(int min_severity = 0)
 			                "Log",    &UI_Check_Things::action_log_unknown,
 			                "Remove", &UI_Check_Things::action_remove_unknown);
 		}
+#endif		
 
 
 		Things_FindStuckies(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No stuck actors");
 		else
@@ -1924,10 +1964,12 @@ check_result_e CHECK_Things(int min_severity = 0)
 			dialog->AddLine(check_message, 2, 200,
 			                "Show",  &UI_Check_Things::action_show_stuck);
 		}
+#endif		
 
 
 		Things_FindInVoid(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No things in the void");
 		else
@@ -1938,10 +1980,12 @@ check_result_e CHECK_Things(int min_severity = 0)
 			                "Show",   &UI_Check_Things::action_show_void,
 			                "Remove", &UI_Check_Things::action_remove_void);
 		}
+#endif		
 
 
 		Things_FindDuds(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unspawnable things -- skill flags are OK");
 		else
@@ -1951,6 +1995,7 @@ check_result_e CHECK_Things(int min_severity = 0)
 			                "Show", &UI_Check_Things::action_show_duds,
 			                "Fix",  &UI_Check_Things::action_fix_duds);
 		}
+#endif
 
 
 		dialog->AddGap(10);
@@ -1960,6 +2005,7 @@ check_result_e CHECK_Things(int min_severity = 0)
 
 		mask = Things_FindStarts(&dm_num);
 
+#ifdef _FLTK_DISABLED
 		if (Features.no_need_players)
 			dialog->AddLine("Player starts not needed, no check done");
 		else if (! (mask & 1))
@@ -1972,7 +2018,9 @@ check_result_e CHECK_Things(int min_severity = 0)
 			dialog->AddLine("Player 4 start is missing", 1);
 		else
 			dialog->AddLine("Found all 4 player starts");
+#endif			
 
+#ifdef _FLTK_DISABLED
 		if (Features.no_need_players)
 		{
 			// leave a blank space
@@ -1998,6 +2046,7 @@ check_result_e CHECK_Things(int min_severity = 0)
 			snprintf(check_message, sizeof(check_message), "Found %d deathmatch starts -- OK", dm_num);
 			dialog->AddLine(check_message);
 		}
+#endif		
 
 
 		// in "ALL" mode, just continue if not too severe
@@ -2675,6 +2724,8 @@ public:
 	{ }
 
 public:
+
+#ifdef _FLTK_DISABLED
 	static void action_show_zero(Fl_Widget *w, void *data)
 	{
 		UI_Check_LineDefs *dialog = (UI_Check_LineDefs *)data;
@@ -2784,6 +2835,8 @@ public:
 		LineDefs_ShowCrossings();
 		dialog->user_action = CKR_Highlight;
 	}
+#endif
+
 };
 
 
@@ -2799,6 +2852,7 @@ check_result_e CHECK_LineDefs(int min_severity)
 	{
 		LineDefs_FindZeroLen(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No zero-length linedefs");
 		else
@@ -2809,10 +2863,12 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Show",   &UI_Check_LineDefs::action_show_zero,
 			                "Remove", &UI_Check_LineDefs::action_remove_zero);
 		}
+#endif		
 
 
 		LineDefs_FindOverlaps(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No overlapping linedefs");
 		else
@@ -2823,10 +2879,11 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Show",   &UI_Check_LineDefs::action_show_overlap,
 			                "Remove", &UI_Check_LineDefs::action_remove_overlap);
 		}
-
+#endif
 
 		LineDefs_FindCrossings(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No criss-crossing linedefs");
 		else
@@ -2836,12 +2893,14 @@ check_result_e CHECK_LineDefs(int min_severity)
 			dialog->AddLine(check_buffer, 2, 220,
 			                "Show", &UI_Check_LineDefs::action_show_crossing);
 		}
+#endif		
 
 		dialog->AddGap(10);
 
 
 		LineDefs_FindUnknown(sel, types);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unknown line types");
 		else
@@ -2853,10 +2912,12 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Log",    &UI_Check_LineDefs::action_log_unknown,
 			                "Clear",  &UI_Check_LineDefs::action_clear_unknown);
 		}
+#endif		
 
 
 		LineDefs_FindMissingRight(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No linedefs without a right side");
 		else
@@ -2866,10 +2927,11 @@ check_result_e CHECK_LineDefs(int min_severity)
 			dialog->AddLine(check_buffer, 2, 300,
 			                "Show", &UI_Check_LineDefs::action_show_mis_right);
 		}
-
+#endif
 
 		LineDefs_FindManualDoors(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No manual doors on 1S linedefs");
 		else
@@ -2880,10 +2942,12 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Show", &UI_Check_LineDefs::action_show_manual_doors,
 			                "Fix",  &UI_Check_LineDefs::action_fix_manual_doors);
 		}
+#endif
 
 
 		LineDefs_FindLackImpass(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No non-blocking one-sided linedefs");
 		else
@@ -2894,10 +2958,12 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Show", &UI_Check_LineDefs::action_show_lack_impass,
 			                "Fix",  &UI_Check_LineDefs::action_fix_lack_impass);
 		}
+#endif		
 
 
 		LineDefs_FindBad2SFlag(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No linedefs with wrong 2S flag");
 		else
@@ -2908,6 +2974,7 @@ check_result_e CHECK_LineDefs(int min_severity)
 			                "Show", &UI_Check_LineDefs::action_show_bad_2s_flag,
 			                "Fix",  &UI_Check_LineDefs::action_fix_bad_2s_flag);
 		}
+#endif
 
 
 		// in "ALL" mode, just continue if not too severe
@@ -3266,6 +3333,8 @@ public:
 	{ }
 
 public:
+
+#ifdef _FLTK_DISABLED
 	static void action_fresh_tag(Fl_Widget *w, void *data)
 	{
 		UI_Check_Tags *dialog = (UI_Check_Tags *)data;
@@ -3303,6 +3372,7 @@ public:
 		Tags_ShowBeastMarks();
 		dialog->user_action = CKR_Highlight;
 	}
+#endif	
 };
 
 
@@ -3316,6 +3386,7 @@ check_result_e CHECK_Tags(int min_severity)
 	{
 		Tags_FindMissingTags(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No linedefs missing a needed tag");
 		else
@@ -3325,10 +3396,11 @@ check_result_e CHECK_Tags(int min_severity)
 			dialog->AddLine(check_buffer, 2, 320,
 			                "Show", &UI_Check_Tags::action_show_missing_tag);
 		}
-
+#endif
 
 		Tags_FindUnmatchedLineDefs(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No tagged linedefs w/o a matching sector");
 		else
@@ -3338,10 +3410,12 @@ check_result_e CHECK_Tags(int min_severity)
 			dialog->AddLine(check_buffer, 2, 350,
 			                "Show", &UI_Check_Tags::action_show_unmatch_line);
 		}
+#endif
 
 
 		Tags_FindUnmatchedSectors(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No tagged sectors w/o a matching linedef");
 		else
@@ -3351,10 +3425,12 @@ check_result_e CHECK_Tags(int min_severity)
 			dialog->AddLine(check_buffer, 1, 350,
 			                "Show", &UI_Check_Tags::action_show_unmatch_sec);
 		}
+#endif
 
 
 		Tags_FindBeastMarks(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No sectors with tag 666 or 667 used on the wrong map");
 		else
@@ -3364,6 +3440,7 @@ check_result_e CHECK_Tags(int min_severity)
 			dialog->AddLine(check_buffer, 1, 350,
 			                "Show", &UI_Check_Tags::action_show_beast_marks);
 		}
+#endif
 
 		dialog->AddGap(10);
 
@@ -3372,6 +3449,7 @@ check_result_e CHECK_Tags(int min_severity)
 
 		Tags_UsedRange(&min_tag, &max_tag);
 
+#ifdef _FLTK_DISABLED
 		if (max_tag <= 0)
 			dialog->AddLine("No tags are in use");
 		else
@@ -3379,6 +3457,7 @@ check_result_e CHECK_Tags(int min_severity)
 			snprintf(check_buffer, sizeof(check_buffer), "Lowest tag: %d   Highest tag: %d", min_tag, max_tag);
 			dialog->AddLine(check_buffer);
 		}
+#endif		
 
 		if ((edit.mode == OBJ_LINEDEFS || edit.mode == OBJ_SECTORS) &&
 		    edit.Selected->notempty())
@@ -3390,8 +3469,10 @@ check_result_e CHECK_Tags(int min_severity)
 				dialog->fresh_tag = 670;
 
 			dialog->AddGap(10);
+#ifdef _FLTK_DISABLED			
 			dialog->AddLine("Apply a fresh tag to the selection", 0, 250, "Apply",
 			                &UI_Check_Tags::action_fresh_tag);
+#endif							
 		}
 
 		if (dialog->WorstSeverity() < min_severity)
@@ -4119,6 +4200,8 @@ public:
 	{ }
 
 public:
+
+#ifdef _FLTK_DISABLED
 	static void action_show_unk_tex(Fl_Widget *w, void *data)
 	{
 		UI_Check_Textures *dialog = (UI_Check_Textures *)data;
@@ -4235,6 +4318,7 @@ public:
 		Textures_LogMedusa();
 		dialog->user_action = CKR_Highlight;
 	}
+#endif	
 };
 
 
@@ -4250,6 +4334,7 @@ check_result_e CHECK_Textures(int min_severity)
 	{
 		Textures_FindUnknownTex(sel, names);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unknown textures");
 		else
@@ -4261,10 +4346,12 @@ check_result_e CHECK_Textures(int min_severity)
 			                "Log",  &UI_Check_Textures::action_log_unk_tex,
 			                "Fix",  &UI_Check_Textures::action_fix_unk_tex);
 		}
+#endif		
 
 
 		Textures_FindUnknownFlat(sel, names);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No unknown flats");
 		else
@@ -4276,12 +4363,13 @@ check_result_e CHECK_Textures(int min_severity)
 			                "Log",  &UI_Check_Textures::action_log_unk_flat,
 			                "Fix",  &UI_Check_Textures::action_fix_unk_flat);
 		}
+#endif		
 
 
 		if (! Features.medusa_fixed)
 		{
 			Textures_FindMedusa(sel, names);
-
+#ifdef _FLTK_DISABLED
 			if (sel.empty())
 				dialog->AddLine("No textures causing Medusa Effect");
 			else
@@ -4293,6 +4381,7 @@ check_result_e CHECK_Textures(int min_severity)
 								"Log",  &UI_Check_Textures::action_log_medusa,
 								"Fix",  &UI_Check_Textures::action_remove_medusa);
 			}
+#endif			
 		}
 
 		dialog->AddGap(10);
@@ -4300,6 +4389,7 @@ check_result_e CHECK_Textures(int min_severity)
 
 		Textures_FindMissing(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No missing textures on walls");
 		else
@@ -4310,10 +4400,11 @@ check_result_e CHECK_Textures(int min_severity)
 			                "Show", &UI_Check_Textures::action_show_missing,
 			                "Fix",  &UI_Check_Textures::action_fix_missing);
 		}
-
+#endif		
 
 		Textures_FindTransparent(sel, names);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No transparent textures on solids");
 		else
@@ -4325,10 +4416,11 @@ check_result_e CHECK_Textures(int min_severity)
 			                "Fix",  &UI_Check_Textures::action_fix_transparent,
 			                "Log",  &UI_Check_Textures::action_log_transparent);
 		}
-
+#endif
 
 		Textures_FindDupSwitches(sel);
 
+#ifdef _FLTK_DISABLED
 		if (sel.empty())
 			dialog->AddLine("No non-animating switch textures");
 		else
@@ -4339,7 +4431,7 @@ check_result_e CHECK_Textures(int min_severity)
 			                "Show", &UI_Check_Textures::action_show_dup_switch,
 			                "Fix",  &UI_Check_Textures::action_fix_dup_switch);
 		}
-
+#endif
 
 		if (dialog->WorstSeverity() < min_severity)
 		{
@@ -4492,7 +4584,9 @@ void Debug_CheckUnusedStuff()
 
 	if (num > 0)
 	{
+#ifdef _FLTK_DISABLED		
 		fl_beep();
+#endif		
 		DLG_Notify("Operation left %d sectors unused.", num);
 
 		Sectors_RemoveUnused();
@@ -4505,7 +4599,9 @@ void Debug_CheckUnusedStuff()
 
 	if (num > 0)
 	{
+#ifdef _FLTK_DISABLED		
 		fl_beep();
+#endif
 		DLG_Notify("Operation left %d sidedefs unused.", num);
 
 		SideDefs_RemoveUnused();

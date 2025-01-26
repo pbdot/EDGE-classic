@@ -29,6 +29,7 @@
 //------------------------------------------------------------------------
 //  FILE MENU
 //------------------------------------------------------------------------
+#ifdef _FLTK_DISABLED
 
 static void file_do_new_project(Fl_Widget *w, void * data)
 {
@@ -406,7 +407,6 @@ static void help_do_about(Fl_Widget *w, void * data)
 {
 	ExecuteCommand("AboutDialog");
 }
-
 
 //------------------------------------------------------------------------
 
@@ -816,6 +816,7 @@ Fl_Sys_Menu_Bar * Menu_Create(int x, int y, int w, int h)
 	return bar;
 }
 
+#endif
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

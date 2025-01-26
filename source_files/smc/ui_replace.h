@@ -24,24 +24,31 @@
 class number_group_c;
 class UI_TripleCheckButton;
 
-
+#ifdef _FLTK_DISABLED
 class UI_FindAndReplace : public Fl_Group
+#else
+class UI_FindAndReplace
+#endif
 {
 private:
+
+#ifdef _FLTK_DISABLED
 	// object kind we are finding / replacing
 	Fl_Choice *what;
+#endif	
 
 	// current (found) object
 	Objid cur_obj;
 
 
 	// --- FIND AREA ---
-
+#ifdef _FLTK_DISABLED
 	Fl_Input  *find_match;
 	UI_Pic    *find_pic;
 	Fl_Output *find_desc;
 	Fl_Button *find_but;
 	Fl_Button *select_all_but;
+#endif	
 
 	// for numeric types, this contains the number(s) to match
 	number_group_c *find_numbers;
@@ -49,8 +56,10 @@ private:
 
 	// --- REPLACE AREA ---
 
-	Fl_Input  *rep_value;
 	UI_Pic    *rep_pic;
+
+#ifdef _FLTK_DISABLED
+	Fl_Input  *rep_value;
 	Fl_Output *rep_desc;
 	Fl_Button *apply_but;
 	Fl_Button *replace_all_but;
@@ -63,9 +72,12 @@ private:
 
 	// common stuff
 	Fl_Input * tag_input;
+#endif	
 	number_group_c * tag_numbers;
 
+#ifdef _FLTK_DISABLED
 	Fl_Check_Button *restrict_to_sel;
+#endif	
 
 	selection_c *previous_sel;
 
@@ -81,6 +93,7 @@ private:
 	int options_mask;
 	int options_value;
 
+#ifdef _FLTK_DISABLED
 	// sector filters
 	Fl_Check_Button *o_floors;
 	Fl_Check_Button *o_ceilings;
@@ -93,6 +106,7 @@ private:
 
 	Fl_Check_Button *o_one_sided;
 	Fl_Check_Button *o_two_sided;
+#endif	
 
 public:
 	UI_FindAndReplace(int X, int Y, int W, int H);
@@ -120,10 +134,12 @@ private:
 
 	void UnselectPics();
 
+#ifdef _FLTK_DISABLED
 	void InsertName  (Fl_Input *inp, char append, const char *name);
 	void InsertNumber(Fl_Input *inp, char append, int number);
 
 	bool NeedSeparator(Fl_Input *inp) const;
+#endif	
 
 	void rawShowFilter(int value);
 
@@ -133,11 +149,13 @@ private:
 	void DoReplace();
 	void DoAll(bool replace);
 
+#ifdef _FLTK_DISABLED
 	// validate input and update desc and the picture
 	bool CheckInput(Fl_Input *w, Fl_Output *desc, UI_Pic *pic, number_group_c *num_grp = NULL);
 
 	// this used for Tag number
 	bool CheckNumberInput(Fl_Input *w, number_group_c *num_grp);
+#endif	
 
 	bool Pattern_Match(const char *tex, const char *pattern, bool is_rail = false);
 
@@ -166,6 +184,7 @@ private:
 	void CB_Delete(bool is_replace);
 
 private:
+#ifdef _FLTK_DISABLED
 	static void      hide_callback(Fl_Widget *w, void *data);
 	static void what_kind_callback(Fl_Widget *w, void *data);
 	static void    choose_callback(UI_Pic    *w, void *data);
@@ -180,6 +199,7 @@ private:
 
 	static void filter_toggle_callback(Fl_Widget *w, void *data);
 	static void     tag_input_callback(Fl_Widget *w, void *data);
+#endif	
 };
 
 

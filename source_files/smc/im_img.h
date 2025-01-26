@@ -32,7 +32,9 @@
 #ifdef NO_OPENGL
 typedef unsigned int GLuint;
 #else
+#ifdef _FLTK_DISABLED
 #include "FL/gl.h"
+#endif
 #endif
 
 // this is a 16-bit value:
@@ -62,8 +64,10 @@ private:
 	int  w;  // Width
 	int  h;  // Height
 
+#ifdef _FLTK_DISABLED
 	// texture identifier for OpenGL, 0 if not uploaded yet
 	GLuint gl_tex;
+#endif
 
 public:
 	 Img_c();
@@ -85,10 +89,12 @@ public:
 		return h;
 	}
 
+#ifdef _FLTK_DISABLED
 	GLuint gl_texture() const
 	{
 		return gl_tex;
 	}
+#endif
 
 	// read access
 	const img_pixel_t *buf() const;
@@ -148,7 +154,9 @@ Img_c * IM_CreateMapSpotSprite(int base_r, int base_g, int base_b);
 Img_c * IM_DigitFont_11x14();
 Img_c * IM_DigitFont_14x19();
 
+#ifdef _FLTK_DISABLED
 Img_c * IM_ConvertRGBImage(Fl_RGB_Image *src);
+#endif
 Img_c * IM_ConvertTGAImage(const rgba_color_t * data, int W, int H);
 
 

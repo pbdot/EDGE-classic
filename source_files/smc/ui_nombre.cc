@@ -32,16 +32,20 @@
 // UI_Nombre Constructor
 //
 UI_Nombre::UI_Nombre(int X, int Y, int W, int H, const char *what) :
+#ifdef _FLTK_DISABLED
     Fl_Box(FL_FLAT_BOX, X, Y, W, H, ""),
+#endif
     index(-1), total(0), selected(0)
 {
 	type_name = StringDup(what);
 
+#ifdef _FLTK_DISABLED
 	align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
 	color(NOMBRBACK_COL);
 
 	labelfont(FL_COURIER_BOLD);
 	labelsize(19);
+#endif
 
 	Update();
 }
@@ -67,6 +71,7 @@ void UI_Nombre::Update()
 	else
 		snprintf(buffer, sizeof(buffer), "%s #%-4d / %d\n", type_name, index, total);
 
+#ifdef _FLTK_DISABLED
 	if (index < 0 || total == 0)
 		labelcolor(FL_DARK1);
 	else
@@ -82,6 +87,7 @@ void UI_Nombre::Update()
 		color(FL_RED);
 
 	copy_label(buffer);
+#endif
 }
 
 

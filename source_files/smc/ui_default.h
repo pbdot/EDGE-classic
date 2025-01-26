@@ -21,19 +21,21 @@
 #ifndef __EUREKA_UI_DEFAULT_H__
 #define __EUREKA_UI_DEFAULT_H__
 
-
-class UI_DefaultProps : public Fl_Group
+// _FLTK_DISABLED
+class UI_DefaultProps /*: public Fl_Group */
 {
 private:
 	UI_Pic      *w_pic;
 	UI_DynInput *w_tex;
 
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *ceil_h;
 	Fl_Int_Input *light;
 	Fl_Int_Input *floor_h;
 
 	Fl_Button *ce_down, *ce_up;
 	Fl_Button *fl_down, *fl_up;
+#endif	
 
 	UI_Pic      *c_pic;
 	UI_DynInput *c_tex;
@@ -42,7 +44,9 @@ private:
 	UI_DynInput *f_tex;
 
 	UI_DynInput  *thing;
+#ifdef _FLTK_DISABLED	
 	Fl_Output    *th_desc;
+#endif
 	UI_Pic		 *th_sprite;
 
 public:
@@ -58,7 +62,9 @@ public:
 	void LoadValues();
 
 private:
+#ifdef _FLTK_DISABLED
 	void SetIntVal(Fl_Int_Input *w, int value);
+#endif	
 	void UpdateThingDesc();
 	void SetThing(int number);
 
@@ -69,6 +75,7 @@ private:
 	static const char * Normalize_and_Dup(UI_DynInput *w);
 
 private:
+#ifdef _FLTK_DISABLED
 	static void   hide_callback(Fl_Widget *w, void *data);
 	static void    tex_callback(Fl_Widget *w, void *data);
 	static void dyntex_callback(Fl_Widget *w, void *data);
@@ -78,6 +85,7 @@ private:
 
 	static void    thing_callback(Fl_Widget *w, void *data);
 	static void dynthing_callback(Fl_Widget *w, void *data);
+#endif	
 };
 
 

@@ -21,14 +21,16 @@
 #ifndef __EUREKA_UI_TILE_H__
 #define __EUREKA_UI_TILE_H__
 
-
-class UI_Tile : public Fl_Tile
+// _FLTK_DISABLED
+class UI_Tile /* : public Fl_Tile */
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Widget * left;
 	Fl_Widget * right;
 
 	Fl_Box * limiter;
+#endif	
 
 	// when the right widget (the browser) is hidden, this remembers
 	// how much of the available width it was using, so can restore it
@@ -38,8 +40,10 @@ private:
 	int right_W;
 
 public:
+#ifdef _FLTK_DISABLED
 	UI_Tile(int X, int Y, int W, int H, const char *what,
 	        Fl_Widget *_left, Fl_Widget *_right);
+#endif
 
 	virtual ~UI_Tile();
 

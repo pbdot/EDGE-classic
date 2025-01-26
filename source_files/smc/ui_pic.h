@@ -25,10 +25,13 @@
 class Img_c;
 
 
-class UI_Pic : public Fl_Box
+// _FLTK_DISABLED
+class UI_Pic /*: public Fl_Box */
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_RGB_Image *rgb;
+#endif
 
 	enum
 	{
@@ -46,7 +49,9 @@ private:
 	bool selected;
 
 	const char *what_text;
+#ifdef _FLTK_DISABLED	
 	Fl_Color    what_color;
+#endif
 
 public:
 	UI_Pic(int X, int Y, int W, int H, const char *L = "");
@@ -64,9 +69,13 @@ public:
 
 	void GetFlat(const char * fname);
 	void GetTex (const char * tname);
+#ifdef _FLTK_DISABLED	
 	void GetSprite(int type, Fl_Color back_color);
+#endif
 
+#ifdef _FLTK_DISABLED
 	void AllowHighlight(bool enable) { allow_hl = enable; redraw(); }
+#endif
 	bool Highlighted() const { return allow_hl && highlighted; }
 	void Unhighlight();
 
@@ -88,15 +97,17 @@ private:
 
 //------------------------------------------------------------------------
 
-
-class UI_DynInput : public Fl_Input
+// _FLTK_DISABLED
+class UI_DynInput /*: public Fl_Input */
 {
 	/* this widget provides a secondary callback which can be
 	 * used to dynamically update a picture or description.
 	 */
 
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Callback *callback2_;
+#endif	
 	void *data2_;
 
 public:
@@ -106,12 +117,16 @@ public:
 	// FLTK method for event handling
 	int handle(int event);
 
+#ifdef _FLTK_DISABLED	
+
 	// main callback is done on ENTER or RELEASE, but this
 	// secondary callback is done on each change by the user.
 	void callback2(Fl_Callback *cb, void *data)
 	{
 		callback2_ = cb; data2_ = data;
 	}
+#endif
+	
 };
 
 #endif  /* __EUREKA_UI_PIC_H__ */

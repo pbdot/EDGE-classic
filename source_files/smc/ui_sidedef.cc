@@ -39,10 +39,13 @@ bool sidedef_add_del_buttons = false;
 // Constructor
 //
 UI_SideBox::UI_SideBox(int X, int Y, int W, int H, int _side) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H),
+#endif
     obj(SETOBJ_NO_LINE), is_front(_side == 0),
 	on_2S_line(false)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX); // FL_UP_BOX
 
 	align(FL_ALIGN_INSIDE | FL_ALIGN_TOP | FL_ALIGN_LEFT);
@@ -138,6 +141,7 @@ UI_SideBox::UI_SideBox(int X, int Y, int W, int H, int _side) :
 	UpdateHiding();
 	UpdateLabel();
 	UpdateAddDel();
+#endif
 }
 
 
@@ -148,6 +152,7 @@ UI_SideBox::~UI_SideBox()
 { }
 
 
+#ifdef _FLTK_DISABLED
 void UI_SideBox::tex_callback(Fl_Widget *w, void *data)
 {
 	UI_SideBox *box = (UI_SideBox *)data;
@@ -414,7 +419,7 @@ void UI_SideBox::sector_callback(Fl_Widget *w, void *data)
 		BA_End();
 	}
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
@@ -440,12 +445,15 @@ void UI_SideBox::SetObj(int index, int solid_mask, bool two_sided)
 	if (obj < 0)
 		UnselectPics();
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 
 void UI_SideBox::UpdateField()
 {
+#ifdef _FLTK_DISABLED	
 	if (is_sidedef(obj))
 	{
 		const SideDef *sd = SideDefs[obj];
@@ -501,11 +509,13 @@ void UI_SideBox::UpdateField()
 		u_pic->AllowHighlight(false);
 		r_pic->AllowHighlight(false);
 	}
+#endif
 }
 
 
 void UI_SideBox::UpdateLabel()
 {
+#ifdef _FLTK_DISABLED	
 	if (! is_sidedef(obj))
 	{
 		label(is_front ? "   No Front Sidedef" : "   No Back Sidedef");
@@ -518,11 +528,13 @@ void UI_SideBox::UpdateLabel()
 			is_front ? "Front" : "Back", obj);
 
 	copy_label(buffer);
+#endif
 }
 
 
 void UI_SideBox::UpdateAddDel()
 {
+#ifdef _FLTK_DISABLED	
 	if (obj == SETOBJ_NO_LINE || ! sidedef_add_del_buttons)
 	{
 		add_button->hide();
@@ -538,11 +550,13 @@ void UI_SideBox::UpdateAddDel()
 		add_button->hide();
 		del_button->show();
 	}
+#endif
 }
 
 
 void UI_SideBox::UpdateHiding()
 {
+#ifdef _FLTK_DISABLED	
 	if (obj < 0)
 	{
 		x_ofs->hide();
@@ -589,6 +603,7 @@ void UI_SideBox::UpdateHiding()
 			r_pic->Selected(false);
 		}
 	}
+#endif
 }
 
 

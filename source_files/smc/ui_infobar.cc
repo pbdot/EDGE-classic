@@ -56,9 +56,12 @@ const int UI_InfoBar::grid_amounts[12] =
 //
 // UI_InfoBar Constructor
 //
-UI_InfoBar::UI_InfoBar(int X, int Y, int W, int H, const char *label) :
-    Fl_Group(X, Y, W, H, label)
+UI_InfoBar::UI_InfoBar(int X, int Y, int W, int H, const char *label)
+#ifdef _FLTK_DISABLED
+ : Fl_Group(X, Y, W, H, label)
+#endif
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 
@@ -160,6 +163,7 @@ UI_InfoBar::UI_InfoBar(int X, int Y, int W, int H, const char *label) :
 	resizable(NULL);
 
 	end();
+	#endif
 }
 
 //
@@ -171,10 +175,15 @@ UI_InfoBar::~UI_InfoBar()
 
 int UI_InfoBar::handle(int event)
 {
+#ifdef _FLTK_DISABLED
 	return Fl_Group::handle(event);
+#else
+	return 0;
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_InfoBar::mode_callback(Fl_Widget *w, void *data)
 {
 	Fl_Menu_Button *mode = (Fl_Menu_Button *)w;
@@ -268,12 +277,13 @@ void UI_InfoBar::ratio_callback(Fl_Widget *w, void *data)
 	grid.ratio = ratio_lock->value();
 	main_win->info_bar->UpdateRatio();
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
 void UI_InfoBar::NewEditMode(obj_type_e new_mode)
 {
+#ifdef _FLTK_DISABLED	
 	switch (new_mode)
 	{
 		case OBJ_THINGS:   mode->value(0); break;
@@ -283,6 +293,7 @@ void UI_InfoBar::NewEditMode(obj_type_e new_mode)
 
 		default: break;
 	}
+#endif
 
 	UpdateModeColor();
 }
@@ -292,7 +303,9 @@ void UI_InfoBar::SetMouse(double mx, double my)
 {
 	// TODO this method should go away
 
+#ifdef _FLTK_DISABLED
 	main_win->status_bar->redraw();
+#endif
 }
 
 
@@ -307,27 +320,35 @@ void UI_InfoBar::SetScale(double new_scale)
 	else
 		snprintf(buffer, sizeof(buffer), "%3d%%", (int)perc);
 
+#ifdef _FLTK_DISABLED
 	scale->copy_label(buffer);
+#endif
 }
 
 void UI_InfoBar::SetGrid(int new_step)
 {
 	if (new_step < 0)
 	{
+#ifdef _FLTK_DISABLED		
 		grid_size->label("OFF");
+#endif
 	}
 	else
 	{
+#ifdef _FLTK_DISABLED		
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "%d", new_step);
 		grid_size->copy_label(buffer);
+#endif
 	}
 }
 
 
 void UI_InfoBar::UpdateSnap()
 {
+#ifdef _FLTK_DISABLED	
    grid_snap->value(grid.snap ? 1 : 0);
+#endif
 
    UpdateSnapText();
 }
@@ -337,12 +358,15 @@ void UI_InfoBar::UpdateSecRend()
 {
 	if (edit.render3d)
 	{
+#ifdef _FLTK_DISABLED		
 		sec_rend->label("3D VIEW");
+#endif
 		return;
 	}
 
 	switch (edit.sector_render_mode)
 	{
+#ifdef _FLTK_DISABLED		
 	case SREND_Floor:       sec_rend->label("Floor");   break;
 	case SREND_Ceiling:     sec_rend->label("Ceiling"); break;
 	case SREND_Lighting:    sec_rend->label("Lighting"); break;
@@ -350,12 +374,14 @@ void UI_InfoBar::UpdateSecRend()
 	case SREND_CeilBright:  sec_rend->label("Ceil Brt"); break;
 	case SREND_SoundProp:   sec_rend->label("Sound");    break;
 	default:                sec_rend->label("PLAIN");    break;
+#endif	
 	}
 }
 
 
 void UI_InfoBar::UpdateRatio()
 {
+#ifdef _FLTK_DISABLED	
 	if (grid.ratio == 0)
 		ratio_lock->color(FL_BACKGROUND_COLOR);
 	else
@@ -376,11 +402,13 @@ void UI_InfoBar::UpdateRatio()
 	{
 		ratio_lock->copy_label(ratio_lock->text(grid.ratio));
 	}
+#endif
 }
 
 
 void UI_InfoBar::UpdateModeColor()
 {
+#ifdef _FLTK_DISABLED	
 	switch (mode->value())
 	{
 		case 0: mode->label("Things");   mode->color(THING_MODE_COL);  break;
@@ -388,11 +416,13 @@ void UI_InfoBar::UpdateModeColor()
 		case 2: mode->label("Sectors");  mode->color(SECTOR_MODE_COL); break;
 		case 3: mode->label("Vertices"); mode->color(VERTEX_MODE_COL); break;
 	}
+#endif
 }
 
 
 void UI_InfoBar::UpdateSnapText()
 {
+#ifdef _FLTK_DISABLED
 	if (grid_snap->value())
 	{
 		grid_snap->label("SNAP");
@@ -403,6 +433,7 @@ void UI_InfoBar::UpdateSnapText()
 	}
 
 	grid_snap->redraw();
+#endif
 }
 
 
@@ -414,10 +445,14 @@ void UI_InfoBar::UpdateSnapText()
 
 
 UI_StatusBar::UI_StatusBar(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Widget(X, Y, W, H, label),
+#endif
 	status()
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_NO_BOX);
+#endif
 }
 
 UI_StatusBar::~UI_StatusBar()
@@ -432,6 +467,7 @@ int UI_StatusBar::handle(int event)
 
 void UI_StatusBar::draw()
 {
+#ifdef _FLTK_DISABLED	
 	fl_color(fl_rgb_color(64, 64, 64));
 	fl_rectf(x(), y(), w(), h());
 
@@ -515,6 +551,7 @@ void UI_StatusBar::draw()
 	}
 
 	fl_pop_clip();
+#endif
 }
 
 
@@ -660,6 +697,7 @@ void UI_StatusBar::IB_ShowDrawLine(int cx, int cy)
 
 void UI_StatusBar::IB_Number(int& cx, int& cy, const char *label, int value, int size)
 {
+#ifdef _FLTK_DISABLED	
 	char buffer[256];
 
 	// negative size means we require a sign
@@ -672,11 +710,13 @@ void UI_StatusBar::IB_Number(int& cx, int& cy, const char *label, int value, int
 	fl_draw(buffer, cx, cy);
 
 	cx = cx + fl_width(buffer);
+#endif
 }
 
 
 void UI_StatusBar::IB_Coord(int& cx, int& cy, const char *label, float value)
 {
+#ifdef _FLTK_DISABLED	
 	char buffer[256];
 	snprintf(buffer, sizeof(buffer), "%s:%-8.2f ", label, value);
 
@@ -684,19 +724,23 @@ void UI_StatusBar::IB_Coord(int& cx, int& cy, const char *label, float value)
 	fl_draw(buffer, cx, cy);
 
 	cx = cx + fl_width(buffer);
+#endif
 }
 
 
 void UI_StatusBar::IB_String(int& cx, int& cy, const char *str)
 {
+#ifdef _FLTK_DISABLED	
 	fl_draw(str, cx, cy);
 
 	cx = cx + fl_width(str);
+#endif
 }
 
 
 void UI_StatusBar::IB_Flag(int& cx, int& cy, bool value, const char *label_on, const char *label_off)
 {
+#ifdef _FLTK_DISABLED	
 	const char *label = value ? label_on : label_off;
 
 	fl_color(value ? INFO_TEXT_COL : INFO_DIM_COL);
@@ -704,6 +748,7 @@ void UI_StatusBar::IB_Flag(int& cx, int& cy, bool value, const char *label_on, c
 	fl_draw(label, cx, cy);
 
 	cx = cx + fl_width(label) + 20;
+#endif
 }
 
 
@@ -714,7 +759,9 @@ void UI_StatusBar::SetStatus(const char *str)
 
 	status = str;
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 

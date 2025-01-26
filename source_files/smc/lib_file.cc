@@ -217,6 +217,7 @@ void FilenameStripBase(char *buffer)
 		strcpy(buffer, ".");
 }
 
+#ifdef _FLTK_DISABLED
 
 //
 // takes the basename in 'filename' and prepends the path from 'othername'.
@@ -243,6 +244,7 @@ const char *FilenameReposition(const char *filename, const char *othername)
 
 	return result;
 }
+#endif
 
 
 void FilenameGetPath(char *dest, size_t maxsize, const char *filename)

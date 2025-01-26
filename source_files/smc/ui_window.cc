@@ -22,6 +22,7 @@
 
 #include "e_main.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "r_render.h"
 #include "ui_window.h"
 #include "w_wad.h"
@@ -30,11 +31,11 @@
 #include <unistd.h>
 #endif
 
+#ifdef _FLTK_DISABLED
 #if (FL_MAJOR_VERSION != 1 || FL_MINOR_VERSION < 3)
 #error "Require FLTK version 1.3.0 or later"
 #endif
-
-
+#endif
 
 #define WINDOW_MIN_W  928
 #define WINDOW_MIN_H  640
@@ -46,10 +47,13 @@ UI_MainWindow *main_win;
 // MainWin Constructor
 //
 UI_MainWindow::UI_MainWindow() :
+#ifdef _FLTK_DISABLED
 	Fl_Double_Window(WINDOW_MIN_W, WINDOW_MIN_H, EUREKA_TITLE),
 	cursor_shape(FL_CURSOR_DEFAULT),
+#endif
 	last_x(0), last_y(0), last_w(0), last_h(0)
 {
+#ifdef _FLTK_DISABLED	
 	end(); // cancel begin() in Fl_Group constructor
 
 	size_range(WINDOW_MIN_W, WINDOW_MIN_H);
@@ -124,6 +128,7 @@ UI_MainWindow::UI_MainWindow() :
 	find_box = new UI_FindAndReplace(w() - panel_W, BY, panel_W, BH);
 	find_box->hide();
 	add(find_box);
+	#endif
 }
 
 
@@ -133,30 +138,35 @@ UI_MainWindow::UI_MainWindow() :
 UI_MainWindow::~UI_MainWindow()
 { }
 
-
+#ifdef _FLTK_DISABLED
 void UI_MainWindow::quit_callback(Fl_Widget *w, void *data)
 {
 	Main_Quit();
 }
+#endif
 
 
 void UI_MainWindow::NewEditMode(obj_type_e mode)
 {
 	UnselectPics();
 
+#ifdef _FLTK_DISABLED
 	thing_box->hide();
 	 line_box->hide();
 	  sec_box->hide();
 	 vert_box->hide();
 	props_box->hide();
 	 find_box->hide();
+#endif
 
 	switch (mode)
 	{
+#ifdef _FLTK_DISABLED		
 		case OBJ_THINGS:  thing_box->show(); break;
 		case OBJ_LINEDEFS: line_box->show(); break;
 		case OBJ_SECTORS:   sec_box->show(); break;
 		case OBJ_VERTICES: vert_box->show(); break;
+#endif
 
 		default: break;
 	}
@@ -164,10 +174,14 @@ void UI_MainWindow::NewEditMode(obj_type_e mode)
 	info_bar->NewEditMode(mode);
 	browser ->NewEditMode(mode);
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
+
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_MainWindow::SetCursor(Fl_Cursor shape)
 {
 	if (shape == cursor_shape)
@@ -177,11 +191,15 @@ void UI_MainWindow::SetCursor(Fl_Cursor shape)
 
 	cursor(shape);
 }
-
+#endif
 
 void UI_MainWindow::BrowserMode(char kind)
 {
+#ifdef _FLTK_DISABLED
 	bool is_visible = browser->visible() ? true : false;
+#else
+	bool is_visible = false;
+#endif
 
 	if (kind == '-' || (is_visible && kind == '/'))
 		kind = 0;
@@ -209,25 +227,32 @@ void UI_MainWindow::BrowserMode(char kind)
 
 void UI_MainWindow::HideSpecialPanel()
 {
+#ifdef _FLTK_DISABLED	
 	props_box->hide();
 	 find_box->hide();
+#endif
 
 	switch (edit.mode)
 	{
+#ifdef _FLTK_DISABLED		
 		case OBJ_THINGS:   thing_box->show(); break;
 		case OBJ_LINEDEFS:  line_box->show(); break;
 		case OBJ_VERTICES:  vert_box->show(); break;
 		case OBJ_SECTORS:    sec_box->show(); break;
+#endif
 
 		default: break;
 	}
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 
 void UI_MainWindow::ShowDefaultProps()
 {
+#ifdef _FLTK_DISABLED	
 	// already shown?
 	if (props_box->visible())
 	{
@@ -244,11 +269,13 @@ void UI_MainWindow::ShowDefaultProps()
 	props_box->show();
 
 	redraw();
+#endif
 }
 
 
 void UI_MainWindow::ShowFindAndReplace()
 {
+#ifdef _FLTK_DISABLED	
 	// already shown?
 	if (find_box->visible())
 	{
@@ -265,6 +292,7 @@ void UI_MainWindow::ShowFindAndReplace()
 	 find_box->Open();
 
 	redraw();
+#endif
 }
 
 
@@ -294,6 +322,7 @@ int UI_MainWindow::GetPanelObjNum() const
 
 void UI_MainWindow::InvalidatePanelObj()
 {
+#ifdef _FLTK_DISABLED	
 	if (thing_box->visible())
 		thing_box->SetObj(-1, 0);
 
@@ -305,10 +334,12 @@ void UI_MainWindow::InvalidatePanelObj()
 
 	if (vert_box->visible())
 		vert_box->SetObj(-1, 0);
+#endif
 }
 
 void UI_MainWindow::UpdatePanelObj()
 {
+#ifdef _FLTK_DISABLED
 	if (thing_box->visible())
 		thing_box->UpdateField();
 
@@ -323,6 +354,7 @@ void UI_MainWindow::UpdatePanelObj()
 
 	if (vert_box->visible())
 		vert_box->UpdateField();
+#endif
 }
 
 
@@ -338,7 +370,8 @@ void UI_MainWindow::UnselectPics()
 void UI_MainWindow::SetTitle(const char *wad_name, const char *map_name,
 						  bool read_only)
 {
-	static char title_buf[FL_PATH_MAX];
+#ifdef _FLTK_DISABLED
+	static char title_buf[SMC_PATH_MAX];
 
 	if (wad_name)
 	{
@@ -352,11 +385,13 @@ void UI_MainWindow::SetTitle(const char *wad_name, const char *map_name,
 	}
 
 	copy_label(title_buf);
+#endif
 }
 
 
 void UI_MainWindow::UpdateTitle(char want_prefix)
 {
+#ifdef _FLTK_DISABLED	
 	if (! label())
 		return;
 
@@ -369,7 +404,7 @@ void UI_MainWindow::UpdateTitle(char want_prefix)
 		return;
 
 
-	static char title_buf[FL_PATH_MAX];
+	static char title_buf[SMC_PATH_MAX];
 
 	const char *src  = label() + (got_prefix ? 1 : 0);
 		  char *dest = title_buf;
@@ -382,6 +417,7 @@ void UI_MainWindow::UpdateTitle(char want_prefix)
 	strcpy(dest, src);
 
 	copy_label(title_buf);
+#endif
 }
 
 
@@ -408,6 +444,7 @@ void UI_MainWindow::ToggleFullscreen()
 
 bool UI_MainWindow::ClipboardOp(char op)
 {
+#ifdef _FLTK_DISABLED	
 	if (props_box->visible())
 	{
 		return props_box->ClipboardOp(op);
@@ -428,7 +465,7 @@ bool UI_MainWindow::ClipboardOp(char op)
 	{
 		return thing_box->ClipboardOp(op);
 	}
-
+#endif
 	// no panel wanted it
 	return false;
 }
@@ -436,6 +473,7 @@ bool UI_MainWindow::ClipboardOp(char op)
 
 void UI_MainWindow::BrowsedItem(char kind, int number, const char *name, int e_state)
 {
+#ifdef _FLTK_DISABLED	
 //	fprintf(stderr, "BrowsedItem: kind '%c' --> %d / \"%s\"\n", kind, number, name);
 
 	if (props_box->visible())
@@ -462,11 +500,13 @@ void UI_MainWindow::BrowsedItem(char kind, int number, const char *name, int e_s
 	{
 		Beep("no target for browsed item");
 	}
+#endif
 }
 
 
 void UI_MainWindow::Maximize()
 {
+#ifdef _FLTK_DISABLED	
 #if defined(WIN32)
 	HWND hWnd = fl_xid(this);
 
@@ -504,6 +544,7 @@ void UI_MainWindow::Maximize()
 
 	Delay(3);
 #endif
+#endif
 }
 
 
@@ -513,7 +554,9 @@ void UI_MainWindow::Delay(int steps)
 	{
 		TimeDelay(100);
 
+#ifdef _FLTK_DISABLED
 		Fl::check();
+#endif
 	}
 }
 
@@ -535,24 +578,30 @@ int UI_MainWindow::handle(int event)
 {
 	if (in_fatal_error)
 		return 0;
-
+#ifdef _FLTK_DISABLED
 	return Fl_Double_Window::handle(event);
+#else
+	return 0;
+#endif
 }
 
 void UI_MainWindow::draw()
 {
 	if (in_fatal_error)
 		return;
-
+#ifdef _FLTK_DISABLED
 	return Fl_Double_Window::draw();
+#endif
 }
 
 
 //------------------------------------------------------------------------
 
 
-UI_Escapable_Window::UI_Escapable_Window(int W, int H, const char *L) :
-	Fl_Double_Window(W, H, L)
+UI_Escapable_Window::UI_Escapable_Window(int W, int H, const char *L) 
+#ifdef _FLTK_DISABLED	
+:Fl_Double_Window(W, H, L)
+#endif
 { }
 
 
@@ -562,6 +611,7 @@ UI_Escapable_Window::~UI_Escapable_Window()
 
 int UI_Escapable_Window::handle(int event)
 {
+#ifdef _FLTK_DISABLED		
 	if (event == FL_KEYDOWN && Fl::event_key() == FL_Escape)
 	{
 		do_callback();
@@ -569,6 +619,9 @@ int UI_Escapable_Window::handle(int event)
 	}
 
 	return Fl_Double_Window::handle(event);
+#else
+	return 0;
+#endif
 }
 
 
@@ -576,13 +629,12 @@ int UI_Escapable_Window::handle(int event)
 
 #define MAX_LOG_LINES  1000
 
-
 UI_LogViewer * log_viewer;
-
 
 UI_LogViewer::UI_LogViewer() :
 	UI_Escapable_Window(580, 400, "Eureka Log Viewer")
 {
+#ifdef _FLTK_DISABLED		
 	box(FL_NO_BOX);
 
 	size_range(480, 200);
@@ -643,6 +695,7 @@ UI_LogViewer::UI_LogViewer() :
 	}
 
 	end();
+#endif
 }
 
 
@@ -652,23 +705,27 @@ UI_LogViewer::~UI_LogViewer()
 
 void UI_LogViewer::Deselect()
 {
+#ifdef _FLTK_DISABLED		
 	browser->deselect();
-
 	copy_but->deactivate();
+#endif
 }
 
 
 void UI_LogViewer::JumpEnd()
 {
+#ifdef _FLTK_DISABLED		
 	if (browser->size() > 0)
 	{
 		browser->bottomline(browser->size());
 	}
+#endif
 }
 
 
 int UI_LogViewer::CountSelectedLines() const
 {
+#ifdef _FLTK_DISABLED		
 	int count = 0;
 
 	for (int i = 1 ; i <= browser->size() ; i++)
@@ -676,13 +733,17 @@ int UI_LogViewer::CountSelectedLines() const
 			count++;
 
 	return count;
+#else
+	return 0;
+#endif
 }
 
 
 char * UI_LogViewer::GetSelectedText() const
-{
+{	
 	char *buf = StringDup("");
 
+#ifdef _FLTK_DISABLED		
 	for (int i = 1 ; i <= browser->size() ; i++)
 	{
 		if (! browser->selected(i))
@@ -711,13 +772,14 @@ char * UI_LogViewer::GetSelectedText() const
 
 		buf = new_buf;
 	}
-
+#endif
 	return buf;
 }
 
 
 void UI_LogViewer::Add(const char *line)
 {
+#ifdef _FLTK_DISABLED		
 	browser->add(line);
 
 	if (browser->size() > MAX_LOG_LINES)
@@ -725,6 +787,7 @@ void UI_LogViewer::Add(const char *line)
 
 	if (shown())
 		browser->bottomline(browser->size());
+#endif		
 }
 
 
@@ -734,7 +797,7 @@ void LogViewer_AddLine(const char *str)
 		log_viewer->Add(str);
 }
 
-
+#ifdef _FLTK_DISABLED	
 void UI_LogViewer::ok_callback(Fl_Widget *w, void *data)
 {
 	UI_LogViewer *that = (UI_LogViewer *)data;
@@ -807,7 +870,7 @@ void UI_LogViewer::save_callback(Fl_Widget *w, void *data)
 
 
 	// add an extension if missing
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	strcpy(filename, chooser.filename());
 
@@ -830,6 +893,7 @@ void UI_LogViewer::save_callback(Fl_Widget *w, void *data)
 	fclose(fp);
 }
 
+#endif
 
 void LogViewer_Open()
 {
@@ -837,7 +901,9 @@ void LogViewer_Open()
 		return;
 
 	// always call show() -- to raise the window
+#ifdef _FLTK_DISABLED		
 	log_viewer->show();
+#endif
 	log_viewer->Deselect();
 
 	log_viewer->JumpEnd();

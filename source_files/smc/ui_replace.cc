@@ -170,8 +170,11 @@ public:
 
 
 //------------------------------------------------------------------------
-
+#ifdef _FLTK_DISABLED
 class UI_TripleCheckButton : public Fl_Group
+#else
+class UI_TripleCheckButton
+#endif
 {
 	/* this button has three states to represent how a search should
 	   check against a boolean value:
@@ -184,12 +187,15 @@ class UI_TripleCheckButton : public Fl_Group
 private:
 	int _value;	  // -1, 0, +1
 
+#ifdef _FLTK_DISABLED
 	Fl_Button * false_but;
 	Fl_Button *  true_but;
 	Fl_Button * other_but;
+#endif
 
 	void Update()
 	{
+#ifdef _FLTK_DISABLED		
 		false_but->hide();
 		 true_but->hide();
 		other_but->hide();
@@ -202,6 +208,7 @@ private:
 			other_but->show();
 
 		redraw();
+#endif
 	}
 
 	void BumpValue()
@@ -210,6 +217,7 @@ private:
 		Update();
 	}
 
+#ifdef _FLTK_DISABLED
 	static void button_callback(Fl_Widget *w, void *data)
 	{
 		UI_TripleCheckButton *G = (UI_TripleCheckButton *)data;
@@ -217,12 +225,16 @@ private:
 		G->BumpValue();
 		G->do_callback();
 	}
+#endif
 
 public:
 	UI_TripleCheckButton(int X, int Y, int W, int H, const char *label = NULL) :
+#ifdef _FLTK_DISABLED	
 		Fl_Group(X, Y, W, H),
+#endif
 		_value(0)
 	{
+#ifdef _FLTK_DISABLED		
 		if (label)
 		{
 			Fl_Box *box = new Fl_Box(FL_NO_BOX, X, Y, W, H, label);
@@ -249,6 +261,7 @@ public:
 		resizable(NULL);
 
 		Update();
+#endif
 	}
 
 	virtual ~UI_TripleCheckButton()
@@ -272,11 +285,14 @@ public:
 
 
 UI_FindAndReplace::UI_FindAndReplace(int X, int Y, int W, int H) :
+#ifdef _FLTK_DISABLED
 	Fl_Group(X, Y, W, H, NULL),
+#endif
 	cur_obj(),
 	find_numbers(new number_group_c),
 	 tag_numbers(new number_group_c)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 	color(WINDOW_BG, WINDOW_BG);
@@ -416,21 +432,24 @@ UI_FindAndReplace::UI_FindAndReplace(int X, int Y, int W, int H) :
 
 
 	Clear();
+	#endif
 }
 
 
 UI_FindAndReplace::~UI_FindAndReplace()
 { }
 
-
+#ifdef _FLTK_DISABLED
 void UI_FindAndReplace::hide_callback(Fl_Widget *w, void *data)
 {
 	main_win->HideSpecialPanel();
 }
+#endif
 
 
 void UI_FindAndReplace::UpdateWhatColor()
 {
+#ifdef _FLTK_DISABLED
 	switch (what->value())
 	{
 		case 0: /* Things      */ what->color(THING_MODE_COL); break;
@@ -439,12 +458,15 @@ void UI_FindAndReplace::UpdateWhatColor()
 		case 3: /* Line Type   */ what->color(FL_GREEN); break;
 		case 4: /* Sector Type */ what->color(fl_rgb_color(255,160,0)); break;
 	}
+#endif
 }
 
 
 
 void UI_FindAndReplace::UpdateWhatFilters()
 {
+
+#ifdef _FLTK_DISABLED	
 	int x = what->value();
 
 #define SHOW_WIDGET_IF(w, test)  \
@@ -491,11 +513,13 @@ void UI_FindAndReplace::UpdateWhatFilters()
 		  o_sp->hide();
 		o_coop->hide();
 	}
+#endif
 }
 
 
 void UI_FindAndReplace::rawShowFilter(int value)
 {
+#ifdef _FLTK_DISABLED	
 	if (value)
 	{
 		filter_toggle->label("^");
@@ -506,9 +530,11 @@ void UI_FindAndReplace::rawShowFilter(int value)
 		filter_toggle->label("v");
 		filter_group->hide();
 	}
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_FindAndReplace::filter_toggle_callback(Fl_Widget *w, void *data)
 {
 	UI_FindAndReplace *box = (UI_FindAndReplace *)data;
@@ -558,10 +584,11 @@ void UI_FindAndReplace::what_kind_callback(Fl_Widget *w, void *data)
 		box-> rep_desc->deactivate();
 	}
 }
-
+#endif
 
 void UI_FindAndReplace::Open()
 {
+#ifdef _FLTK_DISABLED	
 	show();
 
 	WhatFromEditMode();
@@ -572,11 +599,13 @@ void UI_FindAndReplace::Open()
 	Fl::focus(find_match);
 
 	UnselectPics();
+#endif
 }
 
 
 void UI_FindAndReplace::Clear()
 {
+#ifdef _FLTK_DISABLED	
 	cur_obj.clear();
 
 	find_match->value("");
@@ -600,11 +629,13 @@ void UI_FindAndReplace::Clear()
 	filter_toggle->do_callback();
 
 	ResetFilters();
+#endif
 }
 
 
 void UI_FindAndReplace::ResetFilters()
 {
+#ifdef _FLTK_DISABLED	
 	tag_input->value("");
 	tag_numbers->clear();
 
@@ -633,11 +664,13 @@ void UI_FindAndReplace::ResetFilters()
 
 	o_one_sided->value(1);
 	o_two_sided->value(1);
+#endif
 }
 
 
 bool UI_FindAndReplace::WhatFromEditMode()
 {
+#ifdef _FLTK_DISABLED	
 	switch (edit.mode)
 	{
 		case OBJ_THINGS:   what->value(0); return true;
@@ -646,9 +679,12 @@ bool UI_FindAndReplace::WhatFromEditMode()
 
 		default: return false;
 	}
+#else
+	return false;
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_FindAndReplace::find_but_callback(Fl_Widget *w, void *data)
 {
 	UI_FindAndReplace *box = (UI_FindAndReplace *)data;
@@ -884,12 +920,14 @@ bool UI_FindAndReplace::CheckNumberInput(Fl_Input *w, number_group_c *num_grp)
 	return false;
 }
 
+#endif
 
 //------------------------------------------------------------------------
 
 
 char UI_FindAndReplace::GetKind()
 {
+#ifdef _FLTK_DISABLED	
 	// these letters are same as the Browser uses
 
 	int v = what->value();
@@ -900,6 +938,9 @@ char UI_FindAndReplace::GetKind()
 	const char *kinds = "OTFLS";
 
 	return kinds[v];
+#else
+	return 0;
+#endif
 }
 
 
@@ -956,6 +997,7 @@ bool UI_FindAndReplace::ClipboardOp(char op)
 
 void UI_FindAndReplace::CB_Copy(bool is_replace)
 {
+#ifdef _FLTK_DISABLED	
 	const char *tex_name = is_replace ? rep_value->value() : find_match->value();
 
 	// check for a valid, single name
@@ -984,11 +1026,13 @@ void UI_FindAndReplace::CB_Copy(bool is_replace)
 		Texboard_SetTex(tex_name);
 	else
 		Texboard_SetFlat(tex_name);
+#endif
 }
 
 
 void UI_FindAndReplace::CB_Paste(bool is_replace)
 {
+#ifdef _FLTK_DISABLED	
 	Fl_Input *inp = is_replace ? rep_value : find_match;
 
 	int tex_num = (what->value() == 1) ?
@@ -997,11 +1041,13 @@ void UI_FindAndReplace::CB_Paste(bool is_replace)
 	const char *tex_name = BA_GetString(tex_num);
 
 	InsertName(inp, false /* append */, tex_name);
+#endif
 }
 
 
 void UI_FindAndReplace::CB_Delete(bool is_replace)
 {
+#ifdef _FLTK_DISABLED	
 	if (!is_replace)
 	{
 		find_match->value("");
@@ -1016,11 +1062,13 @@ void UI_FindAndReplace::CB_Delete(bool is_replace)
 
 		rep_value_callback(rep_value, this);
 	}
+#endif
 }
 
 
 void UI_FindAndReplace::BrowsedItem(char kind, int number, const char *name, int e_state)
 {
+#ifdef _FLTK_DISABLED	
 	if (kind == 'F')
 		kind = 'T';
 
@@ -1076,9 +1124,11 @@ void UI_FindAndReplace::BrowsedItem(char kind, int number, const char *name, int
 
 		InsertNumber(inp, append, number);
 	}
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_FindAndReplace::InsertName(Fl_Input *inp, char append, const char *name)
 {
 	if (append)
@@ -1146,15 +1196,17 @@ bool UI_FindAndReplace::NeedSeparator(Fl_Input *inp) const
 
 	return true;
 }
-
+#endif
 
 void UI_FindAndReplace::UnselectPics()
 {
+#ifdef _FLTK_DISABLED	
 	find_pic->Selected(false);
 	 rep_pic->Selected(false);
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_FindAndReplace::choose_callback(UI_Pic *w, void *data)
 {
 	UI_FindAndReplace *box = (UI_FindAndReplace *)data;
@@ -1190,13 +1242,14 @@ void UI_FindAndReplace::choose_callback(UI_Pic *w, void *data)
 		}
 	}
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
 
 bool UI_FindAndReplace::FindNext()
 {
+#ifdef _FLTK_DISABLED	
 	// this can happen via CTRL-G shortcut (View / Go to next)
 	if (strlen(find_match->value()) == 0)
 	{
@@ -1271,13 +1324,14 @@ bool UI_FindAndReplace::FindNext()
 		Beep("Nothing found");
 	else
 		Beep("No more found");
-
+#endif
 	return false;
 }
 
 
 void UI_FindAndReplace::DoReplace()
 {
+#ifdef _FLTK_DISABLED	
 	// sanity check  [ should never happen ]
 	if (strlen(find_match->value()) == 0 ||
 		strlen( rep_value->value()) == 0)
@@ -1304,11 +1358,13 @@ void UI_FindAndReplace::DoReplace()
 
 	// move onto next object
 	FindNext();
+#endif
 }
 
 
 bool UI_FindAndReplace::MatchesObject(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	switch (what->value())
 	{
 		case 0: // Things
@@ -1328,6 +1384,9 @@ bool UI_FindAndReplace::MatchesObject(int idx)
 
 		default: return false;
 	}
+#else
+	return false;
+#endif
 }
 
 
@@ -1335,6 +1394,7 @@ void UI_FindAndReplace::ApplyReplace(int idx, int new_tex)
 {
 	SYS_ASSERT(idx >= 0);
 
+#ifdef _FLTK_DISABLED
 	switch (what->value())
 	{
 		case 0: // Things
@@ -1359,11 +1419,13 @@ void UI_FindAndReplace::ApplyReplace(int idx, int new_tex)
 
 		default: break;
 	}
+#endif
 }
 
 
 void UI_FindAndReplace::DoAll(bool replace)
 {
+#ifdef _FLTK_DISABLED	
 	if (strlen(find_match->value()) == 0)
 	{
 		Beep("No find active!");
@@ -1444,6 +1506,7 @@ void UI_FindAndReplace::DoAll(bool replace)
 	}
 
 	RedrawMap();
+#endif
 }
 
 
@@ -1471,6 +1534,7 @@ bool UI_FindAndReplace::Match_Thing(int idx)
 
 bool UI_FindAndReplace::Match_LineDef(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	const LineDef *L = LineDefs[idx];
 
 	if (! Filter_Tag(L->tag) || ! Filter_Sides(L))
@@ -1507,13 +1571,14 @@ bool UI_FindAndReplace::Match_LineDef(int idx)
 			if (R_tex && Pattern_Match(R_tex, pattern, true /* is_rail */))
 				return true;
 	}
-
+#endif
 	return false;
 }
 
 
 bool UI_FindAndReplace::Match_Sector(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	const Sector *SEC = Sectors[idx];
 
 	if (! Filter_Tag(SEC->tag))
@@ -1531,13 +1596,14 @@ bool UI_FindAndReplace::Match_Sector(int idx)
 								|| ( is_sky(ceil_tex) && o_skies->value()) )
 		if (Pattern_Match(ceil_tex, pattern))
 			return true;
-
+#endif
 	return false;
 }
 
 
 bool UI_FindAndReplace::Match_LineType(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	const LineDef *L = LineDefs[idx];
 
 	if (! find_numbers->get(L->type))
@@ -1547,6 +1613,9 @@ bool UI_FindAndReplace::Match_LineType(int idx)
 		return false;
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -1569,6 +1638,7 @@ bool UI_FindAndReplace::Match_SectorType(int idx)
 
 bool UI_FindAndReplace::Filter_PrevSel(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	if (! filter_toggle->value())
 		return true;
 
@@ -1576,11 +1646,15 @@ bool UI_FindAndReplace::Filter_PrevSel(int idx)
 		return true;
 
 	return previous_sel->get(idx);
+#else
+	return false;
+#endif
 }
 
 
 bool UI_FindAndReplace::Filter_Tag(int tag)
 {
+#ifdef _FLTK_DISABLED	
 	if (! filter_toggle->value())
 		return true;
 
@@ -1589,11 +1663,15 @@ bool UI_FindAndReplace::Filter_Tag(int tag)
 		return true;
 
 	return tag_numbers->get(tag);
+#else
+	return false;
+#endif
 }
 
 
 bool UI_FindAndReplace::Filter_Sides(const LineDef *L)
 {
+#ifdef _FLTK_DISABLED	
 	if (filter_toggle->value())
 	{
 		if (! o_one_sided->value() && L->OneSided())
@@ -1604,11 +1682,15 @@ bool UI_FindAndReplace::Filter_Sides(const LineDef *L)
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 
 void UI_FindAndReplace::ComputeFlagMask()
 {
+#ifdef _FLTK_DISABLED	
 	options_mask  = 0;
 	options_value = 0;
 
@@ -1642,11 +1724,13 @@ void UI_FindAndReplace::ComputeFlagMask()
 	}
 
 #undef FLAG_FROM_WIDGET
+#endif
 }
 
 
 bool UI_FindAndReplace::Pattern_Match(const char *tex, const char *pattern, bool is_rail)
 {
+#ifdef _FLTK_DISABLED	
 	// allow multiple names (simple patterns) separated by commas.
 	// they can include '*' as a wildcard.
 
@@ -1686,6 +1770,9 @@ bool UI_FindAndReplace::Pattern_Match(const char *tex, const char *pattern, bool
 
 		local_pat[ofs++] = *pattern++;
 	}
+#else
+	return false;
+#endif
 }
 
 
@@ -1695,14 +1782,17 @@ bool UI_FindAndReplace::Pattern_Match(const char *tex, const char *pattern, bool
 
 void UI_FindAndReplace::Replace_Thing(int idx)
 {
+#ifdef _FLTK_DISABLED
 	int new_type = atoi(rep_value->value());
 
 	BA_ChangeTH(idx, Thing::F_TYPE, new_type);
+#endif
 }
 
 
 void UI_FindAndReplace::Replace_LineDef(int idx, int new_tex)
 {
+#ifdef _FLTK_DISABLED	
 	const LineDef *L = LineDefs[idx];
 
 	const char *pattern = find_match->value();
@@ -1741,11 +1831,13 @@ void UI_FindAndReplace::Replace_LineDef(int idx, int new_tex)
 			if (R_tex && Pattern_Match(R_tex, pattern, true /* is_rail */))
 				BA_ChangeSD(sd_num, SideDef::F_MID_TEX, new_tex);
 	}
+	#endif
 }
 
 
 void UI_FindAndReplace::Replace_Sector(int idx, int new_tex)
 {
+#ifdef _FLTK_DISABLED	
 	const Sector *SEC = Sectors[idx];
 
 	const char *pattern = find_match->value();
@@ -1760,19 +1852,23 @@ void UI_FindAndReplace::Replace_Sector(int idx, int new_tex)
 								|| ( is_sky(ceil_tex) && o_skies->value()) )
 		if (Pattern_Match(ceil_tex, pattern))
 			BA_ChangeSEC(idx, Sector::F_CEIL_TEX, new_tex);
+#endif
 }
 
 
 void UI_FindAndReplace::Replace_LineType(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	int new_type = atoi(rep_value->value());
 
 	BA_ChangeLD(idx, LineDef::F_TYPE, new_type);
+#endif
 }
 
 
 void UI_FindAndReplace::Replace_SectorType(int idx)
 {
+#ifdef _FLTK_DISABLED	
 	int mask = (Features.gen_sectors == 2) ? 255 :
 				(Features.gen_sectors) ? 31 : 65535;
 
@@ -1780,6 +1876,7 @@ void UI_FindAndReplace::Replace_SectorType(int idx)
 	int new_type = atoi(rep_value->value());
 
 	BA_ChangeSEC(idx, Sector::F_TYPE, (old_type & ~mask) | (new_type & mask));
+#endif
 }
 
 //--- editor settings ---

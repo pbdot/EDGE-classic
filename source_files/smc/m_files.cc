@@ -21,6 +21,7 @@
 #include "main.h"
 #include "m_files.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "m_game.h"
 #include "m_loadsave.h"
 #include "w_wad.h"
@@ -35,8 +36,10 @@ static std::map<std::string, std::string> known_iwads;
 
 void M_AddKnownIWAD(const char *path)
 {
-	char absolute_name[FL_PATH_MAX];
+	char absolute_name[SMC_PATH_MAX];
+#ifdef _FLTK_DISABLED	
 	fl_filename_absolute(absolute_name, path);
+#endif	
 
 	const char *game = GameNameFromIWAD(path);
 
@@ -284,6 +287,7 @@ public:
 
 	int find(const char *file, const char *map = NULL)
 	{
+#ifdef _FLTK_DISABLED		
 		// ignore the path when matching filenames
 		const char *A = fl_filename_name(file);
 
@@ -297,6 +301,7 @@ public:
 			if (! map || y_stricmp(map_names[k], map) == 0)
 				return k;
 		}
+#endif		
 
 		return -1;  // not found
 	}
@@ -371,7 +376,11 @@ public:
 	{
 		SYS_ASSERT(index < size);
 
+#ifdef _FLTK_DISABLED
 		const char *name = fl_filename_name(filenames[index]);
+#else
+		const char *name = "";
+#endif
 
 		char buffer[256];
 		snprintf(buffer, sizeof(buffer), "%s%s%d:  %-.42s", (index < 9) ? "  " : "",
@@ -396,7 +405,7 @@ static RecentFiles_c  recent_files;
 
 static void ParseMiscConfig(FILE * fp)
 {
-	static char line[FL_PATH_MAX];
+	static char line[SMC_PATH_MAX];
 	static char * map;
 
 	while (M_ReadTextLine(line, sizeof(line), fp))
@@ -457,7 +466,7 @@ static void ParseMiscConfig(FILE * fp)
 
 void M_LoadRecent()
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/misc.cfg", home_dir);
 
@@ -483,7 +492,7 @@ void M_LoadRecent()
 
 void M_SaveRecent()
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/misc.cfg", home_dir);
 
@@ -538,8 +547,10 @@ void M_OpenRecentFromMenu(void *priv_data)
 
 void M_AddRecent(const char *filename, const char *map_name)
 {
-	char absolute_name[FL_PATH_MAX];
+	char absolute_name[SMC_PATH_MAX];
+#ifdef _FLTK_DISABLED	
 	fl_filename_absolute(absolute_name, filename);
+#endif	
 
 	recent_files.insert(absolute_name, map_name);
 
@@ -628,8 +639,8 @@ static bool ExtractOnePath(const char *paths, char *dir, int index)
 	else
 		len = (int)strlen(paths);
 
-	if (len > FL_PATH_MAX - 2)
-		len = FL_PATH_MAX - 2;
+	if (len > SMC_PATH_MAX - 2)
+		len = SMC_PATH_MAX - 2;
 
 
 	if (len == 0)  // ouch
@@ -649,7 +660,7 @@ static bool ExtractOnePath(const char *paths, char *dir, int index)
 
 static const char * SearchDirForIWAD(const char *dir_name, const char *game)
 {
-	char name_buf[FL_PATH_MAX];
+	char name_buf[SMC_PATH_MAX];
 
 	snprintf(name_buf, sizeof(name_buf), "%s/%s.wad", dir_name, game);
 
@@ -675,12 +686,12 @@ static const char * SearchForIWAD(const char *game)
 {
 	DebugPrintf("Searching for '%s' IWAD\n", game);
 
-	static char dir_name[FL_PATH_MAX];
+	static char dir_name[SMC_PATH_MAX];
 
 	// 1. look in ~/.eureka/iwads first
 
-	snprintf(dir_name, FL_PATH_MAX, "%s/iwads", home_dir);
-	dir_name[FL_PATH_MAX-1] = 0;
+	snprintf(dir_name, SMC_PATH_MAX, "%s/iwads", home_dir);
+	dir_name[SMC_PATH_MAX-1] = 0;
 
 	const char * path = SearchDirForIWAD(dir_name, game);
 	if (path)
@@ -848,8 +859,13 @@ static void M_AddResource_Unique(const char * filename)
 	// check if base filename (without path) already exists
 	for (unsigned int k = 0 ; k < Resource_list.size() ; k++)
 	{
+#ifdef _FLTK_DISABLED
 		const char *A = fl_filename_name(filename);
 		const char *B = fl_filename_name(Resource_list[k]);
+#else
+		const char *A = nullptr;
+		const char *B = nullptr;
+#endif		
 
 		if (y_stricmp(A, B) == 0)
 			return;		// found it
@@ -887,7 +903,7 @@ bool M_ParseEurekaLump(Wad_file *wad, bool keep_cmd_line_args)
 	std::vector< const char * > new_resources;
 
 
-	static char line[FL_PATH_MAX];
+	static char line[SMC_PATH_MAX];
 
 	while (lump->GetLine(line, sizeof(line)))
 	{
@@ -1034,8 +1050,10 @@ void M_WriteEurekaLump(Wad_file *wad)
 
 	for (unsigned int i = 0 ; i < Resource_list.size() ; i++)
 	{
-		char absolute_name[FL_PATH_MAX];
+		char absolute_name[SMC_PATH_MAX];
+#ifdef _FLTK_DISABLED		
 		fl_filename_absolute(absolute_name, Resource_list[i]);
+#endif		
 
 		lump->Printf("resource %s\n", absolute_name);
 	}
@@ -1086,7 +1104,7 @@ static void backup_scan_file(const char *name, int flags, void *priv_dat)
 
 static const char *Backup_Name(const char *dir_name, int slot)
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/%d.wad", dir_name, slot);
 
@@ -1122,9 +1140,11 @@ void M_BackupWad(Wad_file *wad)
 
 	// convert wad filename to a directory name in $cache_dir/backups
 
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
+#ifdef _FLTK_DISABLED
 	snprintf(filename, sizeof(filename), "%s/backups/%s", cache_dir, fl_filename_name(wad->PathName()));
+#endif	
 
 	char * dir_name = ReplaceExtension(filename, NULL);
 

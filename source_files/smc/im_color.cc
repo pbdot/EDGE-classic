@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2019 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ byte rgb555_medium[32];
 
 byte bright_map[256];
 
-
+#ifdef _FLTK_DISABLED
 void W_UpdateGamma()
 {
 	for (int c = 0 ; c < 256 ; c++)
@@ -81,6 +81,7 @@ void W_UpdateGamma()
 		rgb555_medium[d] = gammatable[panel_gamma][i];
 	}
 }
+#endif
 
 
 void W_LoadPalette()
@@ -150,7 +151,7 @@ void W_LoadColormap()
 	}
 }
 
-
+#ifdef _FLTK_DISABLED
 rgb_color_t DarkerColor(rgb_color_t col)
 {
 	int r = RGB_RED(col);
@@ -173,6 +174,7 @@ rgb_color_t LighterColor(rgb_color_t col)
 
 	return fl_rgb_color(r, g, b);
 }
+#endif
 
 
 byte W_FindPaletteColor(int r, int g, int b)
@@ -209,12 +211,13 @@ void W_CreateBrightMap()
 		byte r = raw_palette[c][0];
 		byte g = raw_palette[c][1];
 		byte b = raw_palette[c][2];
-
+#ifdef _FLTK_DISABLED
 		rgb_color_t col = LighterColor(fl_rgb_color(r, g, b));
 
 		r = RGB_RED(col);
 		g = RGB_GREEN(col);
 		b = RGB_BLUE(col);
+#endif		
 
 		bright_map[c] = W_FindPaletteColor(r, g, b);
 	}
@@ -233,8 +236,11 @@ rgb_color_t ParseColor(const char *str)
 		int r = (number & 0xFF0000) >> 16;
 		int g = (number & 0x00FF00) >> 8;
 		int b = (number & 0x0000FF);
-
+#ifdef _FLTK_DISABLED
 		return fl_rgb_color(r, g, b);
+#else
+		return 0;
+#endif
 	}
 	else  // short form: #rgb
 	{
@@ -243,8 +249,11 @@ rgb_color_t ParseColor(const char *str)
 		int r = (number & 0xF00) >> 8;
 		int g = (number & 0x0F0) >> 4;
 		int b = (number & 0x00F);
-
+#ifdef _FLTK_DISABLED
 		return fl_rgb_color(r*17, g*17, b*17);
+#else
+		return 0;
+#endif
 	}
 }
 

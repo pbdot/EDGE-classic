@@ -26,6 +26,7 @@
 //
 // UI_Tile Constructor
 //
+#ifdef _FLTK_DISABLED
 UI_Tile::UI_Tile(int X, int Y, int W, int H, const char *what,
                  Fl_Widget * _left, Fl_Widget * _right) :
 		Fl_Tile(X, Y, W, H, what),
@@ -46,7 +47,7 @@ UI_Tile::UI_Tile(int X, int Y, int W, int H, const char *what,
 
 	resizable(limiter);
 }
-
+#endif
 
 //
 // UI_Tile Destructor
@@ -58,6 +59,7 @@ UI_Tile::~UI_Tile()
 
 void UI_Tile::resize(int X, int Y, int W, int H)
 {
+#ifdef _FLTK_DISABLED	
 	// resize ourself (skip the Fl_Group resize)
 	Fl_Widget::resize(X, Y, W, H);
 
@@ -81,11 +83,13 @@ void UI_Tile::resize(int X, int Y, int W, int H)
 
 	 left->resize(X, Y, W - right_W, H);
 	right->resize(X + W - right_W, Y, right_W, H);
+#endif
 }
 
 
 void UI_Tile::ResizeBoth()
 {
+#ifdef _FLTK_DISABLED	
 	right->resize(x() + w() - right_W, y(), right_W, h());
 	right->show();
 	right->redraw();
@@ -94,11 +98,13 @@ void UI_Tile::ResizeBoth()
 	left->redraw();
 
 	init_sizes();
+#endif
 }
 
 
 void UI_Tile::ShowRight()
 {
+#ifdef _FLTK_DISABLED	
 	if (find(right) < children())
 		return;
 
@@ -108,11 +114,13 @@ void UI_Tile::ShowRight()
 	add(right);
 
 	ResizeBoth();
+#endif
 }
 
 
 void UI_Tile::HideRight()
 {
+#ifdef _FLTK_DISABLED	
 	if (find(right) >= children())
 		return;
 
@@ -128,33 +136,39 @@ void UI_Tile::HideRight()
 
 	// widgets in our group (the window) got rearranged, tell FLTK
 	init_sizes();
+#endif
 }
 
 
 void UI_Tile::MinimiseRight()
 {
+#ifdef _FLTK_DISABLED	
 	if (find(right) >= children())
 		return;
 
 	right_W = MIN_BROWSER_W;
 
 	ResizeBoth();
+#endif
 }
 
 
 void UI_Tile::MaximiseRight()
 {
+#ifdef _FLTK_DISABLED	
 	if (find(right) >= children())
 		return;
 
 	right_W = w() - 32;
 
 	ResizeBoth();
+#endif
 }
 
 
 bool UI_Tile::ParseUser(const char ** tokens, int num_tok)
 {
+#ifdef _FLTK_DISABLED	
 	if (strcmp(tokens[0], "br_width") == 0 && num_tok >= 2)
 	{
 		bool was_visible = right->visible();
@@ -169,14 +183,16 @@ bool UI_Tile::ParseUser(const char ** tokens, int num_tok)
 
 		return true;
 	}
-
+#endif
 	return false;
 }
 
 
 void UI_Tile::WriteUser(FILE *fp)
 {
+#ifdef _FLTK_DISABLED	
 	fprintf(fp, "br_width %d\n", right->visible() ? right->w() : right_W);
+#endif
 }
 
 

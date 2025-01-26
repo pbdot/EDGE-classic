@@ -57,6 +57,7 @@ UI_ChooseMap::UI_ChooseMap(const char *initial_name,
 	rename_wad(_rename_wad),
 	action(ACT_none)
 {
+#ifdef _FLTK_DISABLED	
 	resizable(NULL);
 
 	callback(close_callback, this);
@@ -95,6 +96,7 @@ UI_ChooseMap::UI_ChooseMap(const char *initial_name,
 	end();
 
 	CheckMapName();
+#endif	
 }
 
 
@@ -110,8 +112,13 @@ void UI_ChooseMap::PopulateButtons(char format, Wad_file *test_wad)
 	for (int col = 0 ; col < 5 ; col++)
 	for (int row = 0 ; row < 8 ; row++)
 	{
+#ifdef _FLTK_DISABLED
 		int cx = x() + 30 + col * (but_W + but_W / 5);
 		int cy = y() + 80 + row * 24 + (row / 2) * 10;
+#else
+		int cx = 0;
+		int cy = 0;
+#endif
 
 		char name_buf[20];
 
@@ -141,6 +148,7 @@ void UI_ChooseMap::PopulateButtons(char format, Wad_file *test_wad)
 			snprintf(name_buf, sizeof(name_buf), "MAP%02d", map);
 		}
 
+#ifdef _FLTK_DISABLED
 		Fl_Button * but = new Fl_Button(cx, cy, 60, 20);
 		but->copy_label(name_buf);
 		but->callback(button_callback, this);
@@ -156,12 +164,14 @@ void UI_ChooseMap::PopulateButtons(char format, Wad_file *test_wad)
 			but->color(FREE_COL);
 
 		map_buttons->add(but);
+#endif
 	}
 }
 
 
 const char * UI_ChooseMap::Run()
 {
+#ifdef _FLTK_DISABLED	
 	set_modal();
 
 	show();
@@ -175,9 +185,12 @@ const char * UI_ChooseMap::Run()
 		return NULL;
 
 	return StringUpper(map_name->value());
+#else
+	return "";
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_ChooseMap::close_callback(Fl_Widget *w, void *data)
 {
 	UI_ChooseMap * that = (UI_ChooseMap *)data;
@@ -213,10 +226,11 @@ void UI_ChooseMap::input_callback(Fl_Widget *w, void *data)
 
 	that->CheckMapName();
 }
-
+#endif
 
 void UI_ChooseMap::CheckMapName()
 {
+#ifdef _FLTK_DISABLED	
 	bool was_valid = ok_but->active();
 	bool  is_valid = ValidateMapName(map_name->value());
 
@@ -241,6 +255,7 @@ void UI_ChooseMap::CheckMapName()
 	}
 
 	map_name->redraw();
+#endif
 }
 
 
@@ -253,6 +268,7 @@ UI_OpenMap::UI_OpenMap() :
 	loaded_wad(NULL),
 	 using_wad(NULL)
 {
+#ifdef _FLTK_DISABLED	
 	resizable(NULL);
 
 	callback(close_callback, this);
@@ -320,6 +336,7 @@ UI_OpenMap::UI_OpenMap() :
 	end();
 
 	CheckMapName();
+#endif
 }
 
 
@@ -337,12 +354,16 @@ Wad_file * UI_OpenMap::Run(const char ** map_v, bool * did_load)
 
 	Populate();
 
+#ifdef _FLTK_DISABLED
 	set_modal();
 	show();
+#endif
 
 	while (action == ACT_none)
 	{
+#ifdef _FLTK_DISABLED		
 		Fl::wait(0.2);
+#endif
 	}
 
 	if (action != ACT_ACCEPT)
@@ -350,6 +371,7 @@ Wad_file * UI_OpenMap::Run(const char ** map_v, bool * did_load)
 
 	if (using_wad)
 	{
+#ifdef _FLTK_DISABLED		
 		*map_v = StringUpper(map_name->value());
 
 		if (using_wad == loaded_wad)
@@ -357,6 +379,7 @@ Wad_file * UI_OpenMap::Run(const char ** map_v, bool * did_load)
 			*did_load  = true;
 			loaded_wad = NULL;
 		}
+#endif
 	}
 
 	// if we are not returning a pwad which got loaded, e.g. because
@@ -370,6 +393,7 @@ Wad_file * UI_OpenMap::Run(const char ** map_v, bool * did_load)
 
 void UI_OpenMap::CheckMapName()
 {
+#ifdef _FLTK_DISABLED	
 	bool was_valid = ok_but->active();
 
 	bool  is_valid = (using_wad != NULL) &&
@@ -391,16 +415,20 @@ void UI_OpenMap::CheckMapName()
 	}
 
 	map_name->redraw();
+#endif
 }
 
 
 void UI_OpenMap::Populate()
 {
+#ifdef _FLTK_DISABLED	
 	button_grp->label("\n\n\n\n\nNO   MAPS   FOUND");
+#endif	
 	button_grp->Remove_all();
 
 	using_wad = NULL;
 
+#ifdef _FLTK_DISABLED
 	if (look_where->value() == LOOK_IWad)
 	{
 		using_wad = game_wad;
@@ -441,6 +469,7 @@ void UI_OpenMap::Populate()
 
 	button_grp->Init_sizes();
 	button_grp->redraw();
+#endif
 }
 
 
@@ -473,7 +502,9 @@ void UI_OpenMap::PopulateButtons()
 	if (num_levels == 0)
 		return;
 
+#ifdef _FLTK_DISABLED
 	button_grp->label("");
+#endif
 
 	std::map<std::string, int> level_names;
 	std::map<std::string, int>::iterator IT;
@@ -485,8 +516,13 @@ void UI_OpenMap::PopulateButtons()
 		level_names[std::string(lump->Name())] = 1;
 	}
 
+#ifdef _FLTK_DISABLED
 	int cx_base = button_grp->x() + 25;
 	int cy_base = button_grp->y() + 5;
+#else
+	int cx_base = 0;
+	int cy_base = 0;
+#endif
 	int but_W   = 60;
 
 	// create them buttons!!
@@ -507,14 +543,16 @@ void UI_OpenMap::PopulateButtons()
 		}
 
 		int cx = cx_base + col * (but_W + but_W / 5);
-		int cy = cy_base + row * 24 + (row / 2) * 8;
 
+		int cy = cy_base + row * 24 + (row / 2) * 8;
+#ifdef _FLTK_DISABLED
 		Fl_Button * but = new Fl_Button(cx, cy, but_W, 20);
 		but->copy_label(name);
 		but->color(FREE_COL);
 		but->callback(button_callback, this);
 
 		button_grp->Add(but);
+#endif		
 
 		col++;
 		if (col >= 5)
@@ -526,16 +564,20 @@ void UI_OpenMap::PopulateButtons()
 		last_name = name;
 	}
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 
 void UI_OpenMap::SetPWAD(const char *name)
 {
+#ifdef _FLTK_DISABLED	
 	pwad_name->value(fl_filename_name(name));
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_OpenMap::close_callback(Fl_Widget *w, void *data)
 {
 	UI_OpenMap * that = (UI_OpenMap *)data;
@@ -593,10 +635,11 @@ void UI_OpenMap::load_callback(Fl_Widget *w, void *data)
 	that->LoadFile();
 	that->CheckMapName();
 }
-
+#endif
 
 void UI_OpenMap::LoadFile()
 {
+#ifdef _FLTK_DISABLED	
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick file to open");
@@ -659,6 +702,7 @@ void UI_OpenMap::LoadFile()
 	look_where->value(LOOK_PWad);
 
 	Populate();
+#endif
 }
 
 
@@ -677,6 +721,7 @@ UI_ProjectSetup::UI_ProjectSetup(bool new_project, bool is_startup) :
 	game(NULL), port(NULL),
 	map_format(MAPF_INVALID), name_space()
 {
+#ifdef _FLTK_DISABLED	
 	callback(close_callback, this);
 
 	resizable(NULL);
@@ -793,6 +838,7 @@ UI_ProjectSetup::UI_ProjectSetup(bool new_project, bool is_startup) :
 	}
 
 	end();
+#endif
 }
 
 
@@ -809,6 +855,7 @@ bool UI_ProjectSetup::Run()
 	PopulateMapFormat();
 	PopulateResources();
 
+#ifdef _FLTK_DISABLED
 	set_modal();
 
 	show();
@@ -817,6 +864,7 @@ bool UI_ProjectSetup::Run()
 	{
 		Fl::wait(0.2);
 	}
+#endif
 
 	return (action == ACT_ACCEPT);
 }
@@ -836,7 +884,9 @@ void UI_ProjectSetup::PopulateIWADs()
 
 	game = NULL;
 
+#ifdef _FLTK_DISABLED
 	game_choice->clear();
+#endif
 
 
 	const char *menu_string;
@@ -846,16 +896,20 @@ void UI_ProjectSetup::PopulateIWADs()
 
 	if (menu_string[0])
 	{
+#ifdef _FLTK_DISABLED		
 		game_choice->add(menu_string);
 		game_choice->value(menu_value);
 
 		game = StringDup(game_choice->mvalue()->text);
+#endif
 	}
 
+#ifdef _FLTK_DISABLED
 	if (game)
 		ok_but->activate();
 	else
 		ok_but->deactivate();
+#endif
 }
 
 
@@ -863,8 +917,10 @@ void UI_ProjectSetup::PopulatePort()
 {
 	const char *prev_port = NULL;
 
+#ifdef _FLTK_DISABLED
 	if (port_choice->mvalue())
 		prev_port = StringDup(port_choice->mvalue()->text);
+#endif
 
 	if (! prev_port) prev_port = Port_name;
 	if (! prev_port) prev_port = "vanilla";
@@ -872,7 +928,9 @@ void UI_ProjectSetup::PopulatePort()
 
 	port = "vanilla";
 
+#ifdef _FLTK_DISABLED
 	port_choice->clear();
+#endif
 
 	// if no game, port doesn't matter
 	if (! game)
@@ -881,10 +939,12 @@ void UI_ProjectSetup::PopulatePort()
 
 	const char *base_game = NULL;
 
+#ifdef _FLTK_DISABLED
 	if (game_choice->mvalue())
 		base_game = M_GetBaseGame(game_choice->mvalue()->text);
 	else if (Game_name)
 		base_game = M_GetBaseGame(Game_name);
+#endif
 
 	if (! base_game)
 		base_game = "doom2";
@@ -895,6 +955,7 @@ void UI_ProjectSetup::PopulatePort()
 
 	menu_string = M_CollectPortsForMenu(base_game, &menu_value, prev_port);
 
+#ifdef _FLTK_DISABLED
 	if (menu_string[0])
 	{
 		port_choice->add  (menu_string);
@@ -902,6 +963,7 @@ void UI_ProjectSetup::PopulatePort()
 
 		port = StringDup(port_choice->mvalue()->text);
 	}
+#endif
 }
 
 
@@ -912,8 +974,9 @@ void UI_ProjectSetup::PopulateMapFormat()
 	if (prev_fmt == MAPF_INVALID)
 		prev_fmt = Level_format;
 
-
+#ifdef _FLTK_DISABLED
 	format_choice->clear();
+#endif
 
 	// if no game, format doesn't matter
 	if (! game)
@@ -928,11 +991,13 @@ void UI_ProjectSetup::PopulateMapFormat()
 	const char *c_game = "doom2";
 	const char *c_port = "vanilla";
 
+#ifdef _FLTK_DISABLED
 	if (game_choice->mvalue())
 		c_game = game_choice->mvalue()->text;
 
 	if (port_choice->mvalue())
 		c_port = port_choice->mvalue()->text;
+#endif		
 
 	usable_formats = M_DetermineMapFormats(c_game, c_port);
 
@@ -945,7 +1010,9 @@ void UI_ProjectSetup::PopulateMapFormat()
 
 	if (usable_formats & (1 << MAPF_Doom))
 	{
+#ifdef _FLTK_DISABLED		
 		format_choice->add("Doom Format");
+#endif
 		entry_id++;
 	}
 
@@ -954,7 +1021,9 @@ void UI_ProjectSetup::PopulateMapFormat()
 		if (prev_fmt == MAPF_Hexen)
 			menu_value = entry_id;
 
+#ifdef _FLTK_DISABLED
 		format_choice->add("Hexen Format");
+#endif
 		entry_id++;
 	}
 
@@ -963,19 +1032,24 @@ void UI_ProjectSetup::PopulateMapFormat()
 		if (prev_fmt == MAPF_UDMF)
 			menu_value = entry_id;
 
+#ifdef _FLTK_DISABLED
 		format_choice->add("UDMF");
+#endif
 		entry_id++;
 	}
 
+#ifdef _FLTK_DISABLED
 	format_choice->value(menu_value);
 
 	// set map_format field based on current menu entry.
 	format_callback(format_choice, (void *)this);
+#endif
 
 
 	// determine the UDMF namespace
 	name_space = "";
 
+#ifdef _FLTK_DISABLED
 	PortInfo_c *pinfo = M_LoadPortInfo(port_choice->mvalue()->text);
 	if (pinfo)
 		name_space = pinfo->udmf_namespace;
@@ -984,6 +1058,7 @@ void UI_ProjectSetup::PopulateMapFormat()
 	// [ this is to handle broken config files somewhat sanely ]
 	if (name_space.empty() && map_format == MAPF_UDMF)
 		name_space = "Hexen";
+#endif
 }
 
 
@@ -1043,6 +1118,7 @@ void UI_ProjectSetup::PopulateResources()
 
 	for (int r = 0 ; r < RES_NUM ; r++)
 	{
+#ifdef _FLTK_DISABLED		
 		// the resource widgets are not created for the missing-iwad dialog
 		if (! res_name[r])
 			continue;
@@ -1053,10 +1129,11 @@ void UI_ProjectSetup::PopulateResources()
 
 			res_name[r]->value(fl_filename_name(res[r]));
 		}
+#endif
 	}
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_ProjectSetup::close_callback(Fl_Widget *w, void *data)
 {
 	UI_ProjectSetup * that = (UI_ProjectSetup *)data;
@@ -1177,12 +1254,12 @@ void UI_ProjectSetup::find_callback(Fl_Button *w, void *data)
 	that->PopulatePort();
 	that->PopulateMapFormat();
 }
-
+#endif
 
 // m_testmap.cc
 extern bool M_PortSetupDialog(const char *port, const char *game);
 
-
+#ifdef _FLTK_DISABLED
 void UI_ProjectSetup::setup_callback(Fl_Button *w, void *data)
 {
 	UI_ProjectSetup * that = (UI_ProjectSetup *)data;
@@ -1251,6 +1328,7 @@ void UI_ProjectSetup::kill_callback(Fl_Button *w, void *data)
 		that->res_name[r]->value("");
 	}
 }
+#endif
 
 
 //--- editor settings ---

@@ -30,6 +30,7 @@ UI_MoveDialog::UI_MoveDialog(bool want_dz) :
 	UI_Escapable_Window(360, 205, "Move Objects"),
 	want_close(false)
 {
+#ifdef _FLTK_DISABLED	
     Fl_Box *title = new Fl_Box(10, 11, w() - 20, 32, "Enter the offset to move objects:");
 	title->labelsize(16);
 	title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -64,6 +65,7 @@ UI_MoveDialog::UI_MoveDialog(bool want_dz) :
 	resizable(NULL);
 
 	callback(close_callback, this);
+#endif
 }
 
 
@@ -73,6 +75,7 @@ UI_MoveDialog::~UI_MoveDialog()
 
 void UI_MoveDialog::Run()
 {
+#ifdef _FLTK_DISABLED
 	set_modal();
 
 	show();
@@ -81,9 +84,11 @@ void UI_MoveDialog::Run()
 	{
 		Fl::wait(0.2);
 	}
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_MoveDialog::close_callback(Fl_Widget *w, void *data)
 {
 	UI_MoveDialog * that = (UI_MoveDialog *)data;
@@ -104,7 +109,7 @@ void UI_MoveDialog::ok_callback(Fl_Widget *w, void *data)
 
 	that->want_close = true;
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
@@ -113,6 +118,7 @@ UI_ScaleDialog::UI_ScaleDialog() :
 	UI_Escapable_Window(360, 270, "Scale Objects"),
 	want_close(false)
 {
+#ifdef _FLTK_DISABLED	
     Fl_Box *title = new Fl_Box(10, 11, w() - 20, 32, "Enter the scale amount:");
 	title->labelsize(16);
 	title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -164,6 +170,7 @@ UI_ScaleDialog::UI_ScaleDialog() :
 	resizable(NULL);
 
 	callback(close_callback, this);
+#endif
 }
 
 
@@ -174,6 +181,7 @@ UI_ScaleDialog::~UI_ScaleDialog()
 
 void UI_ScaleDialog::Run()
 {
+#ifdef _FLTK_DISABLED	
 	if (edit.mode != OBJ_SECTORS)
 	{
 		 scale_z->hide();
@@ -188,6 +196,7 @@ void UI_ScaleDialog::Run()
 	{
 		Fl::wait(0.2);
 	}
+#endif
 }
 
 
@@ -222,6 +231,7 @@ static double ParseScaleStr(const char * s)
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_ScaleDialog::close_callback(Fl_Widget *w, void *data)
 {
 	UI_ScaleDialog * that = (UI_ScaleDialog *)data;
@@ -257,6 +267,7 @@ void UI_ScaleDialog::ok_callback(Fl_Widget *w, void *data)
 
 	that->want_close = true;
 }
+#endif
 
 
 //------------------------------------------------------------------------
@@ -266,6 +277,7 @@ UI_RotateDialog::UI_RotateDialog() :
 	UI_Escapable_Window(360, 200, "Rotate Objects"),
 	want_close(false)
 {
+#ifdef _FLTK_DISABLED	
     Fl_Box *title = new Fl_Box(10, 11, w() - 20, 32, "Enter # of degrees to rotate objects:");
 	title->labelsize(16);
 	title->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -302,6 +314,7 @@ UI_RotateDialog::UI_RotateDialog() :
 	resizable(NULL);
 
 	callback(close_callback, this);
+#endif
 }
 
 
@@ -312,6 +325,7 @@ UI_RotateDialog::~UI_RotateDialog()
 
 void UI_RotateDialog::Run()
 {
+#ifdef _FLTK_DISABLED	
 	set_modal();
 
 	show();
@@ -320,9 +334,11 @@ void UI_RotateDialog::Run()
 	{
 		Fl::wait(0.2);
 	}
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_RotateDialog::close_callback(Fl_Widget *w, void *data)
 {
 	UI_RotateDialog * that = (UI_RotateDialog *)data;
@@ -347,6 +363,7 @@ void UI_RotateDialog::ok_callback(Fl_Widget *w, void *data)
 
 	that->want_close = true;
 }
+#endif
 
 
 //------------------------------------------------------------------------
@@ -358,6 +375,7 @@ UI_JumpToDialog::UI_JumpToDialog(const char *_objname, int _limit) :
 	limit(_limit),
 	result(-1)
 {
+#ifdef _FLTK_DISABLED	
 	SYS_ASSERT(limit >= 0);
 
 	char descript[300];
@@ -392,6 +410,7 @@ UI_JumpToDialog::UI_JumpToDialog(const char *_objname, int _limit) :
 	resizable(NULL);
 
 	callback(close_callback, this);
+#endif
 }
 
 
@@ -401,6 +420,7 @@ UI_JumpToDialog::~UI_JumpToDialog()
 
 int UI_JumpToDialog::Run()
 {
+#ifdef _FLTK_DISABLED	
 	set_modal();
 	show();
 
@@ -410,9 +430,13 @@ int UI_JumpToDialog::Run()
 		Fl::wait(0.2);
 
 	return result;
+#else
+	return 0;
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_JumpToDialog::close_callback(Fl_Widget *w, void *data)
 {
 	UI_JumpToDialog * that = (UI_JumpToDialog *)data;
@@ -455,6 +479,7 @@ void UI_JumpToDialog::input_callback(Fl_Widget *w, void *data)
 	if (was_enter)
 		that->ok_callback(w, data);
 }
+#endif
 
 
 //--- editor settings ---

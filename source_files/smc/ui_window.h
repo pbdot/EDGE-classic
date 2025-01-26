@@ -49,13 +49,18 @@
 
 class Wad_file;
 
-
+#ifdef _FLTK_DISABLED
 class UI_MainWindow : public Fl_Double_Window
+#else
+class UI_MainWindow
+#endif
 {
 public:
 	// main child widgets
 
+#ifdef _FLTK_DISABLED
 	Fl_Sys_Menu_Bar *menu_bar;
+#endif
 
 	int panel_W;
 
@@ -78,8 +83,10 @@ public:
 	UI_FindAndReplace *find_box;
 
 private:
+#ifdef _FLTK_DISABLED
 	// active cursor
 	Fl_Cursor cursor_shape;
+#endif
 
 	// remember window size/position after going fullscreen.
 	// the 'last_w' and 'last_h' fields are zero when not fullscreen
@@ -106,7 +113,9 @@ public:
 	// this is a wrapper around the FLTK cursor() method which
 	// prevents the possibly expensive call when the shape hasn't
 	// changed.
+#ifdef _FLTK_DISABLED	
 	void SetCursor(Fl_Cursor shape);
+#endif
 
 	// show or hide the Browser panel.
 	// kind is NUL or '-' to hide, '/' to toggle, 'T' for textures, 'F' flats,
@@ -129,7 +138,11 @@ public:
 
 	bool isSpecialPanelShown()
 	{
+#ifdef _FLTK_DISABLED		
 		return props_box->visible() || find_box->visible();
+#else
+		return false;
+#endif
 	}
 
 	void Delay(int steps);  // each step is 1/10th second
@@ -148,7 +161,9 @@ public:
 	void UpdateGameInfo();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void quit_callback(Fl_Widget *w, void *data);
+#endif
 };
 
 
@@ -157,7 +172,11 @@ extern UI_MainWindow * main_win;
 
 //------------------------------------------------------------------------
 
+#ifdef _FLTK_DISABLED
 class UI_Escapable_Window : public Fl_Double_Window
+#else
+class UI_Escapable_Window
+#endif
 {
 public:
 	UI_Escapable_Window(int W, int H, const char *L = NULL);
@@ -174,9 +193,11 @@ public:
 class UI_LogViewer : public UI_Escapable_Window
 {
 private:
-	Fl_Multi_Browser * browser;
 
+#ifdef _FLTK_DISABLED
+	Fl_Multi_Browser * browser;
 	Fl_Button * copy_but;
+#endif
 
 public:
 	UI_LogViewer();
@@ -194,11 +215,13 @@ private:
 
 	char * GetSelectedText() const;
 
+#ifdef _FLTK_DISABLED
 	static void     ok_callback(Fl_Widget *, void *);
 	static void  clear_callback(Fl_Widget *, void *);
 	static void   save_callback(Fl_Widget *, void *);
 	static void select_callback(Fl_Widget *, void *);
 	static void   copy_callback(Fl_Widget *, void *);
+#endif
 };
 
 

@@ -53,9 +53,12 @@ int headroom_presets[UI_SectorBox::HEADROOM_BUTTONS] =
 // UI_SectorBox Constructor
 //
 UI_SectorBox::UI_SectorBox(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, label),
+#endif
     obj(-1), count(0)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX); // (FL_THIN_UP_BOX);
 
 
@@ -231,6 +234,7 @@ UI_SectorBox::UI_SectorBox(int X, int Y, int W, int H, const char *label) :
 	end();
 
 	resizable(NULL);
+#endif
 }
 
 
@@ -244,6 +248,7 @@ UI_SectorBox::~UI_SectorBox()
 
 //------------------------------------------------------------------------
 
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::height_callback(Fl_Widget *w, void *data)
 {
 	UI_SectorBox *box = (UI_SectorBox *)data;
@@ -357,6 +362,7 @@ void UI_SectorBox::tex_callback(Fl_Widget *w, void *data)
 
 	box->InstallFlat(new_flat, is_floor ? PART_FLOOR : PART_CEIL);
 }
+#endif
 
 
 void UI_SectorBox::InstallFlat(const char *name, int filter_parts)
@@ -387,7 +393,7 @@ void UI_SectorBox::InstallFlat(const char *name, int filter_parts)
 	UpdateField();
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::dyntex_callback(Fl_Widget *w, void *data)
 {
 	// change picture to match the input, BUT does not change the map
@@ -406,10 +412,11 @@ void UI_SectorBox::dyntex_callback(Fl_Widget *w, void *data)
 		box->c_pic->GetFlat(box->c_tex->value());
 	}
 }
-
+#endif
 
 void UI_SectorBox::SetFlat(const char *name, int parts)
 {
+#ifdef _FLTK_DISABLED	
 	if (parts & PART_FLOOR)
 		f_tex->value(name);
 
@@ -417,9 +424,11 @@ void UI_SectorBox::SetFlat(const char *name, int parts)
 		c_tex->value(name);
 
 	InstallFlat(name, parts);
+#endif	
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::type_callback(Fl_Widget *w, void *data)
 {
 	UI_SectorBox *box = (UI_SectorBox *)data;
@@ -480,7 +489,7 @@ void UI_SectorBox::type_callback(Fl_Widget *w, void *data)
 
 	box->InstallSectorType(mask, value);
 }
-
+#endif
 
 void UI_SectorBox::InstallSectorType(int mask, int value)
 {
@@ -505,7 +514,7 @@ void UI_SectorBox::InstallSectorType(int mask, int value)
 	UpdateField(Sector::F_TYPE);
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::dyntype_callback(Fl_Widget *w, void *data)
 {
 	UI_SectorBox *box = (UI_SectorBox *)data;
@@ -529,10 +538,11 @@ void UI_SectorBox::dyntype_callback(Fl_Widget *w, void *data)
 
 	box->desc->value(info->desc);
 }
-
+#endif
 
 void UI_SectorBox::SetSectorType(int new_type)
 {
+#ifdef _FLTK_DISABLED	
 	if (obj < 0)
 		return;
 
@@ -545,9 +555,10 @@ void UI_SectorBox::SetSectorType(int new_type)
 			   (Features.gen_sectors == 1) ? 31  : 65535;
 
 	InstallSectorType(mask, new_type);
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::light_callback(Fl_Widget *w, void *data)
 {
 	UI_SectorBox *box = (UI_SectorBox *)data;
@@ -587,7 +598,7 @@ void UI_SectorBox::tag_callback(Fl_Widget *w, void *data)
 	if (! edit.Selected->empty())
 		Tags_ApplyNewValue(new_tag);
 }
-
+#endif
 
 void UI_SectorBox::FreshTag()
 {
@@ -610,7 +621,7 @@ void UI_SectorBox::FreshTag()
 		Tags_ApplyNewValue(new_tag);
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_SectorBox::button_callback(Fl_Widget *w, void *data)
 {
 	UI_SectorBox *box = (UI_SectorBox *)data;
@@ -676,7 +687,7 @@ void UI_SectorBox::button_callback(Fl_Widget *w, void *data)
 		return;
 	}
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
@@ -696,11 +707,14 @@ void UI_SectorBox::SetObj(int _index, int _count)
 	if (obj < 0)
 		UnselectPics();
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 void UI_SectorBox::UpdateField(int field)
 {
+#ifdef _FLTK_DISABLED	
 	if (field < 0 || field == Sector::F_FLOORH || field == Sector::F_CEILH)
 	{
 		if (is_sector(obj))
@@ -793,6 +807,7 @@ void UI_SectorBox::UpdateField(int field)
 			tag->value("");
 		}
 	}
+#endif
 }
 
 
@@ -811,6 +826,7 @@ int UI_SectorBox::GetHighlightedPics() const
 
 void UI_SectorBox::CB_Copy(int parts)
 {
+#ifdef _FLTK_DISABLED	
 	if (parts == (PART_FLOOR | PART_CEIL))
 	{
 		Beep("multiple textures");
@@ -827,6 +843,7 @@ void UI_SectorBox::CB_Copy(int parts)
 	Texboard_SetFlat(name);
 
 	Status_Set("copied %s", name);
+#endif
 }
 
 
@@ -912,6 +929,7 @@ bool UI_SectorBox::ClipboardOp(char op)
 
 void UI_SectorBox::BrowsedItem(char kind, int number, const char *name, int e_state)
 {
+#ifdef _FLTK_DISABLED	
 	if (obj < 0)
 		return;
 
@@ -937,6 +955,7 @@ void UI_SectorBox::BrowsedItem(char kind, int number, const char *name, int e_st
 	{
 		SetSectorType(number);
 	}
+#endif
 }
 
 
@@ -959,6 +978,7 @@ void UI_SectorBox::UpdateTotal()
 
 void UI_SectorBox::UpdateGameInfo()
 {
+#ifdef _FLTK_DISABLED	
 	if (Features.gen_sectors)
 	{
 		if (Features.gen_sectors == 2)
@@ -986,6 +1006,7 @@ void UI_SectorBox::UpdateGameInfo()
 	UpdateField();
 
 	redraw();
+#endif
 }
 
 //--- editor settings ---

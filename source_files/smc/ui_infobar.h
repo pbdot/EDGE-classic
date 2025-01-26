@@ -22,13 +22,15 @@
 #define __EUREKA_UI_INFOBAR_H__
 
 
-class UI_InfoBar : public Fl_Group
+// _FLTK_DISABLED
+class UI_InfoBar /*: public Fl_Group */
 {
 public:
 	UI_InfoBar(int X, int Y, int W, int H, const char *label = NULL);
 	virtual ~UI_InfoBar();
 
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Menu_Button *mode;
 	Fl_Menu_Button *scale;
 	Fl_Menu_Button *grid_size;
@@ -36,6 +38,7 @@ private:
 	Fl_Menu_Button *ratio_lock;
 
 	Fl_Toggle_Button *grid_snap;
+#endif
 
 public:
 	// FLTK virtual method for handling input events.
@@ -63,6 +66,7 @@ private:
 	void UpdateModeColor();
 	void UpdateSnapText();
 
+#ifdef _FLTK_DISABLED
 	static void mode_callback(Fl_Widget *, void *);
 	static void rend_callback(Fl_Widget *, void *);
 	static void scale_callback(Fl_Widget *, void *);
@@ -71,12 +75,14 @@ private:
 	static void grid_callback(Fl_Widget *, void *);
 	static void snap_callback(Fl_Widget *, void *);
 	static void ratio_callback(Fl_Widget *, void *);
+#endif
 };
 
 
 //------------------------------------------------------------------------
 
-class UI_StatusBar : public Fl_Widget
+// _FLTK_DISABLED
+class UI_StatusBar /*: public Fl_Widget */
 {
 private:
 	std::string status;

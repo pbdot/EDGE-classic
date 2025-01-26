@@ -33,9 +33,12 @@
 #define HIDE_BG  (gui_scheme == 2 ? FL_DARK3 : FL_DARK1)
 
 
-UI_DefaultProps::UI_DefaultProps(int X, int Y, int W, int H) :
-	Fl_Group(X, Y, W, H, NULL)
+UI_DefaultProps::UI_DefaultProps(int X, int Y, int W, int H)
+#ifdef _FLTK_DISABLED
+	: Fl_Group(X, Y, W, H, NULL)
+#endif
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 
@@ -168,13 +171,14 @@ UI_DefaultProps::UI_DefaultProps(int X, int Y, int W, int H) :
 	resizable(NULL);
 
 	end();
+#endif
 }
 
 
 UI_DefaultProps::~UI_DefaultProps()
 { }
 
-
+#ifdef _FLTK_DISABLED
 void UI_DefaultProps::hide_callback(Fl_Widget *w, void *data)
 {
 	main_win->HideSpecialPanel();
@@ -187,14 +191,15 @@ void UI_DefaultProps::SetIntVal(Fl_Int_Input *w, int value)
 	snprintf(buffer, sizeof(buffer), "%d", value);
 	w->value(buffer);
 }
-
+#endif
 
 void UI_DefaultProps::UpdateThingDesc()
 {
 	const thingtype_t *info = M_GetThingType(default_thing);
-
+#ifdef _FLTK_DISABLED
 	th_desc->value(info->desc);
 	th_sprite->GetSprite(default_thing, FL_DARK2);
+#endif	
 }
 
 
@@ -202,7 +207,9 @@ void UI_DefaultProps::SetThing(int number)
 {
 	default_thing = number;
 
+#ifdef _FLTK_DISABLED
 	thing->value(Int_TmpStr(default_thing));
+#endif
 
 	UpdateThingDesc();
 }
@@ -210,14 +217,19 @@ void UI_DefaultProps::SetThing(int number)
 
 const char * UI_DefaultProps::Normalize_and_Dup(UI_DynInput *w)
 {
+#ifdef _FLTK_DISABLED	
 	const char *normalized = StringDup(NormalizeTex(w->value()));
 
 	w->value(normalized);
 
 	return normalized;
+#else
+	return "";
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_DefaultProps::tex_callback(Fl_Widget *w, void *data)
 {
 	UI_DefaultProps *box = (UI_DefaultProps *)data;
@@ -357,10 +369,11 @@ void UI_DefaultProps::dynthing_callback(Fl_Widget *w, void *data)
 	box->th_desc->value(info->desc);
 	box->th_sprite->GetSprite(value, FL_DARK2);
 }
-
+#endif
 
 void UI_DefaultProps::LoadValues()
 {
+#ifdef _FLTK_DISABLED	
 	w_tex->value(default_wall_tex);
 	f_tex->value(default_floor_tex);
 	c_tex->value(default_ceil_tex);
@@ -376,6 +389,7 @@ void UI_DefaultProps::LoadValues()
 	thing->value(Int_TmpStr(default_thing));
 
 	UpdateThingDesc();
+#endif	
 }
 
 
@@ -385,9 +399,11 @@ void UI_DefaultProps::CB_Copy(int sel_pics)
 
 	switch (sel_pics)
 	{
+#ifdef _FLTK_DISABLED		
 		case 1: name = f_tex->value(); break;
 		case 2: name = c_tex->value(); break;
 		case 4: name = w_tex->value(); break;
+#endif		
 
 		default:
 			Beep("multiple textures");
@@ -403,6 +419,7 @@ void UI_DefaultProps::CB_Copy(int sel_pics)
 
 void UI_DefaultProps::CB_Paste(int sel_pics)
 {
+#ifdef _FLTK_DISABLED	
 	if (sel_pics & 1)
 	{
 		f_tex->value(BA_GetString(Texboard_GetFlatNum()));
@@ -420,13 +437,14 @@ void UI_DefaultProps::CB_Paste(int sel_pics)
 		w_tex->value(BA_GetString(Texboard_GetTexNum()));
 		w_tex->do_callback();
 	}
+#endif	
 }
 
 
 void UI_DefaultProps::CB_Delete(int sel_pics)
 {
 	// we abuse the delete function to turn sector ceilings into sky
-
+#ifdef _FLTK_DISABLED
 	if (sel_pics & 1)
 	{
 		f_tex->value(Misc_info.sky_flat);
@@ -438,6 +456,7 @@ void UI_DefaultProps::CB_Delete(int sel_pics)
 		c_tex->value(Misc_info.sky_flat);
 		c_tex->do_callback();
 	}
+#endif
 }
 
 
@@ -497,13 +516,15 @@ void UI_DefaultProps::BrowsedItem(char kind, int number, const char *name, int e
 
 	if (sel_pics == 0)
 	{
+#ifdef _FLTK_DISABLED		
 		if (kind == 'T')
 			sel_pics = 4;
 		else
 			sel_pics = (e_state & FL_BUTTON3) ? 2 : 1;
+#endif			
 	}
 
-
+#ifdef _FLTK_DISABLED
 	if (sel_pics & 1)
 	{
 		f_tex->value(name);
@@ -519,6 +540,7 @@ void UI_DefaultProps::BrowsedItem(char kind, int number, const char *name, int e
 		w_tex->value(name);
 		w_tex->do_callback();
 	}
+#endif	
 }
 
 

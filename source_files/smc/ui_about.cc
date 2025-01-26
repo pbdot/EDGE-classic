@@ -19,6 +19,7 @@
 //------------------------------------------------------------------------
 
 #include "main.h"
+#include "m_files.h"
 #include "ui_window.h"
 #include "ui_about.h"
 
@@ -32,7 +33,9 @@ class UI_About : public UI_Escapable_Window
 private:
 	static UI_About * _instance;
 
+#ifdef _FLTK_DISABLED
 	static Fl_RGB_Image *about_img;
+#endif	
 
 	UI_About(int W, int H, const char *label = NULL);
 
@@ -43,7 +46,7 @@ private:
 
 	static void LoadImage()
 	{
-		static char filename[FL_PATH_MAX];
+		static char filename[SMC_PATH_MAX];
 
 		// FIXME : use this location for all platforms
 #ifdef WIN32
@@ -51,11 +54,14 @@ private:
 #else
 		snprintf(filename, sizeof(filename), "%s/about_logo.png", install_dir);
 #endif
-		filename[FL_PATH_MAX-1] = 0;
+		filename[SMC_PATH_MAX-1] = 0;
 
 		if (FileExists(filename))
 		{
+#ifdef _FLTK_DISABLED
 			about_img = new Fl_PNG_Image(filename);
+#endif			
+			
 		}
 	}
 
@@ -65,15 +71,21 @@ public:
 		if (_instance)  // already up?
 			return;
 
+#ifdef _FLTK_DISABLED
 		if (! about_img)
 			LoadImage();
+#endif			
 
 		_instance = new UI_About(ABOUT_W, ABOUT_H, "About Eureka v" EUREKA_VERSION);
-
+		
+#ifdef _FLTK_DISABLED
 		_instance->show();
+#endif		
 	}
 
 private:
+
+#ifdef _FLTK_DISABLED
 	static void close_callback(Fl_Widget *w, void *data)
 	{
 		if (_instance)
@@ -82,6 +94,7 @@ private:
 			_instance = NULL;
 		}
 	}
+#endif	
 
 	static const char *Text1;
 	static const char *Text2;
@@ -91,7 +104,9 @@ private:
 
 UI_About * UI_About::_instance;
 
+#ifdef _FLTK_DISABLED
 Fl_RGB_Image * UI_About::about_img;
+#endif
 
 
 const char *UI_About::Text1 =
@@ -121,6 +136,7 @@ const char *UI_About::URL = "http://awwports.sf.net/eureka";
 UI_About::UI_About(int W, int H, const char *label) :
     UI_Escapable_Window(W, H, label)
 {
+#ifdef _FLTK_DISABLED	
 	// non-resizable
 	size_range(W, H, W, H);
 
@@ -201,6 +217,7 @@ UI_About::UI_About(int W, int H, const char *label) :
 
 
 	end();
+#endif	
 }
 
 

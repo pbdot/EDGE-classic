@@ -27,8 +27,8 @@
 
 class Browser_Button;
 
-
-class Browser_Item : public Fl_Group
+// _FLTK_DISABLED
+class Browser_Item /* : public Fl_Group */
 {
 private:
 
@@ -64,21 +64,24 @@ public:
 	bool MatchName(const char *name) const;
 
 public:
+#ifdef _FLTK_DISABLED
 	static void texture_callback(Fl_Widget *w, void *data);
 	static void    flat_callback(Fl_Widget *w, void *data);
 	static void   thing_callback(Fl_Widget *w, void *data);
 	static void    line_callback(Fl_Widget *w, void *data);
 	static void  sector_callback(Fl_Widget *w, void *data);
+#endif
 
 private:
 };
 
-
-class UI_Browser_Box : public Fl_Group
+// _FLTK_DISABLED
+class UI_Browser_Box /* : public Fl_Group */
 {
 private:
 	char kind;
 
+#ifdef _FLTK_DISABLED
 	Fl_Choice *category;
 	Fl_Input  *search;
 
@@ -87,6 +90,7 @@ private:
 
 	Fl_Check_Button *do_tex;
 	Fl_Check_Button *do_flats;
+#endif
 
 	UI_Scroll *scroll;
 
@@ -142,26 +146,31 @@ private:
 
 	bool CategoryByLetter(char letter);
 
+#ifdef _FLTK_DISABLED
 	static void category_callback(Fl_Widget *w, void *data);
 	static void   search_callback(Fl_Widget *w, void *data);
 
 	static void   hide_callback(Fl_Widget *w, void *data);
 	static void  repop_callback(Fl_Widget *w, void *data);
 	static void   sort_callback(Fl_Widget *w, void *data);
+#endif
 };
 
 
 class UI_Generalized_Page;
 
-
-class UI_Generalized_Box : public Fl_Group
+// _FLTK_DISABLED
+class UI_Generalized_Box /*: public Fl_Group */
 {
 private:
+
+#ifdef _FLTK_DISABLED
 	// overall kind of line (DOOR, LIFT, etc...)
 	Fl_Choice * category;
 
 	// this is shown when not in Boom mode
 	Fl_Box * no_boom;
+#endif	
 
 	enum
 	{
@@ -187,13 +196,16 @@ private:
 
 	int ComputeType() const;
 
+#ifdef _FLTK_DISABLED
 	static void hide_callback(Fl_Widget *w, void *data);
 	static void  cat_callback(Fl_Widget *w, void *data);
 	static void edit_callback(Fl_Widget *w, void *data);
+#endif
 };
 
 
-class UI_Browser : public Fl_Group
+// _FLTK_DISABLED
+class UI_Browser /*: public Fl_Group */
 {
 	/* this widget basically just contains all the browser boxes,
 	 * and controls which one is visible at any time.

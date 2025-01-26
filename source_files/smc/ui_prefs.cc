@@ -26,7 +26,9 @@
 #include "ui_window.h"
 #include "ui_prefs.h"
 
+#ifdef _FLTK_DISABLED
 #include <FL/Fl_Color_Chooser.H>
+#endif
 
 
 #define PREF_WINDOW_W  600
@@ -48,6 +50,7 @@ private:
 
 	keycode_t key;
 
+#ifdef _FLTK_DISABLED
 	Fl_Input  *key_name;
 	Fl_Button *grab_but;
 
@@ -56,14 +59,17 @@ private:
 
 	Fl_Choice *context;
 	Fl_Input  *params;
+#endif	
 
 	const editor_command_t *cur_cmd;
 
+#ifdef _FLTK_DISABLED
 	Fl_Menu_Button *keyword_menu;
 	Fl_Menu_Button *flag_menu;
 
 	Fl_Button *cancel;
 	Fl_Button *ok_but;
+#endif	
 
 private:
 	void BeginGrab()
@@ -72,6 +78,7 @@ private:
 
 		awaiting_key = true;
 
+#ifdef _FLTK_DISABLED
 		key_name->color(FL_YELLOW, FL_YELLOW);
 		key_name->value("<\077\077\077>");
 		key_name->textcolor(FL_FOREGROUND_COLOR);
@@ -80,6 +87,7 @@ private:
 		Fl::focus(this);
 
 		redraw();
+#endif		
 	}
 
 	void FinishGrab()
@@ -88,15 +96,17 @@ private:
 			return;
 
 		awaiting_key = false;
-
+#ifdef _FLTK_DISABLED
 		key_name->color(FL_BACKGROUND2_COLOR, FL_SELECTION_COLOR);
 		grab_but->activate();
 
 		redraw();
+#endif		
 	}
 
 	int handle(int event)
 	{
+#ifdef _FLTK_DISABLED		
 		if (awaiting_key)
 		{
 			// escape key cancels
@@ -133,7 +143,7 @@ private:
 				}
 			}
 		}
-
+#endif
 		return UI_Escapable_Window::handle(event);
 	}
 
@@ -149,28 +159,36 @@ private:
 	// need this because menu is in reverse order
 	key_context_e ContextFromMenu()
 	{
+#ifdef _FLTK_DISABLED		
 		int i = context->value();
 		SYS_ASSERT(i >= 0 && i <= 6);
 		return (key_context_e)((int)KCTX_General - i);
+#else
+		return KCTX_NONE;
+#endif		
 	}
 
 	void SetContext(key_context_e ctx)
 	{
+#ifdef _FLTK_DISABLED		
 		int i = (int)KCTX_General - (int)ctx;
 		SYS_ASSERT(i >= 0 && i <= 6);
 		context->value(i);
+#endif
 	}
 
 	void AddContextToMenu(const char *lab, key_context_e ctx, key_context_e limit_ctx)
 	{
 		int flags = 0;
 
+#ifdef _FLTK_DISABLED
 		if (limit_ctx != KCTX_NONE && ctx != limit_ctx)
 		{
 			flags = FL_MENU_INACTIVE;
 		}
 
 		context->add(lab, 0, 0, 0, flags);
+#endif		
 	}
 
 	void PopulateContextMenu(key_context_e want_ctx)
@@ -180,7 +198,9 @@ private:
 		if (cur_cmd && cur_cmd->req_context != KCTX_NONE)
 			limit_ctx = cur_cmd->req_context;
 
+#ifdef _FLTK_DISABLED
 		context->clear();
+#endif		
 
 		AddContextToMenu("General (Any)",  KCTX_General, limit_ctx);
 
@@ -197,7 +217,9 @@ private:
 
 	void PopulateFuncMenu(const char *find_name = NULL)
 	{
+#ifdef _FLTK_DISABLED		
 		func_choose->clear();
+#endif		
 
 		cur_cmd = NULL;
 
@@ -215,24 +237,29 @@ private:
 
 			if (! did_separator && y_stricmp(cmd->group_name, "General") == 0)
 			{
+#ifdef _FLTK_DISABLED				
 				func_choose->add("", 0, 0, 0, FL_MENU_DIVIDER|FL_MENU_INACTIVE);
+#endif
 				did_separator = true;
 			}
 
 			snprintf(buffer, sizeof(buffer), "%s/%s", cmd->group_name, cmd->name);
 
+#ifdef _FLTK_DISABLED
 			func_choose->add(buffer, 0, 0, (void *)(long)i, 0 /* flags */);
+#endif			
 
 			if (find_name && strcmp(cmd->name, find_name) == 0)
 			{
 				cur_cmd = cmd;
 			}
 		}
-
+#ifdef _FLTK_DISABLED
 		if (cur_cmd)
 			func_name->value(cur_cmd->name);
 		else
 			func_name->value("");
+#endif			
 	}
 
 	void Decode(key_context_e ctx, const char *str)
@@ -254,8 +281,10 @@ private:
 		// this sets the 'cur_cmd' variable
 		PopulateFuncMenu(func_buf);
 
+#ifdef _FLTK_DISABLED
 		PopulateMenuList(keyword_menu, cur_cmd ? cur_cmd->keyword_list : NULL);
 		PopulateMenuList(   flag_menu, cur_cmd ? cur_cmd->   flag_list : NULL);
+#endif		
 
 		if (*str == ':')
 			str++;
@@ -263,7 +292,9 @@ private:
 		while (isspace(*str))
 			str++;
 
+#ifdef _FLTK_DISABLED
 		params->value(str);
+#endif		
 	}
 
 	const char * Encode()
@@ -276,15 +307,18 @@ private:
 
 		strcpy(buffer, cur_cmd->name);
 
+#ifdef _FLTK_DISABLED
 		if (strlen(buffer) + strlen(params->value()) + 10 >= sizeof(buffer))
 			return "OVERFLOW";
 
 		strcat(buffer, ": ");
 		strcat(buffer, params->value());
+#endif		
 
 		return buffer;
 	}
 
+#ifdef _FLTK_DISABLED
 	void PopulateMenuList(Fl_Menu_Button *menu, const char *list)
 	{
 		menu->clear();
@@ -364,6 +398,7 @@ private:
 
 		dialog->want_close = true;
 	}
+#endif
 
 	void SetNewFunction(int cmd_index)
 	{
@@ -374,7 +409,9 @@ private:
 		if (! cur_cmd)  // shouldn't happen
 			return;
 
+#ifdef _FLTK_DISABLED
 		func_name->value(cur_cmd->name);
+#endif		
 
 		key_context_e want_ctx = ContextFromMenu();
 
@@ -387,12 +424,15 @@ private:
 
 		PopulateContextMenu(want_ctx);
 
+#ifdef _FLTK_DISABLED
 		PopulateMenuList(keyword_menu, cur_cmd ? cur_cmd->keyword_list : NULL);
 		PopulateMenuList(   flag_menu, cur_cmd ? cur_cmd->   flag_list : NULL);
 
 		redraw();
+#endif
 	}
 
+#ifdef _FLTK_DISABLED
 	static void func_callback(Fl_Menu_Button *w, void *data)
 	{
 		UI_EditKey *dialog = (UI_EditKey *)data;
@@ -402,9 +442,11 @@ private:
 
 		dialog->SetNewFunction(cmd_index);
 	}
+#endif	
 
 	void ReplaceKeyword(const char *new_word)
 	{
+#ifdef _FLTK_DISABLED		
 		// delete existing keyword, if any
 		if (isalnum(params->value()[0]))
 		{
@@ -425,10 +467,12 @@ private:
 			params->replace(0, 0, " ");
 
 		params->replace(0, 0, new_word);
+#endif		
 	}
 
 	void ReplaceFlag(const char *new_flag)
 	{
+#ifdef _FLTK_DISABLED		
 		const char *str = params->value();
 
 		// if flag is already present, remove it
@@ -457,8 +501,10 @@ private:
 		}
 
 		params->replace(a, a, new_flag);
+#endif		
 	}
 
+#ifdef _FLTK_DISABLED
 	static void keyword_callback(Fl_Menu_Button *w, void *data)
 	{
 		UI_EditKey *dialog = (UI_EditKey *)data;
@@ -472,6 +518,7 @@ private:
 
 		dialog->ReplaceFlag(w->text());
 	}
+#endif
 
 public:
 	UI_EditKey(keycode_t _key, key_context_e ctx, const char *_funcname) :
@@ -482,6 +529,7 @@ public:
 	{
 		// _key may be zero (when "Add" button is used)
 
+#ifdef _FLTK_DISABLED
 		if (ctx == KCTX_NONE)
 			ctx = KCTX_General;
 
@@ -536,12 +584,14 @@ public:
 		Decode(ctx, _funcname);
 
 		PopulateContextMenu(ctx == KCTX_NONE ? KCTX_General : ctx);
+#endif
 	}
 
 
 	bool Run(keycode_t *key_v, key_context_e *ctx_v,
 			 const char **func_v, bool start_grabbed)
 	{
+#ifdef _FLTK_DISABLED		
 		*key_v  = 0;
 		*ctx_v  = KCTX_NONE;
 		*func_v = NULL;
@@ -575,14 +625,20 @@ public:
 		*func_v = Encode();
 
 		return true;
+#else
+		return false;
+#endif
 	}
 };
 
 
 //------------------------------------------------------------------------
 
-
+#ifdef _FLTK_DISABLED
 class UI_Preferences : public Fl_Double_Window
+#else
+class UI_Preferences
+#endif
 {
 private:
 	bool want_quit;
@@ -594,6 +650,7 @@ private:
 	// normally zero (not waiting for a key)
 	int awaiting_line;
 
+#ifdef _FLTK_DISABLED
 	static void  close_callback(Fl_Widget *w, void *data);
 	static void  color_callback(Fl_Button *w, void *data);
 
@@ -603,6 +660,7 @@ private:
 	static void  del_key_callback(Fl_Button *w, void *data);
 
 	static void reset_callback(Fl_Button *w, void *data);
+#endif	
 
 public:
 	UI_Preferences();
@@ -626,6 +684,7 @@ public:
 	void EnsureKeyVisible(int line);
 
 public:
+#ifdef _FLTK_DISABLED
 	Fl_Tabs *tabs;
 
 	Fl_Button *apply_but;
@@ -729,6 +788,7 @@ public:
 
 	Fl_Button * reset_conf;
 	Fl_Button * reset_keys;
+#endif	
 };
 
 
@@ -736,11 +796,14 @@ public:
 
 
 UI_Preferences::UI_Preferences() :
+#ifdef _FLTK_DISABLED
 	  Fl_Double_Window(PREF_WINDOW_W, PREF_WINDOW_H, PREF_WINDOW_TITLE),
+#endif	  
 	  want_quit(false), want_discard(false),
 	  key_sort_mode('k'), key_sort_rev(false),
 	  awaiting_line(0)
 {
+#ifdef _FLTK_DISABLED	
 	if (gui_color_set == 2)
 		color(fl_gray_ramp(4));
 	else
@@ -1120,11 +1183,13 @@ UI_Preferences::UI_Preferences() :
 	}
 
 	end();
+#endif	
 }
 
 
 //------------------------------------------------------------------------
 
+#ifdef _FLTK_DISABLED
 void UI_Preferences::close_callback(Fl_Widget *w, void *data)
 {
 	UI_Preferences *prefs = (UI_Preferences *)data;
@@ -1369,10 +1434,11 @@ void UI_Preferences::reset_callback(Fl_Button *w, void *data)
 		}
 	}
 }
-
+#endif
 
 void UI_Preferences::Run()
 {
+#ifdef _FLTK_DISABLED	
 	if (last_active_tab < tabs->children())
 		tabs->value(tabs->child(last_active_tab));
 
@@ -1403,6 +1469,7 @@ void UI_Preferences::Run()
 
 	M_ApplyBindings();
 	M_SaveBindings();
+#endif
 }
 
 
@@ -1425,6 +1492,7 @@ int UI_Preferences::GridSizeToChoice(int size)
 void UI_Preferences::LoadValues()
 {
 	/* Theme stuff */
+#ifdef _FLTK_DISABLED	
 
 	switch (gui_scheme)
 	{
@@ -1542,11 +1610,14 @@ void UI_Preferences::LoadValues()
 
 	/* Other Tab */
 
+#endif
+
 }
 
 
 void UI_Preferences::SaveValues()
 {
+#ifdef _FLTK_DISABLED	
 	/* Theme stuff */
 
 	if (theme_FLTK->value())
@@ -1678,25 +1749,32 @@ void UI_Preferences::SaveValues()
 	render_high_detail  = rend_high_detail->value() ? true : false;
 	render_lock_gravity = rend_lock_grav->value() ? true : false;
 	render_far_clip     = atoi(rend_far_clip->mvalue()->text);
+#endif
 }
-
 
 void UI_Preferences::LoadKeys()
 {
 	M_SortBindings(key_sort_mode, key_sort_rev);
 	M_DetectConflictingBinds();
 
+#ifdef _FLTK_DISABLED
 	key_list->clear();
+#endif
 
 	for (int i = 0 ; i < M_NumBindings() ; i++)
 	{
 		const char *str = M_StringForBinding(i);
 		SYS_ASSERT(str);
 
+#ifdef _FLTK_DISABLED
 		key_list->add(str);
+#endif
 	}
 
+#ifdef _FLTK_DISABLED
 	key_list->select(1);
+#endif
+
 }
 
 
@@ -1708,22 +1786,27 @@ void UI_Preferences::ReloadKeys()
 	{
 		const char *str = M_StringForBinding(i);
 
+#ifdef _FLTK_DISABLED
 		key_list->text(i + 1, str);
+#endif
 	}
 }
 
 
 void UI_Preferences::EnsureKeyVisible(int line)
 {
+#ifdef _FLTK_DISABLED	
 	if (! key_list->displayed(line))
 	{
 		key_list->middleline(line);
 	}
+#endif
 }
 
 
 void UI_Preferences::ClearWaiting()
 {
+#ifdef _FLTK_DISABLED{
 	if (awaiting_line > 0)
 	{
 		// restore the text line
@@ -1735,6 +1818,7 @@ void UI_Preferences::ClearWaiting()
 	awaiting_line = 0;
 
 	key_list->selection_color(FL_SELECTION_COLOR);
+#endif
 }
 
 
@@ -1750,6 +1834,7 @@ void UI_Preferences::SetBinding(keycode_t key)
 
 int UI_Preferences::handle(int event)
 {
+#ifdef _FLTK_DISABLED	
 	if (awaiting_line > 0)
 	{
 		// escape key cancels
@@ -1774,6 +1859,9 @@ int UI_Preferences::handle(int event)
 	}
 
 	return Fl_Double_Window::handle(event);
+#else
+	return 0;
+#endif
 }
 
 

@@ -35,12 +35,16 @@
 // UI_Pic Constructor
 //
 UI_Pic::UI_Pic(int X, int Y, int W, int H, const char *L) :
+#ifdef _FLTK_DISABLED
 	Fl_Box(FL_BORDER_BOX, X, Y, W, H, ""),
-	rgb(NULL), special(SP_None),
+	rgb(NULL), 
+#endif
+	special(SP_None),
 	allow_hl(false),
 	highlighted(false),
 	selected(false)
 {
+#ifdef _FLTK_DISABLED	
 	color(FL_DARK2);
 
 	what_text = StringDup(L);
@@ -52,6 +56,7 @@ UI_Pic::UI_Pic(int X, int Y, int W, int H, const char *L) :
 	labelsize(16);
 
 	align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
+#endif
 }
 
 //
@@ -67,7 +72,7 @@ UI_Pic::~UI_Pic()
 void UI_Pic::Clear()
 {
 	special = SP_None;
-
+#ifdef _FLTK_DISABLED
 	color(FL_DARK2);
 	labelcolor(what_color);
 	labelsize(16);
@@ -80,6 +85,7 @@ void UI_Pic::Clear()
 	}
 
 	redraw();
+#endif	
 }
 
 
@@ -89,6 +95,7 @@ void UI_Pic::MarkUnknown()
 
 	special = SP_Unknown;
 
+#ifdef _FLTK_DISABLED
 	color(FL_CYAN);
 	labelcolor(FL_BLACK);
 	labelsize(40);
@@ -96,6 +103,7 @@ void UI_Pic::MarkUnknown()
 	label("?");
 
 	redraw();
+#endif
 }
 
 void UI_Pic::MarkMissing()
@@ -104,6 +112,7 @@ void UI_Pic::MarkMissing()
 
 	special = SP_Missing;
 
+#ifdef _FLTK_DISABLED
 	color(fl_rgb_color(255, 128, 0));
 	labelcolor(FL_BLACK);
 	labelsize(40);
@@ -111,6 +120,7 @@ void UI_Pic::MarkMissing()
 	label("!");
 
 	redraw();
+#endif
 }
 
 void UI_Pic::MarkSpecial()
@@ -119,6 +129,7 @@ void UI_Pic::MarkSpecial()
 
 	special = SP_Special;
 
+#ifdef _FLTK_DISABLED
 	color(fl_rgb_color(192, 0, 192));
 	labelcolor(FL_WHITE);
 	labelsize(40);
@@ -126,6 +137,7 @@ void UI_Pic::MarkSpecial()
 	label("?");
 
 	redraw();
+#endif
 }
 
 
@@ -155,7 +167,7 @@ void UI_Pic::GetTex(const char * tname)
 	TiledImg(img);
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_Pic::GetSprite(int type, Fl_Color back_color)
 {
 	Clear();
@@ -244,10 +256,12 @@ void UI_Pic::GetSprite(int type, Fl_Color back_color)
 	if (new_img)
 		delete img;
 }
-
+#endif
 
 void UI_Pic::TiledImg(Img_c *img)
 {
+#ifdef _FLTK_DISABLED
+
 	color(FL_DARK2);
 
 	Clear();
@@ -299,11 +313,13 @@ void UI_Pic::TiledImg(Img_c *img)
 	}
 
 	UploadRGB(buf, 3);
+#endif
 }
 
 
 void UI_Pic::UploadRGB(const byte *buf, int depth)
 {
+#ifdef _FLTK_DISABLED	
 	rgb = new Fl_RGB_Image(buf, w(), h(), depth, 0);
 
 	// HACK ALERT: make the Fl_RGB_Image class think it allocated
@@ -317,6 +333,7 @@ void UI_Pic::UploadRGB(const byte *buf, int depth)
 	special = SP_None;
 
 	redraw();
+#endif
 }
 
 
@@ -325,6 +342,7 @@ void UI_Pic::UploadRGB(const byte *buf, int depth)
 
 int UI_Pic::handle(int event)
 {
+#ifdef _FLTK_DISABLED	
 	switch (event)
 	{
 		case FL_ENTER:
@@ -349,6 +367,7 @@ int UI_Pic::handle(int event)
 		default:
 			break;
 	}
+#endif
 
 	return 0;  // unused
 }
@@ -356,6 +375,7 @@ int UI_Pic::handle(int event)
 
 void UI_Pic::draw()
 {
+#ifdef _FLTK_DISABLED	
 	if (rgb)
 		rgb->draw(x(), y());
 	else
@@ -365,11 +385,13 @@ void UI_Pic::draw()
 		draw_selected();
 	else if (Highlighted())
 		draw_highlighted();
+#endif
 }
 
 
 void UI_Pic::draw_highlighted()
 {
+#ifdef _FLTK_DISABLED	
 	int X = x();
 	int Y = y();
 	int W = w();
@@ -378,11 +400,13 @@ void UI_Pic::draw_highlighted()
 	fl_rect(X+0, Y+0, W-0, H-0, FL_YELLOW);
 	fl_rect(X+1, Y+1, W-2, H-2, FL_YELLOW);
 	fl_rect(X+2, Y+2, W-4, H-4, FL_BLACK);
+#endif
 }
 
 
 void UI_Pic::draw_selected()
 {
+#ifdef _FLTK_DISABLED	
 	int X = x();
 	int Y = y();
 	int W = w();
@@ -391,13 +415,16 @@ void UI_Pic::draw_selected()
 	fl_rect(X+0, Y+0, W-0, H-0, FL_RED);
 	fl_rect(X+1, Y+1, W-2, H-2, FL_RED);
 	fl_rect(X+2, Y+2, W-4, H-4, FL_BLACK);
+#endif
 }
 
 
 void UI_Pic::Selected(bool _val)
 {
+#ifdef _FLTK_DISABLED	
 	if (selected != _val)
 		redraw();
+#endif
 
 	selected = _val;
 }
@@ -405,16 +432,20 @@ void UI_Pic::Selected(bool _val)
 
 void UI_Pic::Unhighlight()
 {
+#ifdef _FLTK_DISABLED	
 	handle(FL_LEAVE);
+#endif
 }
 
 
 //------------------------------------------------------------------------
 
 
-UI_DynInput::UI_DynInput(int X, int Y, int W, int H, const char *L) :
-	Fl_Input(X, Y, W, H, L),
+UI_DynInput::UI_DynInput(int X, int Y, int W, int H, const char *L) 
+#ifdef _FLTK_DISABLED
+: Fl_Input(X, Y, W, H, L),
 	callback2_(NULL), data2_(NULL)
+#endif
 { }
 
 
@@ -424,6 +455,7 @@ UI_DynInput::~UI_DynInput()
 
 int UI_DynInput::handle(int event)
 {
+#ifdef _FLTK_DISABLED
 	int res = Fl_Input::handle(event);
 
 	if ((event == FL_KEYBOARD || event == FL_PASTE) && callback2_)
@@ -432,6 +464,9 @@ int UI_DynInput::handle(int event)
 	}
 
 	return res;
+#else
+	return 0;
+#endif
 }
 
 

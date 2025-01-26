@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2020 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@ static void DrawColumn(Img_c& img, const post_t *column, int x, int y)
 	}
 }
 
-
+#ifdef _FLTK_DISABLED
 Img_c * LoadImage_PNG(Lump_c *lump, const char *name)
 {
 	// load the raw data
@@ -147,7 +147,7 @@ Img_c * LoadImage_JPEG(Lump_c *lump, const char *name)
 
 	return img;
 }
-
+#endif
 
 Img_c * LoadImage_TGA(Lump_c *lump, const char *name)
 {

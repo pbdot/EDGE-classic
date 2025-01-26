@@ -46,15 +46,20 @@ extern bool inhibit_node_build;
 
 #define NODE_PROGRESS_COLOR  fl_color_cube(2,6,2)
 
-
+#ifdef _FLTK_DISABLED
 class UI_NodeDialog : public Fl_Double_Window
+#else
+class UI_NodeDialog
+#endif
 {
 public:
+#ifdef _FLTK_DISABLED
 	Fl_Browser *browser;
 
 	Fl_Progress *progress;
 
 	Fl_Button * button;
+#endif
 
 	int cur_prog;
 	char prog_label[64];
@@ -84,8 +89,10 @@ public:
 	bool WantClose()  const { return want_close;  }
 
 private:
+#ifdef _FLTK_DISABLED
 	static void  close_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
+#endif	
 };
 
 
@@ -93,6 +100,7 @@ private:
 //  Callbacks
 //
 
+#ifdef _FLTK_DISABLED
 void UI_NodeDialog::close_callback(Fl_Widget *w, void *data)
 {
 	UI_NodeDialog * that = (UI_NodeDialog *)data;
@@ -113,18 +121,21 @@ void UI_NodeDialog::button_callback(Fl_Widget *w, void *data)
 	else
 		that->want_cancel = true;
 }
-
+#endif
 
 //
 //  Constructor
 //
 UI_NodeDialog::UI_NodeDialog() :
+#ifdef _FLTK_DISABLED
 	    Fl_Double_Window(400, 400, "Building Nodes"),
+#endif		
 		cur_prog(-1),
 		finished(false),
 		want_cancel(false),
 		want_close(false)
 {
+#ifdef _FLTK_DISABLED	
 	size_range(w(), h());
 
 	callback((Fl_Callback *) close_callback, this);
@@ -156,6 +167,7 @@ UI_NodeDialog::UI_NodeDialog() :
 	end();
 
 	resizable(browser);
+#endif
 }
 
 
@@ -168,6 +180,7 @@ UI_NodeDialog::~UI_NodeDialog()
 
 int UI_NodeDialog::handle(int event)
 {
+#ifdef _FLTK_DISABLED	
 	if (event == FL_KEYDOWN && Fl::event_key() == FL_Escape)
 	{
 		if (finished)
@@ -178,6 +191,9 @@ int UI_NodeDialog::handle(int event)
 	}
 
 	return Fl_Double_Window::handle(event);
+#else
+	return 0;
+#endif
 }
 
 
@@ -190,10 +206,12 @@ void UI_NodeDialog::SetProg(int perc)
 
 	snprintf(prog_label, sizeof(prog_label), "%d%%", perc);
 
+#ifdef _FLTK_DISABLED
 	progress->value(perc);
 	progress->label(prog_label);
 
 	Fl::check();
+#endif	
 }
 
 
@@ -215,14 +233,18 @@ void UI_NodeDialog::Print(const char *str)
 
 		if (next) *next++ = 0;
 
+#ifdef _FLTK_DISABLED
 		browser->add(pos);
+#endif		
 
 		pos = next;
 	}
 
+#ifdef _FLTK_DISABLED
 	browser->bottomline(browser->size());
 
 	Fl::check();
+#endif
 }
 
 
@@ -230,33 +252,38 @@ void UI_NodeDialog::Finish_OK()
 {
 	finished = true;
 
+#ifdef _FLTK_DISABLED
 	button->label("Close");
 
 	progress->value(100);
 	progress->label("Success");
 	progress->color(FL_BLUE, FL_BLUE);
+#endif	
 }
 
 void UI_NodeDialog::Finish_Cancel()
 {
 	finished = true;
-
+#ifdef _FLTK_DISABLED
 	button->label("Close");
 
 	progress->value(0);
 	progress->label("Cancelled");
 	progress->color(FL_RED, FL_RED);
+#endif	
 }
 
 void UI_NodeDialog::Finish_Error()
 {
 	finished = true;
 
+#ifdef _FLTK_DISABLED
 	button->label("Close");
 
 	progress->value(100);
 	progress->label("ERROR");
 	progress->color(FL_RED, FL_RED);
+#endif	
 }
 
 
@@ -359,7 +386,9 @@ static build_result_e BuildAllNodes(nodebuildinfo_t *info)
 
 		dialog->SetProg(100 * (n + 1) / num_levels);
 
+#ifdef _FLTK_DISABLED
 		Fl::check();
+#endif		
 
 		if (dialog->WantCancel())
 		{
@@ -470,10 +499,12 @@ void CMD_BuildAllNodes()
 
 	dialog = new UI_NodeDialog();
 
+#ifdef _FLTK_DISABLED
 	dialog->set_modal();
 	dialog->show();
 
 	Fl::check();
+#endif	
 
 
 	nb_info = new nodebuildinfo_t;
@@ -500,7 +531,9 @@ void CMD_BuildAllNodes()
 
 	while (! dialog->WantClose())
 	{
+#ifdef _FLTK_DISABLED		
 		Fl::wait(0.2);
+#endif		
 	}
 
 	delete nb_info; nb_info = NULL;

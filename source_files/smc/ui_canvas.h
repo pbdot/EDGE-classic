@@ -21,8 +21,10 @@
 #ifndef __EUREKA_UI_CANVAS_H__
 #define __EUREKA_UI_CANVAS_H__
 
+#ifdef _FLTK_DISABLED
 #ifndef NO_OPENGL
 #include <FL/Fl_Gl_Window.H>
+#endif
 #endif
 
 #include "m_events.h"
@@ -37,7 +39,8 @@ class Img_c;
 #ifdef NO_OPENGL
 class UI_Canvas : public Fl_Widget
 #else
-class UI_Canvas : public Fl_Gl_Window
+// _FLTK_DISABLED
+class UI_Canvas /*: public Fl_Gl_Window */
 #endif
 {
 private:
@@ -111,6 +114,11 @@ public:
 	// return -1 if too small, 0 is OK, 1 is too big to fit
 	int ApproxBoxSize(int mx1, int my1, int mx2, int my2);
 
+	// _FLTK_DISABLED
+	// stubs
+	int w() const { return 1920; }
+	int h() const { return 1080; }
+
 private:
 	// FLTK virtual method for drawing
 	void draw();
@@ -119,7 +127,10 @@ private:
 
 	void DrawGrid_Dotty();
 	void DrawGrid_Normal();
+
+#ifdef _FLTK_DISABLED
 	void DrawAxes(Fl_Color col);
+#endif
 
 	void DrawMapBounds();
 	void DrawVertices();
@@ -185,7 +196,9 @@ private:
 	void PrepareToDraw();
 	void Blit();
 
+#ifdef _FLTK_DISABLED
 	void RenderColor(Fl_Color c);
+#endif
 	void RenderThickness(int w);
 	void RenderFontSize(int size);
 

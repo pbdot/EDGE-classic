@@ -39,9 +39,12 @@ extern const char ** arrow_pixmaps[8];
 // UI_VertexBox Constructor
 //
 UI_VertexBox::UI_VertexBox(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, label),
+#endif
     obj(-1), count(0)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 
@@ -92,6 +95,7 @@ UI_VertexBox::UI_VertexBox(int X, int Y, int W, int H, const char *label) :
 	end();
 
 	resizable(NULL);
+#endif
 }
 
 
@@ -105,10 +109,14 @@ UI_VertexBox::~UI_VertexBox()
 
 int UI_VertexBox::handle(int event)
 {
+#ifdef _FLTK_DISABLED	
 	return Fl_Group::handle(event);
+#else
+	return 0;
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_VertexBox::x_callback(Fl_Widget *w, void *data)
 {
 	UI_VertexBox *box = (UI_VertexBox *)data;
@@ -128,7 +136,9 @@ void UI_VertexBox::x_callback(Fl_Widget *w, void *data)
 		BA_End();
 	}
 }
+#endif
 
+#ifdef _FLTK_DISABLED
 void UI_VertexBox::y_callback(Fl_Widget *w, void *data)
 {
 	UI_VertexBox *box = (UI_VertexBox *)data;
@@ -190,7 +200,7 @@ void UI_VertexBox::button_callback(Fl_Widget *w, void *data)
 		BA_End();
 	}
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
@@ -207,11 +217,14 @@ void UI_VertexBox::SetObj(int _index, int _count)
 
 	UpdateField();
 
+#ifdef _FLTK_DISABLED
 	redraw();
+#endif
 }
 
 void UI_VertexBox::UpdateField()
 {
+#ifdef _FLTK_DISABLED	
 	if (is_vertex(obj))
 	{
 		// @@ FIXME show decimals in UDMF
@@ -223,6 +236,7 @@ void UI_VertexBox::UpdateField()
 		pos_x->value("");
 		pos_y->value("");
 	}
+#endif
 }
 
 

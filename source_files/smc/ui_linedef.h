@@ -22,7 +22,11 @@
 #define __EUREKA_UI_LINEDEF_H__
 
 
+#ifdef _FLTK_DISABLED
 class UI_LineBox : public Fl_Group
+#else
+class UI_LineBox
+#endif
 {
 private:
 	int obj;
@@ -32,6 +36,8 @@ public:
 	UI_Nombre *which;
 
 	UI_DynInput  *type;
+
+#ifdef _FLTK_DISABLED	
 	Fl_Button    *choose;
 	Fl_Button    *gen;
 
@@ -41,10 +47,12 @@ public:
 	Fl_Int_Input *length;
 	Fl_Int_Input *tag;
 	Fl_Int_Input *args[5];
+#endif	
 
 	UI_SideBox *front;
 	UI_SideBox *back;
 
+#ifdef _FLTK_DISABLED
 	// Flags
 	Fl_Choice *f_automap;
 
@@ -61,6 +69,7 @@ public:
 	Fl_Check_Button *f_mons;
 	Fl_Check_Button *f_sound;
 	Fl_Check_Button *f_flyers;    // Strife
+#endif
 
 public:
 	UI_LineBox(int X, int Y, int W, int H, const char *label = NULL);
@@ -106,6 +115,8 @@ private:
 	const char *GeneralizedDesc(int type_num);
 
 private:
+
+#ifdef _FLTK_DISABLED
 	static void    type_callback(Fl_Widget *, void *);
 	static void dyntype_callback(Fl_Widget *, void *);
 
@@ -114,6 +125,8 @@ private:
 	static void   args_callback(Fl_Widget *, void *);
 	static void length_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
+#endif
+	
 };
 
 #endif  /* __EUREKA_UI_LINEDEF_H__ */

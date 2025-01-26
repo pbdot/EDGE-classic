@@ -50,10 +50,11 @@ void M_WriteEurekaLump(Wad_file *wad);
 
 void M_BackupWad(Wad_file *wad);
 
+#define SMC_PATH_MAX 2048
 
 typedef struct port_path_info_t
 {
-	char exe_filename[FL_PATH_MAX];
+	char exe_filename[SMC_PATH_MAX];
 
 } port_path_info_t;
 

@@ -20,6 +20,7 @@
 
 #include "main.h"
 #include "m_config.h"
+#include "m_files.h"
 
 #include <algorithm>
 
@@ -131,6 +132,7 @@ typedef struct
 } key_mapping_t;
 
 
+#ifdef _FLTK_DISABLED
 static const key_mapping_t key_map[] =
 {
 	{ ' ',			"SPACE" },
@@ -393,6 +395,8 @@ int M_KeyCmp(keycode_t A, keycode_t B)
 	return (int)A_mod - (int)B_mod;
 }
 
+#endif
+
 
 //------------------------------------------------------------------------
 
@@ -554,7 +558,7 @@ fprintf(stderr, "ADDED BINDING key:%04x --> %s\n", temp.key, tokens[2]);
 
 static bool LoadBindingsFromPath(const char *path, bool required)
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/bindings.cfg", path);
 
@@ -570,13 +574,13 @@ static bool LoadBindingsFromPath(const char *path, bool required)
 
 	LogPrintf("Reading key bindings from: %s\n", filename);
 
-	static char line_buf[FL_PATH_MAX];
+	static char line_buf[SMC_PATH_MAX];
 
 	const char * tokens[MAX_TOKENS];
 
 	while (! feof(fp))
 	{
-		char *line = fgets(line_buf, FL_PATH_MAX, fp);
+		char *line = fgets(line_buf, SMC_PATH_MAX, fp);
 
 		if (! line)
 			break;
@@ -667,7 +671,7 @@ void M_LoadBindings()
 
 void M_SaveBindings()
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/bindings.cfg", home_dir);
 
@@ -914,6 +918,8 @@ const char * M_StringForBinding(int index, bool changing_key)
 	if (y_stricmp(ctx_name, "render") == 0)
 		ctx_name = "3D view";
 
+#ifdef _FLTK_DISABLED
+
 	// display SHIFT + letter as an uppercase letter
 	keycode_t tempk = bind.key;
 	if ((tempk & MOD_ALL_MASK) == MOD_SHIFT &&
@@ -929,6 +935,9 @@ const char * M_StringForBinding(int index, bool changing_key)
 			changing_key ? "\077?>" : BareKeyName(tempk & FL_KEY_MASK),
 			ctx_name,
 			M_StringForFunc(index) );
+#else
+	buffer[0] = 0;
+#endif
 
 	return buffer;
 }
@@ -1074,7 +1083,7 @@ void M_DeleteLocalBinding(int index)
 //  COMMAND EXECUTION STUFF
 //------------------------------------------------------------------------
 
-
+#ifdef _FLTK_DISABLED
 keycode_t M_TranslateKey(int key, int state)
 {
 	// ignore modifier keys themselves
@@ -1130,6 +1139,7 @@ key_context_e M_ModeToKeyContext(obj_type_e mode)
 
 	return KCTX_NONE;  /* shouldn't happen */
 }
+#endif
 
 
 bool Exec_HasFlag(const char *flag)
@@ -1159,7 +1169,7 @@ static void DoExecuteCommand(const editor_command_t *cmd)
 //	Debug_CheckUnusedStuff();
 }
 
-
+#ifdef _FLTK_DISABLED
 static int FindBinding(keycode_t key, key_context_e context, bool lax_only)
 {
 	for (int i = 0 ; i < (int)all_bindings.size() ; i++)
@@ -1196,8 +1206,10 @@ static int FindBinding(keycode_t key, key_context_e context, bool lax_only)
 	// not found
 	return -1;
 }
+#endif
 
 
+#ifdef _FLTK_DISABLED
 bool ExecuteKey(keycode_t key, key_context_e context)
 {
 	for (int p = 0 ; p < MAX_EXEC_PARAM ; p++)
@@ -1249,6 +1261,7 @@ bool ExecuteKey(keycode_t key, key_context_e context)
 
 	return true;
 }
+#endif
 
 
 bool ExecuteCommand(const editor_command_t *cmd,
@@ -1317,7 +1330,9 @@ void Beep(const char *fmt, ...)
 	Status_Set("%s", buffer);
 	LogPrintf("BEEP: %s\n", buffer);
 
+#ifdef _FLTK_DISABLED
 	fl_beep();
+#endif
 
 	EXEC_Errno = 1;
 }

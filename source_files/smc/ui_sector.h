@@ -21,8 +21,8 @@
 #ifndef __EUREKA_UI_SECTOR_H__
 #define __EUREKA_UI_SECTOR_H__
 
-
-class UI_SectorBox : public Fl_Group
+// _FLTK_DISABLED
+class UI_SectorBox /*: public Fl_Group*/
 {
 private:
 	int obj;
@@ -32,6 +32,7 @@ public:
 	UI_Nombre *which;
 
 	UI_DynInput   *type;
+#ifdef _FLTK_DISABLED	
 	Fl_Output    *desc;
 	Fl_Button    *choose;
 
@@ -46,6 +47,7 @@ public:
 
 	Fl_Button *ce_down, *ce_up;
 	Fl_Button *fl_down, *fl_up;
+#endif
 
 	UI_DynInput *c_tex;
 	UI_Pic      *c_pic;
@@ -53,13 +55,16 @@ public:
 	UI_DynInput *f_tex;
 	UI_Pic      *f_pic;
 
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *headroom;
+#endif	
 
 	enum
 	{
 		HEADROOM_BUTTONS = 6
 	};
 
+#ifdef _FLTK_DISABLED
 	Fl_Button * hd_buttons[HEADROOM_BUTTONS];
 
 	// Boom generalized sectors
@@ -70,6 +75,7 @@ public:
 	Fl_Check_Button * bm_secret;
 	Fl_Check_Button * bm_friction;
 	Fl_Check_Button * bm_wind;
+#endif
 
 public:
 	UI_SectorBox(int X, int Y, int W, int H, const char *label = NULL);
@@ -111,6 +117,7 @@ private:
 
 	void FreshTag();
 
+#ifdef _FLTK_DISABLED
 	static void   height_callback(Fl_Widget *, void *);
 	static void headroom_callback(Fl_Widget *, void *);
 
@@ -122,6 +129,7 @@ private:
 	static void   light_callback(Fl_Widget *, void *);
 	static void     tag_callback(Fl_Widget *, void *);
 	static void  button_callback(Fl_Widget *, void *);
+#endif
 };
 
 #endif  /* __EUREKA_UI_SECTOR_H__ */

@@ -68,9 +68,12 @@ const char ** arrow_pixmaps[8] =
 // UI_ThingBox Constructor
 //
 UI_ThingBox::UI_ThingBox(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, label),
+#endif
     obj(-1), count(0)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 	X += 6;
@@ -322,6 +325,7 @@ UI_ThingBox::UI_ThingBox(int X, int Y, int W, int H, const char *label) :
 	end();
 
 	resizable(NULL);
+#endif
 }
 
 //
@@ -345,10 +349,12 @@ void UI_ThingBox::SetObj(int _index, int _count)
 
 	UpdateField();
 
-	redraw();
+#ifdef _FLTK_DISABLED
+	redraw()
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_ThingBox::type_callback(Fl_Widget *w, void *data)
 {
 	UI_ThingBox *box = (UI_ThingBox *)data;
@@ -438,7 +444,7 @@ void UI_ThingBox::dynspec_callback(Fl_Widget *w, void *data)
 		box->spec_desc->value("");
 	}
 }
-
+#endif
 
 void UI_ThingBox::SetThingType(int new_type)
 {
@@ -448,8 +454,10 @@ void UI_ThingBox::SetThingType(int new_type)
 	char buffer[64];
 	snprintf(buffer, sizeof(buffer), "%d", new_type);
 
+#ifdef _FLTK_DISABLED
 	type->value(buffer);
 	type->do_callback();
+#endif
 }
 
 
@@ -461,8 +469,10 @@ void UI_ThingBox::SetSpecialType(int new_type)
 	char buffer[64];
 	snprintf(buffer, sizeof(buffer), "%d", new_type);
 
+#ifdef _FLTK_DISABLED
 	spec_type->value(buffer);
 	spec_type->do_callback();
+#endif
 }
 
 
@@ -484,7 +494,7 @@ void UI_ThingBox::BrowsedItem(char kind, int number, const char *name, int e_sta
 	}
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_ThingBox::angle_callback(Fl_Widget *w, void *data)
 {
 	UI_ThingBox *box = (UI_ThingBox *)data;
@@ -667,10 +677,11 @@ void UI_ThingBox::args_callback(Fl_Widget *w, void *data)
 		BA_End();
 	}
 }
-
+#endif
 
 void UI_ThingBox::AdjustExtraFloor(int dir)
 {
+#ifdef _FLTK_DISABLED	
 	if (! is_thing(obj))
 		return;
 
@@ -685,11 +696,13 @@ void UI_ThingBox::AdjustExtraFloor(int dir)
 	thing_opt_CB_data_c ocb(this, MTF_EXFLOOR_MASK);
 
 	option_callback(this, &ocb);
+#endif
 }
 
 
 void UI_ThingBox::OptionsFromInt(int options)
 {
+#ifdef _FLTK_DISABLED	
 	o_easy  ->value((options & MTF_Easy)   ? 1 : 0);
 	o_medium->value((options & MTF_Medium) ? 1 : 0);
 	o_hard  ->value((options & MTF_Hard)   ? 1 : 0);
@@ -735,11 +748,13 @@ void UI_ThingBox::OptionsFromInt(int options)
 		o_sf_altvis->value((options & MTF_Strife_AltVis) ? 1 : 0);
 		o_sf_stand ->value((options & MTF_Strife_Stand) ? 1 : 0);
 	}
+#endif
 }
 
 
 int UI_ThingBox::CalcOptions() const
 {
+#ifdef _FLTK_DISABLED	
 	int options = 0;
 
 	if (o_easy  ->value()) options |= MTF_Easy;
@@ -798,11 +813,15 @@ int UI_ThingBox::CalcOptions() const
 	}
 
 	return options;
+#else
+	return 0;
+#endif
 }
 
 
 void UI_ThingBox::UpdateField(int field)
 {
+#ifdef _FLTK_DISABLED	
 	if (field < 0 ||
 		field == Thing::F_X ||
 		field == Thing::F_Y ||
@@ -929,6 +948,7 @@ void UI_ThingBox::UpdateField(int field)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -940,6 +960,7 @@ void UI_ThingBox::UpdateTotal()
 
 void UI_ThingBox::UpdateGameInfo()
 {
+#ifdef _FLTK_DISABLED	
 	if (Features.coop_dm_flags || Level_format != MAPF_Doom)
 	{
 		o_sp  ->show();
@@ -1041,6 +1062,7 @@ void UI_ThingBox::UpdateGameInfo()
 	}
 
 	redraw();
+#endif
 }
 
 

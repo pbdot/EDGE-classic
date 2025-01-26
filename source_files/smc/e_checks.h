@@ -63,13 +63,17 @@ protected:
 
 	check_result_e  user_action;
 
+#ifdef _FLTK_DISABLED
 	Fl_Group * line_group;
+#endif	
 
 	int cy;
 	int worst_severity;
 
 private:
+#ifdef _FLTK_DISABLED
 	static void close_callback(Fl_Widget *, void *);
+#endif	
 
 public:
 	UI_Check_base(int W, int H, bool all_mode, const char *L,
@@ -80,10 +84,12 @@ public:
 
 	void AddGap(int H);
 
+#ifdef _FLTK_DISABLED
 	void AddLine(const char *msg, int severity = 0, int W = -1,
 	             const char *button1 = NULL, Fl_Callback *cb1 = NULL,
 	             const char *button2 = NULL, Fl_Callback *cb2 = NULL,
 	             const char *button3 = NULL, Fl_Callback *cb3 = NULL);
+#endif				 
 
 	check_result_e  Run();
 

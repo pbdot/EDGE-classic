@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2018 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -28,6 +28,7 @@
 
 #include "m_events.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "e_main.h"
 #include "e_hover.h"
 #include "r_render.h"
@@ -57,7 +58,9 @@ void Editor_ClearAction()
 			return;
 
 		case ACT_ADJUST_OFS:
+#ifdef _FLTK_DISABLED		
 			main_win->SetCursor(FL_CURSOR_DEFAULT);
+#endif
 			break;
 
 		default:
@@ -81,10 +84,12 @@ void Editor_SetAction(editor_action_e  new_action)
 			return;
 
 		case ACT_ADJUST_OFS:
+#ifdef _FLTK_DISABLED		
 			mouse_last_x = Fl::event_x();
 			mouse_last_y = Fl::event_y();
 
 			main_win->SetCursor(FL_CURSOR_HAND);
+#endif
 			break;
 
 		default:
@@ -111,7 +116,9 @@ void Editor_ScrollMap(int mode, int dx, int dy, keycode_t mod)
 	if (mode < 0)
 	{
 		edit.is_panning = true;
+#ifdef _FLTK_DISABLED		
 		main_win->SetCursor(FL_CURSOR_HAND);
+#endif
 		return;
 	}
 
@@ -119,7 +126,9 @@ void Editor_ScrollMap(int mode, int dx, int dy, keycode_t mod)
 	if (mode > 0)
 	{
 		edit.is_panning = false;
+#ifdef _FLTK_DISABLED		
 		main_win->SetCursor(FL_CURSOR_DEFAULT);
+#endif
 		return;
 	}
 
@@ -173,8 +182,10 @@ static void Navigate2D()
 		mod = M_ReadLaxModifiers();
 
 	float mod_factor = 1.0;
+#ifdef _FLTK_DISABLED	
 	if (mod & MOD_SHIFT)   mod_factor = 0.5;
 	if (mod & MOD_COMMAND) mod_factor = 2.0;
+#endif
 
 	if (edit.nav_left || edit.nav_right ||
 		edit.nav_up   || edit.nav_down)
@@ -246,8 +257,11 @@ bool Nav_SetKey(keycode_t key, nav_release_func_t func)
 	keycode_t lax_mod = 0;
 
 	edit.nav_lax = Exec_HasFlag("/LAX");
+
+#ifdef _FLTK_DISABLED
 	if (edit.nav_lax)
 		lax_mod = MOD_SHIFT | MOD_COMMAND;
+#endif
 
 	edit.is_navigating = true;
 
@@ -269,12 +283,14 @@ bool Nav_SetKey(keycode_t key, nav_release_func_t func)
 		if ((N.key | N.lax_mod) == (key | N.lax_mod) && N.release == func)
 			return false;
 
+#ifdef _FLTK_DISABLED
 		// if it's the same physical key, release the previous action
 		if ((N.key & FL_KEY_MASK) == (key & FL_KEY_MASK))
 		{
 			(N.release)();
 			 N.key = 0;
 		}
+#endif		
 	}
 
 	if (free_slot >= 0)
@@ -294,8 +310,10 @@ bool Nav_ActionKey(keycode_t key, nav_release_func_t func)
 {
 	keycode_t lax_mod = 0;
 
+#ifdef _FLTK_DISABLED
 	if (Exec_HasFlag("/LAX"))
 		lax_mod = MOD_SHIFT | MOD_COMMAND;
+#endif
 
 	nav_active_key_t& N = cur_action_key;
 
@@ -329,6 +347,7 @@ static inline bool CheckKeyPressed(nav_active_key_t& N)
 		return false;
 #endif
 
+#ifdef _FLTK_DISABLED
 	keycode_t base = N.key & FL_KEY_MASK;
 
 	if (is_mouse_button(base))
@@ -345,6 +364,7 @@ static inline bool CheckKeyPressed(nav_active_key_t& N)
 		if (Fl::event_key(base))
 			return true;
 	}
+#endif
 
 	return false;
 }
@@ -446,11 +466,13 @@ static void EV_EnterWindow()
 
 	main_win->canvas->PointerPos(true /* in_event */);
 
+#ifdef _FLTK_DISABLED
 	// restore keyboard focus to the canvas
 	Fl_Widget * foc = main_win->canvas;
 
 	if (Fl::focus() != foc)
 		foc->take_focus();
+#endif		
 
 	RedrawMap();
 }
@@ -527,7 +549,9 @@ void EV_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
 		edit.selbox_x2 = edit.map_x;
 		edit.selbox_y2 = edit.map_y;
 
+#ifdef _FLTK_DISABLED
 		main_win->canvas->redraw();
+#endif
 		return;
 	}
 
@@ -544,7 +568,9 @@ void EV_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
 		if (edit.mode == OBJ_VERTICES && edit.dragged.valid())
 			UpdateHighlight();
 
+#ifdef _FLTK_DISABLED
 		main_win->canvas->redraw();
+#endif
 		return;
 	}
 
@@ -565,7 +591,7 @@ void EV_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
 keycode_t M_RawKeyForEvent(int event)
 {
 	// event must be FL_KEYDOWN, FL_PUSH or FL_MOUSEWHEEL
-
+#ifdef _FLTK_DISABLED
 	if (event == FL_PUSH)
 	{
 		// convert mouse button to a fake key
@@ -585,20 +611,28 @@ keycode_t M_RawKeyForEvent(int event)
 	}
 
 	return Fl::event_key();
+#else
+	return 0;
+#endif
 }
 
 
 keycode_t M_CookedKeyForEvent(int event)
 {
+#ifdef _FLTK_DISABLED	
 	int raw_key   = M_RawKeyForEvent(event);
 	int raw_state = Fl::event_state();
 
 	return M_TranslateKey(raw_key, raw_state);
+#else
+	return 0;
+#endif
 }
 
 
 keycode_t M_ReadLaxModifiers()
 {
+#ifdef _FLTK_DISABLED	
 	// this is a workaround for X-windows, where we don't get new
 	// modifier state until the event *after* the shift key is
 	// pressed or released.
@@ -624,11 +658,15 @@ keycode_t M_ReadLaxModifiers()
 
 	return result;
 #endif
+#else
+	return 0;
+#endif
 }
 
 
 int EV_RawKey(int event)
 {
+#ifdef _FLTK_DISABLED	
 	Nav_UpdateKeys();
 
 	if (event == FL_KEYUP || event == FL_RELEASE)
@@ -682,6 +720,9 @@ int EV_RawKey(int event)
 	// won't really be META-fied anywhere else -- including the case
 	// of it being sent back to this function as a SHORTCUT event.
 	return old_sticky_mod ? 1 : 0;
+#else
+	return 0;
+#endif
 }
 
 
@@ -692,13 +733,20 @@ int EV_RawWheel(int event)
 	// ensure we zoom from correct place
 	main_win->canvas->PointerPos(true /* in_event */);
 
+#ifdef _FLTK_DISABLED
 	wheel_dx = Fl::event_dx();
 	wheel_dy = Fl::event_dy();
+#else
+	wheel_dx = 0;
+	wheel_dy = 0;
+#endif
 
 	if (wheel_dx == 0 && wheel_dy == 0)
 		return 1;
 
+#ifdef _FLTK_DISABLED
 	EV_RawKey(FL_MOUSEWHEEL);
+#endif
 
 	return 1;
 }
@@ -715,6 +763,7 @@ int EV_RawButton(int event)
 	// release event, because when the first button is released the "pushed"
 	// widget becomes NULL.
 
+#ifdef _FLTK_DISABLED
 	if (Fl::event_buttons() != 0)
 		Fl::pushed(main_win->canvas);
 
@@ -725,11 +774,15 @@ int EV_RawButton(int event)
 		return 0;
 
 	return EV_RawKey(event);
+#else
+	return 0;
+#endif
 }
 
 
 int EV_RawMouse(int event)
 {
+#ifdef _FLTK_DISABLED		
 	if (!app_has_focus)
 		return 1;
 
@@ -749,6 +802,7 @@ int EV_RawMouse(int event)
 
 	mouse_last_x = Fl::event_x();
 	mouse_last_y = Fl::event_y();
+#endif
 
 	return 1;
 }
@@ -758,6 +812,7 @@ int EV_HandleEvent(int event)
 {
 	//// fprintf(stderr, "HANDLE EVENT %d\n", event);
 
+#ifdef _FLTK_DISABLED
 	switch (event)
 	{
 		case FL_FOCUS:
@@ -791,7 +846,7 @@ int EV_HandleEvent(int event)
 			// pass on everything else
 			break;
 	}
-
+#endif
 	return 0;
 }
 
@@ -802,8 +857,9 @@ int EV_HandleEvent(int event)
 
 static bool no_operation_cfg;
 
+#ifdef _FLTK_DISABLED
 static std::map< std::string, Fl_Menu_Button* > op_all_menus;
-
+#endif
 
 typedef struct
 {
@@ -814,6 +870,7 @@ typedef struct
 } operation_command_t;
 
 
+#ifdef _FLTK_DISABLED
 static void ParseOperationLine(const char ** tokens, int num_tok,
 							   Fl_Menu_Button *menu)
 {
@@ -894,7 +951,7 @@ static void M_AddOperationMenu(std::string context, Fl_Menu_Button *menu)
 
 	main_win->add(menu);
 }
-
+#endif
 
 #define MAX_TOKENS  30
 
@@ -902,7 +959,7 @@ static bool M_ParseOperationFile()
 {
 	// open the file and build all the menus it contains.
 
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	// look in user's $HOME directory first
 	snprintf(filename, sizeof(filename), "%s/operations.cfg", home_dir);
@@ -923,11 +980,13 @@ static bool M_ParseOperationFile()
 
 	// parse each line
 
-	static char line[FL_PATH_MAX];
+	static char line[SMC_PATH_MAX];
 	const  char * tokens[MAX_TOKENS];
 
-	Fl_Menu_Button *menu = NULL;
 
+#ifdef _FLTK_DISABLED
+	Fl_Menu_Button *menu = NULL;
+#endif
 	std::string context;
 
 	while (M_ReadTextLine(line, sizeof(line), fp))
@@ -950,6 +1009,8 @@ static bool M_ParseOperationFile()
 				continue;
 			}
 
+#ifdef _FLTK_DISABLED			
+
 			if (menu != NULL)
 				M_AddOperationMenu(context, menu);
 
@@ -957,19 +1018,24 @@ static bool M_ParseOperationFile()
 			menu = new Fl_Menu_Button(0, 0, 99, 99, "");
 			menu->copy_label(tokens[2]);
 			menu->clear();
+#endif			
 
 			context = tokens[1];
 			continue;
 		}
 
+#ifdef _FLTK_DISABLED
 		if (menu != NULL)
 			ParseOperationLine(tokens, num_tok, menu);
+#endif			
 	}
 
 	fclose(fp);
 
+#ifdef _FLTK_DISABLED
 	if (menu != NULL)
 		M_AddOperationMenu(context, menu);
+#endif
 
 	return true;
 }
@@ -1013,6 +1079,7 @@ void CMD_OperationMenu()
 		}
 	}
 
+#ifdef _FLTK_DISABLED
 	Fl_Menu_Button *menu = op_all_menus[context];
 
 	if (menu == NULL)
@@ -1045,6 +1112,7 @@ void CMD_OperationMenu()
 		ExecuteCommand(info->cmd, info->param[0], info->param[1],
 					   info->param[2], info->param[3]);
 	}
+#endif
 }
 
 

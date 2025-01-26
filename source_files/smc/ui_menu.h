@@ -21,7 +21,9 @@
 #ifndef __EUREKA_UI_MENU_H__
 #define __EUREKA_UI_MENU_H__
 
+#ifdef _FLTK_DISABLED
 Fl_Sys_Menu_Bar * Menu_Create(int x, int y, int w, int h);
+#endif
 
 #endif  /* __EUREKA_UI_MENU_H__ */
 

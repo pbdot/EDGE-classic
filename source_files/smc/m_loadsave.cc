@@ -6,7 +6,7 @@
 //
 //  Copyright (C) 2001-2019 Andrew Apted
 //  Copyright (C)      2015 Ioan Chera
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -141,7 +141,7 @@ static void FreshLevel()
 static bool Project_AskFile(char *filename)
 {
 	// this returns false if user cancelled
-
+#ifdef _FLTK_DISABLED
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick file to create");
@@ -177,6 +177,9 @@ static bool Project_AskFile(char *filename)
 		strcat(filename, ".wad");
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -205,11 +208,15 @@ void Project_ApplyChanges(UI_ProjectSetup *dialog)
 			Resource_list.push_back(StringDup(dialog->res[i]));
 	}
 
+#ifdef _FLTK_DISABLED
 	Fl::wait(0.1);
+#endif
 
 	Main_LoadResources();
 
+#ifdef _FLTK_DISABLED
 	Fl::wait(0.1);
+#endif
 }
 
 
@@ -236,7 +243,7 @@ void CMD_NewProject()
 
 	/* first, ask for the output file */
 
-	char filename[FL_PATH_MAX];
+	char filename[SMC_PATH_MAX];
 
 	if (! Project_AskFile(filename))
 		return;
@@ -271,8 +278,10 @@ void CMD_NewProject()
 			return;
 		}
 
+#ifdef _FLTK_DISABLED
 		Fl::wait(0.1);
 		Fl::wait(0.1);
+#endif		
 	}
 
 
@@ -978,7 +987,9 @@ void LoadLevel(Wad_file *wad, const char *level)
 	main_win->UpdateTotals();
 	main_win->UpdateGameInfo();
 	main_win->InvalidatePanelObj();
+#ifdef _FLTK_DISABLED	
 	main_win->redraw();
+#endif
 
 	if (main_win)
 	{
@@ -1741,6 +1752,7 @@ bool M_SaveMap()
 
 bool M_ExportMap()
 {
+#ifdef _FLTK_DISABLED
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick file to export to");
@@ -1767,7 +1779,7 @@ bool M_ExportMap()
 	}
 
 	// if extension is missing then add ".wad"
-	char filename[FL_PATH_MAX];
+	char filename[SMC_PATH_MAX];
 
 	strcpy(filename, chooser.filename());
 
@@ -1782,7 +1794,6 @@ bool M_ExportMap()
 		DLG_Notify("Unable to export the map:\n\nFile already in use");
 		return false;
 	}
-
 
 	// does the file already exist?  if not, create it...
 	bool exists = FileExists(filename);
@@ -1823,9 +1834,7 @@ bool M_ExportMap()
 		return false;
 	}
 
-
 	// ask user for map name
-
 	UI_ChooseMap * dialog = new UI_ChooseMap(Level_name);
 
 	dialog->PopulateButtons(toupper(Level_name[0]), wad);
@@ -1874,6 +1883,9 @@ bool M_ExportMap()
 	Main_LoadResources();
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 

@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2020 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -198,7 +198,7 @@ static void CreateHomeDirs()
 {
 	SYS_ASSERT(home_dir);
 
-	static char dir_name[FL_PATH_MAX];
+	static char dir_name[SMC_PATH_MAX];
 
 #ifdef __APPLE__
    // IOANCH 20130825: modified to use name-independent calls
@@ -229,8 +229,8 @@ static void CreateHomeDirs()
 
 	for (int i = 0 ; subdirs[i] ; i++)
 	{
-		snprintf(dir_name, FL_PATH_MAX, "%s/%s", (i < 2) ? cache_dir : home_dir, subdirs[i]);
-		dir_name[FL_PATH_MAX-1] = 0;
+		snprintf(dir_name, SMC_PATH_MAX, "%s/%s", (i < 2) ? cache_dir : home_dir, subdirs[i]);
+		dir_name[SMC_PATH_MAX-1] = 0;
 
 		FileMakeDir(dir_name);
 	}
@@ -239,6 +239,7 @@ static void CreateHomeDirs()
 
 static void Determine_HomeDir(const char *argv0)
 {
+#ifdef _FLTK_DISABLED	
 	// already set by cmd-line option?
 	if (! home_dir)
 	{
@@ -271,7 +272,7 @@ static void Determine_HomeDir(const char *argv0)
 	StringFree(path);
 
 #elif defined(__APPLE__)
-	char * path = StringNew(FL_PATH_MAX + 4);
+	char * path = StringNew(SMC_PATH_MAX + 4);
 
    fl_filename_expand(path, OSX_UserDomainDirectory(osx_LibAppSupportDir, "eureka-editor"));
    home_dir = StringDup(path);
@@ -282,7 +283,7 @@ static void Determine_HomeDir(const char *argv0)
 	StringFree(path);
 
 #else  // UNIX
-	char * path = StringNew(FL_PATH_MAX + 4);
+	char * path = StringNew(SMC_PATH_MAX + 4);
 
 	if (fl_filename_expand(path, "$HOME/.eureka"))
 		home_dir = path;
@@ -303,6 +304,7 @@ static void Determine_HomeDir(const char *argv0)
 
 	// determine log filename
 	log_file = StringPrintf("%s/logs.txt", home_dir);
+#endif	
 }
 
 
@@ -361,11 +363,12 @@ static void Determine_InstallPath(const char *argv0)
 
 const char * GameNameFromIWAD(const char *iwad_name)
 {
-	static char game_name[FL_PATH_MAX];
+	static char game_name[SMC_PATH_MAX];
 
+#ifdef _FLTK_DISABLED
 	strcpy(game_name, fl_filename_name(iwad_name));
-
 	fl_filename_setext(game_name, "");
+#endif
 
 	y_strlowr(game_name);
 
@@ -527,6 +530,7 @@ static const char * DetermineLevel()
 // this is mainly to prevent ESCAPE key from quitting
 int Main_key_handler(int event)
 {
+#ifdef _FLTK_DISABLED	
 	if (event != FL_SHORTCUT)
 		return 0;
 
@@ -535,6 +539,7 @@ int Main_key_handler(int event)
 		EV_EscapeKey();
 		return 1;
 	}
+#endif
 
 	return 0;
 }
@@ -578,6 +583,7 @@ int x11_check_focus_change(void *xevent, void *data)
 
 static void Main_SetupFLTK()
 {
+#ifdef _FLTK_DISABLED	
 	Fl::visual(FL_DOUBLE | FL_RGB);
 
 #ifndef NO_OPENGL
@@ -634,6 +640,7 @@ static void Main_SetupFLTK()
 	int screen_h = Fl::h();
 
 	LogPrintf("Detected Screen Size: %dx%d\n", screen_w, screen_h);
+#endif	
 }
 
 
@@ -642,6 +649,7 @@ static void Main_SetupFLTK()
 //
 static void Main_OpenWindow()
 {
+#ifdef _FLTK_DISABLED	
 	main_win = new UI_MainWindow();
 
 	main_win->label("Eureka v" EUREKA_VERSION);
@@ -691,6 +699,7 @@ static void Main_OpenWindow()
 	Fl::focus(main_win->canvas);
 
 	Fl::check();
+#endif
 }
 
 
@@ -736,7 +745,7 @@ bool Main_ConfirmQuit(const char *action)
 //
 const char * Main_FileOpFolder()
 {
-	static char folder[FL_PATH_MAX];
+	static char folder[SMC_PATH_MAX];
 
 	if (Pwad_name)
 	{
@@ -760,14 +769,18 @@ void Main_Loop()
 		{
 			Nav_Navigate();
 
+#ifdef _FLTK_DISABLED
 			Fl::wait(0);
+#endif			
 
 			if (want_quit)
 				break;
 		}
 		else
 		{
+#ifdef _FLTK_DISABLED
 			Fl::wait(0.2);
+#endif
 		}
 
 		if (want_quit)

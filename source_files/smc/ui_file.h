@@ -24,10 +24,12 @@
 class UI_ChooseMap : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Input *map_name;
 	Fl_Group *map_buttons;
 
 	Fl_Return_Button *ok_but;
+#endif	
 
 	// normally NULL, when present will prevent using an existing level name
 	Wad_file *rename_wad;
@@ -55,11 +57,13 @@ public:
 	const char * Run();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void     ok_callback(Fl_Widget *, void *);
 	static void  close_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
 	static void  input_callback(Fl_Widget *, void *);
 	static void    new_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -75,13 +79,17 @@ private:
 		LOOK_Resource
 	};
 
+#ifdef _FLTK_DISABLED
 	Fl_Output *pwad_name;
 	Fl_Choice *look_where;
 
 	Fl_Input  *map_name;
+#endif	
 	UI_Scroll *button_grp;
 
+#ifdef _FLTK_DISABLED
 	Fl_Return_Button *ok_but;
+#endif
 
 	enum
 	{
@@ -124,12 +132,14 @@ private:
 	void CheckMapName();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void     ok_callback(Fl_Widget *, void *);
 	static void  close_callback(Fl_Widget *, void *);
 	static void   look_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
 	static void  input_callback(Fl_Widget *, void *);
 	static void   load_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -144,6 +154,7 @@ public:
 	};
 
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Choice *game_choice;
 	Fl_Choice *port_choice;
 	Fl_Choice *format_choice;
@@ -152,6 +163,7 @@ private:
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel;
+#endif
 
 	map_format_bitset_t usable_formats;
 
@@ -166,6 +178,7 @@ private:
 
 	static UI_ProjectSetup * _instance;  // meh!
 
+#ifdef _FLTK_DISABLED
 	static void   game_callback(Fl_Choice*, void*);
 	static void   port_callback(Fl_Choice*, void*);
 	static void format_callback(Fl_Choice*, void*);
@@ -178,6 +191,7 @@ private:
 
 	static void close_callback(Fl_Widget*, void*);
 	static void   use_callback(Fl_Button*, void*);
+#endif
 
 	void PopulateIWADs();
 	void PopulatePort();

@@ -24,8 +24,9 @@
 #include "w_rawdef.h"
 #include "w_wad.h"
 
+#ifdef _FLTK_DISABLED
 #include <zlib.h>
-
+#endif
 
 namespace ajbsp
 {
@@ -2092,9 +2093,9 @@ build_result_e SaveUDMF(node_t *root_node)
 
 
 static Lump_c  *zout_lump;
+#ifdef _FLTK_DISABLED
 static z_stream zout_stream;
 static Bytef    zout_buffer[1024];
-
 
 void ZLibBeginLump(Lump_c *lump)
 {
@@ -2189,7 +2190,7 @@ void ZLibFinishLump(void)
 	deflateEnd(&zout_stream);
 	zout_lump = NULL;
 }
-
+#endif
 
 /* ---------------------------------------------------------------- */
 

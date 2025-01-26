@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2020 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -26,7 +26,9 @@
 #include <map>
 #include <algorithm>
 
+#ifdef _FLTK_DISABLED
 #include "FL/gl.h"
+#endif
 
 #include "e_main.h"
 #include "e_hover.h"  // PointOnLineSide
@@ -50,7 +52,7 @@ extern bool render_unknown_bright;
 extern int  render_pixel_aspect;
 extern int  render_far_clip;
 
-
+#ifdef _FLTK_DISABLED
 // convert from our coordinate system (looking along +X)
 // to OpenGL's coordinate system (looking down -Z).
 static GLdouble flip_matrix[16] =
@@ -60,6 +62,7 @@ static GLdouble flip_matrix[16] =
 	 0, +1,  0,  0,
 	 0,  0,  0, +1
 };
+#endif
 
 
 // The emulation of DOOM lighting here targets a very basic
@@ -153,7 +156,9 @@ public:
 		if (is_sky(fname))
 		{
 			fullbright = true;
+#ifdef _FLTK_DISABLED			
 			glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
 			IM_DecodePixel(Misc_info.sky_color, r, g, b);
 			return NULL;
@@ -161,7 +166,9 @@ public:
 
 		if (! r_view.texturing)
 		{
+#ifdef _FLTK_DISABLED			
 			glBindTexture(GL_TEXTURE_2D, 0);
+#endif			
 
 			int col;
 
@@ -194,7 +201,9 @@ public:
 
 		if (! r_view.texturing)
 		{
+#ifdef _FLTK_DISABLED			
 			glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
 			int col;
 
@@ -241,6 +250,7 @@ public:
 							float cx, float cy, float cz, float ctx, float cty,
 							float r, float g, float b, float level)
 	{
+#ifdef _FLTK_DISABLED		
 		glColor3f(level * r, level * g, level * b);
 
 		glBegin(GL_POLYGON);
@@ -250,6 +260,7 @@ public:
 		glTexCoord2f(ctx, cty); glVertex3f(cx, cy, cz);
 
 		glEnd();
+#endif		
 	}
 
 	void LightClippedTriangle(double ax, double ay, float az, float atx, float aty,
@@ -483,6 +494,7 @@ public:
 				zb1 = zb2;
 		}
 
+#ifdef _FLTK_DISABLED		
 		glColor3f(level * r, level * g, level * b);
 
 		glBegin(GL_QUADS);
@@ -493,6 +505,7 @@ public:
 		glTexCoord2f(tx2, (zb1 - tex_top) * tex_scale); glVertex3f(x2, y2, zb1);
 
 		glEnd();
+#endif		
 	}
 
 	void LightClippedQuad(double x1, double y1, const slope_plane_c *p1,
@@ -652,6 +665,7 @@ public:
 			}
 			else
 			{
+#ifdef _FLTK_DISABLED				
 				glColor3f(r, g, b);
 				glBegin(GL_POLYGON);
 
@@ -673,6 +687,7 @@ public:
 				}
 
 				glEnd();
+#endif				
 			}
 		}
 	}
@@ -694,7 +709,9 @@ public:
 
 		if (sky_upper && where == 'U')
 		{
+#ifdef _FLTK_DISABLED			
 			glBindTexture(GL_TEXTURE_2D, 0);
+#endif			
 			IM_DecodePixel(Misc_info.sky_color, r, g, b);
 		}
 		else
@@ -756,7 +773,9 @@ public:
 			tex_scale = 1.0 / img_th;
 		}
 
+#ifdef _FLTK_DISABLED
 		glDisable(GL_ALPHA_TEST);
+#endif		
 
 		double r0 = (double)r / 255.0;
 		double g0 = (double)g / 255.0;
@@ -825,7 +844,9 @@ public:
 			z1 = z2 - img_h;
 		}
 
+#ifdef _FLTK_DISABLED
 		glEnable(GL_ALPHA_TEST);
+#endif		
 
 		slope_plane_c p1; p1.Init(z1);
 		slope_plane_c p2; p2.Init(z2);
@@ -1114,7 +1135,9 @@ public:
 
 		sector_3dfloors_c *exfloor = Subdiv_3DFloorsForSector(sec_index);
 
+#ifdef _FLTK_DISABLED
 		glColor3f(1, 1, 1);
+#endif		
 
 		// support for BOOM's 242 "transfer heights" line type
 		if (exfloor->heightsec >= 0)
@@ -1291,6 +1314,7 @@ public:
 			L = DoomLightToFloat(light, ty /* dist */);
 		}
 
+#ifdef _FLTK_DISABLED
 		glColor3f(L, L, L);
 
 		glBegin(GL_QUADS);
@@ -1301,6 +1325,8 @@ public:
 		glTexCoord2f(tx2, ty1); glVertex3f(x2, y2, z1);
 
 		glEnd();
+#endif
+
 	}
 
 	void HighlightLine(int ld_index, int part)
@@ -1361,6 +1387,7 @@ public:
 			z2 = front->ceilh;
 		}
 
+#ifdef _FLTK_DISABLED
 		glBegin(GL_LINE_LOOP);
 
 		glVertex3f(x1, y1, z1);
@@ -1369,6 +1396,7 @@ public:
 		glVertex3f(x2, y2, z1);
 
 		glEnd();
+#endif		
 	}
 
 	void HighlightSector(int sec_index, int part)
@@ -1405,10 +1433,12 @@ public:
 				float x2 = L->End()->x();
 				float y2 = L->End()->y();
 
+#ifdef _FLTK_DISABLED
 				glBegin(GL_LINE_STRIP);
 				glVertex3f(x1, y1, z);
 				glVertex3f(x2, y2, z);
 				glEnd();
+#endif				
 			}
 		}
 	}
@@ -1468,7 +1498,7 @@ public:
 
 		z1 += drag_dz;
 		z2 += drag_dz;
-
+#ifdef _FLTK_DISABLED
 		glBegin(GL_LINE_LOOP);
 
 		glVertex3f(x1, y1, z1);
@@ -1477,6 +1507,7 @@ public:
 		glVertex3f(x2, y2, z1);
 
 		glEnd();
+#endif		
 	}
 
 	void HighlightObject(Objid& obj)
@@ -1522,11 +1553,13 @@ public:
 
 	void Highlight()
 	{
+#ifdef _FLTK_DISABLED		
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_ALPHA_TEST);
 
 		glLineWidth(2);
+#endif		
 
 		/* do the selection */
 
@@ -1547,11 +1580,15 @@ public:
 
 			if (parts > 1)
 			{
+#ifdef _FLTK_DISABLED				
 				gl_color(SEL3D_COL);
+#endif				
 			}
 			else
 			{
+#ifdef _FLTK_DISABLED				
 				gl_color(SEL_COL);
+#endif				
 				parts = 0;
 			}
 
@@ -1561,15 +1598,18 @@ public:
 		}
 
 		/* do the highlight */
-
+#ifdef _FLTK_DISABLED
 		gl_color(saw_hl ? HI_AND_SEL_COL : HI_COL);
+#endif		
 
 		if (edit.action == ACT_DRAG && edit.dragged.valid())
 			HighlightObject(edit.dragged);
 		else
 			HighlightObject(edit.highlight);
 
+#ifdef _FLTK_DISABLED
 		glLineWidth(1);
+#endif		
 	}
 
 	void MarkCameraSector()
@@ -1589,13 +1629,16 @@ public:
 		for (int i=0 ; i < NumLineDefs ; i++)
 			DrawLine(i);
 
+#ifdef _FLTK_DISABLED
 		glDisable(GL_ALPHA_TEST);
-
+#endif		
 		for (int s=0 ; s < NumSectors ; s++)
 			if (seen_sectors.get(s))
 				DrawSector(s);
 
+#ifdef _FLTK_DISABLED
 		glEnable(GL_ALPHA_TEST);
+#endif		
 
 		if (r_view.sprites)
 			for (int t=0 ; t < NumThings ; t++)
@@ -1604,6 +1647,7 @@ public:
 
 	void Begin(int ow, int oh)
 	{
+#ifdef _FLTK_DISABLED		
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1653,10 +1697,12 @@ public:
 
 		glLoadIdentity();
 		glFrustum(-x_slope, +x_slope, -y_slope, +y_slope, z_near, z_far);
+#endif
 	}
 
 	void Finish()
 	{
+#ifdef _FLTK_DISABLED		
 		// reset state
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_DEPTH_TEST);
@@ -1668,6 +1714,7 @@ public:
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+#endif		
 	}
 };
 

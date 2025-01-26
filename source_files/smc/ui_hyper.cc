@@ -33,19 +33,23 @@
 
 UI_HyperLink::UI_HyperLink(int x, int y, int w, int h, const char *label,
                            const char *_url) :
+#ifdef _FLTK_DISABLED                           
     Fl_Button(x, y, w, h, label),
+#endif
     hover(false),
     label_X(0), label_Y(0), label_W(0), label_H(0)
 {
   // copy the URL string
   url = strdup(_url);
 
+#ifdef _FLTK_DISABLED
   box(FL_FLAT_BOX);
   color(FL_GRAY);
   labelcolor(LINK_BLUE);
 
   // setup the callback
   callback(callback_Link, NULL);
+#endif
 }
 
 
@@ -60,7 +64,7 @@ void UI_HyperLink::checkLink()
   // change the cursor if the mouse is over the link.
   // the 'hover' variable reduces the number of times fl_cursor()
   // needs to be called (since it can be expensive).
-
+#ifdef _FLTK_DISABLED
   if (Fl::event_inside(x()+label_X, y()+label_Y, label_W, label_H))
   {
     if (! hover)
@@ -75,11 +79,13 @@ void UI_HyperLink::checkLink()
 
     hover = false;
   }
+#endif
 }
 
 
 int UI_HyperLink::handle(int event)
 {
+#ifdef _FLTK_DISABLED  
   if (!active_r())
     return Fl_Button::handle(event);
 
@@ -111,11 +117,15 @@ int UI_HyperLink::handle(int event)
   }
 
   return Fl_Button::handle(event);
+  #else
+  return 0;
+  #endif
 }
 
 
 void UI_HyperLink::draw()
 {
+  #ifdef _FLTK_DISABLED
   if (type() == FL_HIDDEN_BUTTON)
     return;
 
@@ -157,9 +167,11 @@ void UI_HyperLink::draw()
   if (Fl::focus() == this)
     draw_focus();
 */
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_HyperLink::callback_Link(Fl_Widget *w, void *data)
 {
   UI_HyperLink *link = (UI_HyperLink *)w;
@@ -171,4 +183,5 @@ void UI_HyperLink::callback_Link(Fl_Widget *w, void *data)
     LogPrintf("\n");
   }
 }
+#endif
 

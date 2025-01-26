@@ -133,10 +133,12 @@ static bool ValidLumpToEdit(const char *p)
 class UI_ChooseTextLump : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Input *lump_name;
 	Fl_Group *lump_buttons;
 
 	Fl_Return_Button *ok_but;
+#endif	
 
 	enum
 	{
@@ -160,12 +162,15 @@ private:
 	void CheckInput();
 	void PopulateButtons();
 
+#ifdef _FLTK_DISABLED
 	static void     ok_callback(Fl_Widget *, void *);
 	static void  close_callback(Fl_Widget *, void *);
 	static void button_callback(Fl_Widget *, void *);
 	static void  input_callback(Fl_Widget *, void *);
 	static void header_callback(Fl_Widget *, void *);
 	static void script_callback(Fl_Widget *, void *);
+#endif
+
 };
 
 
@@ -173,6 +178,7 @@ UI_ChooseTextLump::UI_ChooseTextLump() :
 	UI_Escapable_Window(420, 385, "Choose Text Lump"),
 	action(ACT_none)
 {
+#ifdef _FLTK_DISABLED	
 	resizable(NULL);
 
 	callback(close_callback, this);
@@ -232,11 +238,13 @@ UI_ChooseTextLump::UI_ChooseTextLump() :
 	}
 
 	end();
+	#endif
 }
 
 
 void UI_ChooseTextLump::PopulateButtons()
 {
+	#ifdef _FLTK_DISABLED
 	int col = 0;
 	int row = 0;
 	int but_W = 100;
@@ -268,9 +276,10 @@ void UI_ChooseTextLump::PopulateButtons()
 			row += 1;
 		}
 	}
+	#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_ChooseTextLump::close_callback(Fl_Widget *w, void *data)
 {
 	UI_ChooseTextLump *win = (UI_ChooseTextLump *)data;
@@ -349,10 +358,11 @@ void UI_ChooseTextLump::button_callback(Fl_Widget *w, void *data)
 	win->lump_name->value(but->label());
 	win->action = ACT_ACCEPT;
 }
-
+#endif
 
 const char * UI_ChooseTextLump::Run()
 {
+#ifdef _FLTK_DISABLED
 	set_modal();
 	show();
 
@@ -371,6 +381,10 @@ const char * UI_ChooseTextLump::Run()
 
 	// return a copy of the name
 	return StringDup(name);
+#else
+	return "";
+#endif
+
 }
 
 
@@ -503,7 +517,7 @@ void CMD_AddBehaviorLump()
 		DLG_Notify("A BEHAVIOR lump can only be added to a Hexen format map.");
 		return;
 	}
-
+#ifdef _FLTK_DISABLED
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick bytecode file to insert");
@@ -556,6 +570,7 @@ void CMD_AddBehaviorLump()
 	FileFree(data);
 
 	MadeChanges = 1;
+	#endif
 }
 
 //--- editor settings ---

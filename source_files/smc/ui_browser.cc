@@ -29,6 +29,7 @@
 #include "im_img.h"
 #include "im_color.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "m_game.h"
 #include "e_main.h"		// recent_xxx
 #include "e_things.h"
@@ -101,7 +102,11 @@ bool Texture_MatchPattern(const char *tex, const char *pattern)
 	else
 		strcat(local_pat, "*");
 
+#ifdef _FLTK_DISABLED
 	bool result = fl_filename_match(tex, local_pat) ? true : false;
+#else
+	bool result = false;
+#endif	
 
 	return negated ? !result : result;
 }
@@ -112,22 +117,32 @@ bool Texture_MatchPattern(const char *tex, const char *pattern)
 // which is mainly useful for the Find/Replace panel, as it needs
 // to know which input box (Find or Replace) was last active.
 //
+#ifdef _FLTK_DISABLED
 class Browser_Button : public Fl_Button
+#else
+class Browser_Button
+#endif
 {
 public:
-	Browser_Button(int X, int Y, int W, int H, const char *L) :
-		Fl_Button(X, Y, W, H, L)
+	Browser_Button(int X, int Y, int W, int H, const char *L) {}
+#ifdef _FLTK_DISABLED	
+		: Fl_Button(X, Y, W, H, L)
 	{ }
+#endif
 
 	virtual ~Browser_Button()
 	{ }
 
 	int handle(int event)
 	{
+#ifdef _FLTK_DISABLED		
 		if (event == FL_FOCUS)
 			return 0;
 
 		return Fl_Button::handle(event);
+#else
+		return 0;
+#endif		
 	}
 };
 
@@ -137,13 +152,17 @@ public:
 Browser_Item::Browser_Item(int X, int Y, int W, int H,
 	                       const char *_desc, const char *_realname,
 						   int _num, char _kind, char _category) :
+#ifdef _FLTK_DISABLED								   
 	Fl_Group(X, Y, W, H, ""),
+#endif
 	desc(_desc), real_name(_realname),
 	number(_num), kind(_kind), category(_category),
 	recent_idx(-2),
 	button(NULL), pic(NULL)
 {
+#ifdef _FLTK_DISABLED			
 	end();
+
 
 	button = new Browser_Button(X + 4, Y + 1, W - 8, H - 2, desc.c_str());
 
@@ -153,6 +172,7 @@ Browser_Item::Browser_Item(int X, int Y, int W, int H,
 	button->when(FL_WHEN_CHANGED);
 
 	add(button);
+#endif	
 }
 
 
@@ -162,12 +182,15 @@ Browser_Item::Browser_Item(int X, int Y, int W, int H,
 	                       const char *_desc, const char *_realname,
 						   int _num, char _kind, char _category,
 						   int pic_w, int pic_h, UI_Pic *_pic) :
+#ifdef _FLTK_DISABLED								   
 	Fl_Group(X, Y, W, H, ""),
+#endif	
 	desc(_desc), real_name(_realname),
 	number(_num), kind(_kind), category(_category),
 	recent_idx(-2),
 	button(NULL), pic(_pic)
 {
+#ifdef _FLTK_DISABLED			
 	end();
 
 	add(pic);
@@ -180,6 +203,7 @@ Browser_Item::Browser_Item(int X, int Y, int W, int H,
 	add(box);
 
 	resizable(NULL);
+#endif	
 }
 
 
@@ -194,7 +218,7 @@ bool Browser_Item::MatchName(const char *name) const
 	return (y_stricmp(real_name.c_str(), name) == 0);
 }
 
-
+#ifdef _FLTK_DISABLED
 void Browser_Item::texture_callback(Fl_Widget *w, void *data)
 {
 	const char *tex_name = (const char *)data;
@@ -235,15 +259,18 @@ void Browser_Item::sector_callback(Fl_Widget *w, void *data)
 
 	main_win->BrowsedItem('S', item->number, "", Fl::event_state());
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
 
 UI_Browser_Box::UI_Browser_Box(int X, int Y, int W, int H, const char *label, char _kind) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, NULL),
+#endif	
 	kind(_kind), pic_mode(false)
 {
+#ifdef _FLTK_DISABLED	
 	end(); // cancel begin() in Fl_Group constructor
 
 	box(FL_FLAT_BOX);
@@ -364,6 +391,7 @@ UI_Browser_Box::UI_Browser_Box(int X, int Y, int W, int H, const char *label, ch
 	Fl_Box * rs_box = new Fl_Box(FL_NO_BOX, X + W - 10, Y + top_H, 8, H - top_H, NULL);
 
 	resizable(rs_box);
+#endif	
 }
 
 
@@ -375,6 +403,7 @@ UI_Browser_Box::~UI_Browser_Box()
 
 void UI_Browser_Box::resize(int X, int Y, int W, int H)
 {
+#ifdef _FLTK_DISABLED	
 	Fl_Group::resize(X, Y, W, H);
 
 	Fl_Widget * rs_box = resizable();
@@ -386,9 +415,10 @@ void UI_Browser_Box::resize(int X, int Y, int W, int H)
 	{
 		Filter();
 	}
+#endif	
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_Browser_Box::category_callback(Fl_Widget *w, void *data)
 {
 	UI_Browser_Box *that = (UI_Browser_Box *)data;
@@ -427,10 +457,12 @@ void UI_Browser_Box::sort_callback(Fl_Widget *w, void *data)
 
 	that->Sort();
 }
+#endif
 
 
 bool UI_Browser_Box::Filter(bool force_update)
 {
+#ifdef _FLTK_DISABLED	
 	bool changes = false;
 
 	int left_X  = scroll->x() + SBAR_W;
@@ -494,11 +526,15 @@ bool UI_Browser_Box::Filter(bool force_update)
 	scroll->redraw();
 
 	return changes;
+#else
+	return false;
+#endif	
 }
 
 
 bool UI_Browser_Box::SearchMatch(Browser_Item *item) const
 {
+#ifdef _FLTK_DISABLED	
 	if (browser_combine_tex && kind == 'T')
 	{
 		if (item->kind == 'T' && !do_tex->value())
@@ -532,6 +568,9 @@ bool UI_Browser_Box::SearchMatch(Browser_Item *item) const
 		return Texture_MatchPattern(item->real_name.c_str(), pattern);
 
 	return Texture_MatchPattern(item->desc.c_str(), pattern);
+#else
+	return false;
+#endif	
 }
 
 
@@ -621,6 +660,7 @@ static void SortPass(std::vector< Browser_Item * >& ARR, int gap, int total, sor
 
 void UI_Browser_Box::Sort()
 {
+#ifdef _FLTK_DISABLED	
 	int total = scroll->Children();
 
 	// transfer widgets to a local vector
@@ -655,6 +695,7 @@ void UI_Browser_Box::Sort()
 
 	// reposition them all
 	Filter(true);
+#endif	
 }
 
 
@@ -665,7 +706,7 @@ const char * TidyLineDesc(const char *name)
 	if (! strchr(name, '&'))
 		return name;
 
-	static char buffer[FL_PATH_MAX];
+	static char buffer[SMC_PATH_MAX];
 
 	char *dest = buffer;
 
@@ -689,6 +730,7 @@ const char * TidyLineDesc(const char *name)
 
 void UI_Browser_Box::Populate_Images(char imkind, std::map<std::string, Img_c *> & img_list)
 {
+#ifdef _FLTK_DISABLED	
 	/* Note: the side-by-side packing is done in Filter() method */
 
 	pic_mode = true;
@@ -759,11 +801,13 @@ void UI_Browser_Box::Populate_Images(char imkind, std::map<std::string, Img_c *>
 		                                      pic_w, pic_h, pic);
 		scroll->Add(item);
 	}
+#endif	
 }
 
 
 void UI_Browser_Box::Populate_Sprites()
 {
+#ifdef _FLTK_DISABLED	
 	/* Note: the side-by-side packing is done in Filter() method */
 
 	pic_mode = true;
@@ -811,11 +855,13 @@ void UI_Browser_Box::Populate_Sprites()
 
 		scroll->Add(item);
 	}
+#endif	
 }
 
 
 void UI_Browser_Box::Populate_ThingTypes()
 {
+#ifdef _FLTK_DISABLED	
 	std::map<int, thingtype_t *>::iterator TI;
 
 	int y = scroll->y();
@@ -838,11 +884,13 @@ void UI_Browser_Box::Populate_ThingTypes()
 
 		scroll->Add(item);
 	}
+#endif	
 }
 
 
 void UI_Browser_Box::Populate_LineTypes()
 {
+#ifdef _FLTK_DISABLED	
 	std::map<int, linetype_t *>::iterator TI;
 
 	int y = scroll->y();
@@ -866,11 +914,13 @@ void UI_Browser_Box::Populate_LineTypes()
 
 		scroll->Add(item);
 	}
+#endif	
 }
 
 
 void UI_Browser_Box::Populate_SectorTypes()
 {
+#ifdef _FLTK_DISABLED	
 	std::map<int, sectortype_t *>::iterator TI;
 
 	int y = scroll->y();
@@ -893,6 +943,7 @@ void UI_Browser_Box::Populate_SectorTypes()
 
 		scroll->Add(item);
 	}
+#endif	
 }
 
 
@@ -902,7 +953,9 @@ void UI_Browser_Box::Populate()
 	scroll->Remove_all();
 
 	// default background and scroll rate
+#ifdef _FLTK_DISABLED	
 	scroll->color(WINDOW_BG, WINDOW_BG);
+#endif	
 	scroll->resize_horiz(true);
 	scroll->Line_size(24 * 2);
 
@@ -911,13 +964,17 @@ void UI_Browser_Box::Populate()
 	{
 		if (browser_combine_tex)
 		{
+#ifdef _FLTK_DISABLED			
 			do_tex->show();
 			do_flats->show();
+#endif			
 		}
 		else
 		{
+#ifdef _FLTK_DISABLED			
 			do_tex->hide();
 			do_flats->hide();
+#endif			
 		}
 	}
 
@@ -939,10 +996,12 @@ void UI_Browser_Box::Populate()
 			break;
 
 		case 'O':
+#ifdef _FLTK_DISABLED
 			if (pics->value())
 				Populate_Sprites();
 			else
 				Populate_ThingTypes();
+#endif				
 			break;
 
 		case 'L':
@@ -969,16 +1028,19 @@ void UI_Browser_Box::SetCategories(const char *cats, const char *letters)
 	strncpy(cat_letters, letters, sizeof(cat_letters));
 	cat_letters[sizeof(cat_letters) - 1] = 0;
 
+#ifdef _FLTK_DISABLED
 	category->clear();
 	category->add(cats);
 	category->value(0);
 
 	redraw();
+#endif
 }
 
 
 void UI_Browser_Box::CycleCategory(int dir)
 {
+#ifdef _FLTK_DISABLED	
 	// need '- 1' since the size() includes the empty terminator
 	int total_cats = category->size() - 1;
 
@@ -1007,11 +1069,13 @@ void UI_Browser_Box::CycleCategory(int dir)
 	{
 		Filter();
 	}
+#endif	
 }
 
 
 bool UI_Browser_Box::CategoryByLetter(char letter)
 {
+#ifdef _FLTK_DISABLED	
 	// need '- 1' since the size() includes the empty terminator
 	int total_cats = category->size() - 1;
 
@@ -1024,6 +1088,7 @@ bool UI_Browser_Box::CategoryByLetter(char letter)
 			return true;
 		}
 	}
+#endif	
 
 	return false;
 }
@@ -1031,17 +1096,20 @@ bool UI_Browser_Box::CategoryByLetter(char letter)
 
 void UI_Browser_Box::ClearSearchBox()
 {
+#ifdef _FLTK_DISABLED	
 	if (search->size() > 0)
 	{
 		search->value("");
 
 		Filter();
 	}
+#endif
 }
 
 
 void UI_Browser_Box::JumpToTex(const char *tex_name)
 {
+#ifdef _FLTK_DISABLED	
 	if (! (kind == 'T' || kind == 'F'))
 		return;
 
@@ -1059,11 +1127,13 @@ void UI_Browser_Box::JumpToTex(const char *tex_name)
 			break;
 		}
 	}
+#endif	
 }
 
 
 void UI_Browser_Box::JumpToValue(int value)
 {
+#ifdef _FLTK_DISABLED	
 	if (! (kind == 'O' || kind == 'S' || kind == 'L'))
 		return;
 
@@ -1081,6 +1151,7 @@ void UI_Browser_Box::JumpToValue(int value)
 			break;
 		}
 	}
+#endif
 }
 
 
@@ -1092,6 +1163,7 @@ void UI_Browser_Box::Scroll(int delta)
 
 void UI_Browser_Box::RecentUpdate()
 {
+#ifdef _FLTK_DISABLED	
 	bool changes = false;
 
 	for (int i = 0 ; i < scroll->Children() ; i++)
@@ -1106,11 +1178,13 @@ void UI_Browser_Box::RecentUpdate()
 
 	if (changes && cat == '^')
 		Sort();
+#endif
 }
 
 
 void UI_Browser_Box::ToggleRecent(bool force_recent)
 {
+#ifdef _FLTK_DISABLED	
 	char cat = cat_letters[category->value()];
 
 	if (cat == '^' && force_recent)
@@ -1129,13 +1203,17 @@ void UI_Browser_Box::ToggleRecent(bool force_recent)
 	category->value(new_cat);
 
 	Sort();
+#endif
 }
 
 
 //------------------------------------------------------------------------
 
-
+#ifdef _FLTK_DISABLED
 class UI_Generalized_Item : public Fl_Choice
+#else
+class UI_Generalized_Item
+#endif
 {
 public:
 	const generalized_field_t * field;
@@ -1143,19 +1221,23 @@ public:
 public:
 	UI_Generalized_Item(int X, int Y, int W, int H,
 						const generalized_field_t *_field) :
+#ifdef _FLTK_DISABLED						
 		Fl_Choice(X, Y, W, H, ""),
+#endif
 		field(_field)
 	{
 		char label_buf[256];
 
 		snprintf(label_buf, sizeof(label_buf), "%s: ", field->name);
 
+#ifdef _FLTK_DISABLED
 		copy_label(label_buf);
 
 		for (int i = 0 ; i < field->num_keywords ; i++)
 		{
 			add(field->keywords[i]);
 		}
+#endif		
 
 		Reset();
 	}
@@ -1165,24 +1247,35 @@ public:
 
 	int Compute() const
 	{
+#ifdef _FLTK_DISABLED		
 		return (value() << field->shift) & field->mask;
+#else
+		return 0;
+#endif
 	}
 
 	void Decode(int line_type)
 	{
+#ifdef _FLTK_DISABLED		
 		value((line_type & field->mask) >> field->shift);
+#endif		
 	}
 
 	void Reset()
 	{
 		int def_val = CLAMP(0, field->default_val, field->num_keywords - 1);
 
+#ifdef _FLTK_DISABLED
 		value(def_val);
+#endif		
 	}
 };
 
-
+#ifdef _FLTK_DISABLED
 class UI_Generalized_Page : public Fl_Group
+#else
+class UI_Generalized_Page
+#endif
 {
 public:
 	int t_base;
@@ -1197,6 +1290,7 @@ public:
 	UI_Generalized_Item *change_widget;
 
 private:
+#ifdef _FLTK_DISABLED
 	static void item_callback(Fl_Widget *w, void *data)
 	{
 		UI_Generalized_Page *page = (UI_Generalized_Page *)data;
@@ -1206,11 +1300,14 @@ private:
 
 		page->do_callback();
 	}
+#endif	
 
 public:
 	UI_Generalized_Page(int X, int Y, int W, int H,
 						const generalized_linetype_t *info) :
+#ifdef _FLTK_DISABLED						
 		Fl_Group(X, Y, W, H),
+#endif
 		t_base(info->base), t_length(info->length),
 		num_items(0),
 		change_index(-1),
@@ -1235,7 +1332,9 @@ public:
 				Y += 10;
 
 			items[i] = new UI_Generalized_Item(X + 100, Y, 120, 22, &info->fields[i]);
+#ifdef _FLTK_DISABLED			
 			items[i]->callback(item_callback, this);
+#endif			
 
 			if (is_change && (i+2) < num_items)
 			{
@@ -1243,13 +1342,16 @@ public:
 				change_widget = items[i];
 			}
 
+#ifdef _FLTK_DISABLED
 			if (change_index >= 0 && i == change_index+1)
 				items[i]->deactivate();
+#endif				
 
 			Y += 30;
 		}
-
+#ifdef _FLTK_DISABLED
 		end();
+#endif
 	}
 
 	~UI_Generalized_Page()
@@ -1259,7 +1361,7 @@ public:
 	{
 		if (change_index < 0)
 			return;
-
+#ifdef _FLTK_DISABLED
 		if (items[change_index]->value() == 0)
 		{
 			items[change_index+1]->deactivate();
@@ -1270,6 +1372,7 @@ public:
 			items[change_index+1]->  activate();
 			items[change_index+2]->deactivate();
 		}
+#endif
 	}
 
 	int ComputeType() const
@@ -1278,8 +1381,10 @@ public:
 
 		for (int i = 0 ; i < num_items ; i++)
 		{
+#ifdef _FLTK_DISABLED			
 			if (items[i]->active())
 				value = value | items[i]->Compute();
+#endif				
 		}
 
 		return t_base + value;
@@ -1308,13 +1413,17 @@ public:
 
 
 UI_Generalized_Box::UI_Generalized_Box(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, NULL),
+#endif
 	num_pages(0),
 	in_update(false)
 {
+#ifdef _FLTK_DISABLED	
 	box(FL_FLAT_BOX);
 
 	color(BROWBACK_COL, BROWBACK_COL);
+#endif	
 
 
 	memset(pages, 0, sizeof(pages));
@@ -1327,6 +1436,7 @@ UI_Generalized_Box::UI_Generalized_Box(int X, int Y, int W, int H, const char *l
 
 	Y += 10;
 
+#ifdef _FLTK_DISABLED
 	Fl_Box *title = new Fl_Box(X + 30, Y, W - 114, 26, label);
 	title->labelsize(24);
 
@@ -1360,6 +1470,7 @@ UI_Generalized_Box::UI_Generalized_Box(int X, int Y, int W, int H, const char *l
 	Fl_Box * rs_box = new Fl_Box(FL_NO_BOX, orig_X + W - 10, Y + H - 10, 8, 8, NULL);
 
 	resizable(rs_box);
+	#endif
 }
 
 
@@ -1371,6 +1482,7 @@ UI_Generalized_Box::~UI_Generalized_Box()
 
 void UI_Generalized_Box::Populate()
 {
+#ifdef _FLTK_DISABLED	
 	if (! Features.gen_types)
 	{
 		no_boom->show();
@@ -1402,11 +1514,13 @@ void UI_Generalized_Box::Populate()
 	}
 
 	redraw();
+#endif	
 }
 
 
 void UI_Generalized_Box::CreatePages()
 {
+#ifdef _FLTK_DISABLED	
 	memset(pages, 0, sizeof(pages));
 
 	num_pages = 0;
@@ -1432,22 +1546,28 @@ void UI_Generalized_Box::CreatePages()
 	}
 
 	category->value(0);
+#endif	
 }
 
 
 int UI_Generalized_Box::ComputeType() const
 {
+#ifdef _FLTK_DISABLED	
 	int cur_page = category->value();
 
 	if (cur_page == 0)
 		return 0;
 
 	return pages[cur_page - 1]->ComputeType();
+#else
+	return 0;
+#endif	
 }
 
 
 void UI_Generalized_Box::UpdateGenType(int line_type)
 {
+#ifdef _FLTK_DISABLED	
 	if (in_update)
 		return;
 
@@ -1486,9 +1606,11 @@ void UI_Generalized_Box::UpdateGenType(int line_type)
 	}
 
 	pages[new_page]->DecodeType(line_type);
+#endif	
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_Generalized_Box::hide_callback(Fl_Widget *w, void *data)
 {
 	main_win->BrowserMode(0);
@@ -1528,13 +1650,15 @@ void UI_Generalized_Box::edit_callback(Fl_Widget *w, void *data)
 	}
 	box->in_update = false;
 }
-
+#endif
 
 //------------------------------------------------------------------------
 
 
 UI_Browser::UI_Browser(int X, int Y, int W, int H, const char *label) :
+#ifdef _FLTK_DISABLED
     Fl_Group(X, Y, W, H, label),
+#endif	
 	active(2)
 {
 	// create each browser box
@@ -1554,15 +1678,20 @@ UI_Browser::UI_Browser(int X, int Y, int W, int H, const char *label) :
 	{
 		browsers[i] = new UI_Browser_Box(X, Y, W, H, mode_titles[i], mode_letters[i]);
 
+#ifdef _FLTK_DISABLED
 		if (i != active)
 			browsers[i]->hide();
+#endif
+
 	}
 
 	gen_box = new UI_Generalized_Box(X, Y, W, H, "Generalized");
+#ifdef _FLTK_DISABLED	
 	gen_box->hide();
 
 
 	end();
+#endif	
 }
 
 
@@ -1608,21 +1737,27 @@ void UI_Browser::SetActive(int new_active)
 	if (new_active == active)
 		return;
 
+#ifdef _FLTK_DISABLED
 	if (active < ACTIVE_GENERALIZED)
 		browsers[active]->hide();
 	else
 		gen_box->hide();
+#endif		
 
 	active = new_active;
 
 	if (active < ACTIVE_GENERALIZED)
 	{
+#ifdef _FLTK_DISABLED		
 		browsers[active]->show();
+#endif		
 		browsers[active]->RecentUpdate();
 	}
 	else
 	{
+#ifdef _FLTK_DISABLED		
 		gen_box->show();
+#endif		
 	}
 
 	if (new_active == ACTIVE_GENERALIZED)
@@ -1753,6 +1888,7 @@ void UI_Browser::RecentUpdate()
 
 void UI_Browser::ToggleRecent(bool force_recent)
 {
+#ifdef _FLTK_DISABLED	
 	// show browser if hidden [ and then force the RECENT category ]
 	if (! visible())
 	{
@@ -1765,6 +1901,7 @@ void UI_Browser::ToggleRecent(bool force_recent)
 	{
 		browsers[active]->ToggleRecent(force_recent);
 	}
+#endif	
 }
 
 
@@ -1779,6 +1916,7 @@ void UI_Browser::UpdateGenType(int line_type)
 
 bool UI_Browser_Box::ParseUser(const char ** tokens, int num_tok)
 {
+#ifdef _FLTK_DISABLED	
 	// syntax is: browser <kind> <keyword> <args...>
 
 	if (num_tok < 3)
@@ -1833,11 +1971,15 @@ bool UI_Browser_Box::ParseUser(const char ** tokens, int num_tok)
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 
 void UI_Browser_Box::WriteUser(FILE *fp)
 {
+#ifdef _FLTK_DISABLED	
 	char cat = cat_letters[category->value()];
 
 	if (isprint(cat))
@@ -1856,6 +1998,7 @@ void UI_Browser_Box::WriteUser(FILE *fp)
 		fprintf(fp, "browser %c do_flats %d\n", kind, do_flats->value());
 		fprintf(fp, "browser %c do_tex %d\n", kind, do_tex->value());
 	}
+#endif	
 }
 
 
@@ -1879,6 +2022,7 @@ bool UI_Browser::ParseUser(const char ** tokens, int num_tok)
 
 void UI_Browser::WriteUser(FILE *fp)
 {
+#ifdef _FLTK_DISABLED	
 	fprintf(fp, "\n");
 
 	fprintf(fp, "open_browser %c\n",
@@ -1892,6 +2036,7 @@ void UI_Browser::WriteUser(FILE *fp)
 	}
 
 	// generalized box is not saved (not needed)
+#endif	
 }
 
 

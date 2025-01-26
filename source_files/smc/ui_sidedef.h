@@ -33,8 +33,11 @@ enum
 
 };
 
-
+#ifdef _FLTK_DISABLED
 class UI_SideBox : public Fl_Group
+#else
+class UI_SideBox
+#endif
 {
 private:
 	int  obj;
@@ -44,9 +47,11 @@ private:
 	bool on_2S_line;
 
 public:
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *x_ofs;
 	Fl_Int_Input *y_ofs;
 	Fl_Int_Input *sec;
+#endif
 
 	UI_Pic *l_pic;
 	UI_Pic *u_pic;
@@ -56,8 +61,10 @@ public:
 	UI_DynInput *u_tex;
 	UI_DynInput *r_tex;
 
+#ifdef _FLTK_DISABLED
 	Fl_Button *add_button;
 	Fl_Button *del_button;
+#endif
 
 public:
 	UI_SideBox(int X, int Y, int W, int H, int _side);
@@ -83,12 +90,15 @@ private:
 	void UpdateHiding();
 	void UpdateAddDel();
 
+#ifdef _FLTK_DISABLED
 	static void    tex_callback(Fl_Widget *, void *);
 	static void dyntex_callback(Fl_Widget *, void *);
 	static void offset_callback(Fl_Widget *, void *);
 	static void sector_callback(Fl_Widget *, void *);
 	static void    add_callback(Fl_Widget *, void *);
 	static void delete_callback(Fl_Widget *, void *);
+#endif
+
 };
 
 #endif  /* __EUREKA_UI_SIDEDEF_H__ */

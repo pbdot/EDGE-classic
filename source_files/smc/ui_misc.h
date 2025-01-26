@@ -24,12 +24,14 @@
 class UI_MoveDialog : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *delta_x;
 	Fl_Int_Input *delta_y;
 	Fl_Int_Input *delta_z;
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel_but;
+#endif
 
 	bool want_close;
 
@@ -40,8 +42,10 @@ public:
 	void Run();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void    ok_callback(Fl_Widget *, void *);
 	static void close_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -50,6 +54,7 @@ private:
 class UI_ScaleDialog : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Input *scale_x;
 	Fl_Input *scale_y;
 	Fl_Input *scale_z;
@@ -60,6 +65,7 @@ private:
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel_but;
+#endif
 
 	bool want_close;
 
@@ -70,8 +76,10 @@ public:
 	void Run();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void    ok_callback(Fl_Widget *, void *);
 	static void close_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -80,6 +88,7 @@ private:
 class UI_RotateDialog : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Float_Input *angle;
 
 	Fl_Choice *dir;
@@ -87,7 +96,7 @@ private:
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel_but;
-
+#endif
 	bool want_close;
 
 public:
@@ -97,8 +106,10 @@ public:
 	void Run();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void    ok_callback(Fl_Widget *, void *);
 	static void close_callback(Fl_Widget *, void *);
+#endif
 };
 
 
@@ -107,10 +118,12 @@ private:
 class UI_JumpToDialog : public UI_Escapable_Window
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Int_Input *input;
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel_but;
+#endif
 
 	bool want_close;
 
@@ -125,9 +138,11 @@ public:
 	int Run();
 
 private:
+#ifdef _FLTK_DISABLED
 	static void    ok_callback(Fl_Widget *, void *);
 	static void close_callback(Fl_Widget *, void *);
 	static void input_callback(Fl_Widget *, void *);
+#endif
 };
 
 

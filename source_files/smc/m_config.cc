@@ -5,7 +5,7 @@
 //  Eureka DOOM Editor
 //
 //  Copyright (C) 2001-2018 Andrew Apted
-//  Copyright (C) 1997-2003 André Majorel et al
+//  Copyright (C) 1997-2003 Andrï¿½ Majorel et al
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------
 //
 //  Based on Yadex which incorporated code from DEU 5.21 that was put
-//  in the public domain in 1994 by Raphaël Quinet and Brendon Wyber.
+//  in the public domain in 1994 by Raphaï¿½l Quinet and Brendon Wyber.
 //
 //------------------------------------------------------------------------
 
@@ -32,6 +32,7 @@
 #include "lib_adler.h"
 #include "im_color.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "m_loadsave.h"
 #include "r_grid.h"
 #include "r_render.h"
@@ -1013,7 +1014,7 @@ static const char * default_config_file()
 {
 	SYS_ASSERT(home_dir);
 
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 	snprintf(filename, sizeof(filename), "%s/config.cfg", home_dir);
 
 	return StringDup(filename);
@@ -1052,7 +1053,7 @@ int M_ParseConfigFile()
 
 int M_ParseDefaultConfigFile()
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/defaults.cfg", install_dir);
 
@@ -1519,7 +1520,7 @@ void M_FreeLine(const char ** tokens, int num_tok)
 
 char * PersistFilename(const crc32_c& crc)
 {
-	static char filename[FL_PATH_MAX];
+	static char filename[SMC_PATH_MAX];
 
 	snprintf(filename, sizeof(filename), "%s/cache/%08X%08X.dat",
 			cache_dir, crc.extra, crc.raw);
@@ -1547,7 +1548,7 @@ bool M_LoadUserState()
 	LogPrintf("Loading user state from: %s\n", filename);
 
 
-	static char line[FL_PATH_MAX];
+	static char line[SMC_PATH_MAX];
 
 	const char * tokens[MAX_TOKENS];
 

@@ -49,10 +49,13 @@ static const char * QueryName(const char *port = Port_name, const char *game = G
 class UI_PortPathDialog : public UI_Escapable_Window
 {
 public:
+
+#ifdef _FLTK_DISABLED
 	Fl_Output *exe_display;
 
 	Fl_Button *ok_but;
 	Fl_Button *cancel_but;
+#endif	
 
 	// the chosen EXE name, or NULL if cancelled
 	char *exe_name;
@@ -67,14 +70,17 @@ public:
 		exe_name = StringDup(newbie);
 
 		// NULL is ok here
+#ifdef _FLTK_DISABLED
 		exe_display->value(exe_name);
 
 		if (exe_name && FileExists(exe_name))
 			ok_but->activate();
 		else
 			ok_but->deactivate();
+#endif			
 	}
 
+#ifdef _FLTK_DISABLED
 	static void ok_callback(Fl_Widget *w, void *data)
 	{
 		UI_PortPathDialog * that = (UI_PortPathDialog *)data;
@@ -124,6 +130,7 @@ public:
 
 		that->SetEXE(chooser.filename());
 	}
+#endif	
 
 public:
 	UI_PortPathDialog(const char *port_name) :
@@ -134,6 +141,7 @@ public:
 
 		snprintf(message_buf, sizeof(message_buf), "Setting up location of the executable (EXE) for %s.", port_name);
 
+#ifdef _FLTK_DISABLED
 		Fl_Box *header = new Fl_Box(FL_NO_BOX, 20, 20, w() - 40, 30, "");
 		header->copy_label(message_buf);
 		header->align(FL_ALIGN_INSIDE | FL_ALIGN_LEFT);
@@ -170,6 +178,8 @@ public:
 		resizable(NULL);
 
 		callback(close_callback, this);
+#endif		
+
 	}
 
 	virtual ~UI_PortPathDialog()
@@ -178,11 +188,14 @@ public:
 	// returns true if user clicked OK
 	bool Run()
 	{
+
+#ifdef _FLTK_DISABLED		
 		set_modal();
 		show();
 
 		while (! want_close)
 			Fl::wait(0.2);
+#endif			
 
 		return exe_name ? true : false;
 	}
@@ -223,8 +236,10 @@ bool M_PortSetupDialog(const char *port, const char *game)
 		// persist the new port settings
 		info = M_QueryPortPath(QueryName(port, game), true /* create_it */);
 
+#ifdef _FLTK_DISABLED
 		// FIXME: check result??
 		fl_filename_absolute(info->exe_filename, sizeof(info->exe_filename), dialog->exe_name);
+#endif		
 
 		M_SaveRecent();
 	}
@@ -239,7 +254,7 @@ bool M_PortSetupDialog(const char *port, const char *game)
 
 static const char *CalcEXEName(const port_path_info_t *info)
 {
-	static char exe_name[FL_PATH_MAX];
+	static char exe_name[SMC_PATH_MAX];
 
 	// make the executable name relative, since we chdir() to its folder
 
@@ -303,10 +318,12 @@ static const char * CalcWarpString()
 
 static void AppendWadName(char *buf, size_t maxsize, const char *name, const char *parm = NULL)
 {
-	static char abs_name[FL_PATH_MAX];
+	static char abs_name[SMC_PATH_MAX];
 
 	// FIXME: check result??
+#ifdef _FLTK_DISABLED	
 	fl_filename_absolute(abs_name, sizeof(abs_name), name);
+#endif
 
 	// ensure we don't overflow the 'wad_names' buffer
 	size_t new_len = strlen(buf);
@@ -336,7 +353,7 @@ static void AppendWadName(char *buf, size_t maxsize, const char *name, const cha
 
 static const char * GrabWadNames(const port_path_info_t *info)
 {
-	static char wad_names[FL_PATH_MAX * 3];
+	static char wad_names[SMC_PATH_MAX * 3];
 
 	bool has_file = false;
 
@@ -419,17 +436,18 @@ void CMD_TestMap()
 		return;
 	}
 
-
 	// remember the previous working directory
-	static char old_dir[FL_PATH_MAX];
+	static char old_dir[SMC_PATH_MAX];
 
+#ifdef _FLTK_DISABLED
 	if (getcwd(old_dir, sizeof(old_dir)) == NULL)
 	{
 		old_dir[0] = 0;
 	}
+#endif
 
 	// change working directory to be same as the executable
-	static char folder[FL_PATH_MAX];
+	static char folder[SMC_PATH_MAX];
 
 	FilenameGetPath(folder, sizeof(folder), info->exe_filename);
 
@@ -444,7 +462,7 @@ void CMD_TestMap()
 
 
 	// build the command string
-	static char cmd_buffer[FL_PATH_MAX * 4];
+	static char cmd_buffer[SMC_PATH_MAX * 4];
 
 	snprintf(cmd_buffer, sizeof(cmd_buffer), "%s %s %s",
 			 CalcEXEName(info), GrabWadNames(info), CalcWarpString());
@@ -454,10 +472,11 @@ void CMD_TestMap()
 
 	Status_Set("TESTING MAP");
 
+#ifdef _FLTK_DISABLED
 	main_win->redraw();
 	Fl::wait(0.1);
 	Fl::wait(0.1);
-
+#endif
 
 	/* Go baby! */
 
@@ -477,9 +496,11 @@ void CMD_TestMap()
 		FileChangeDir(old_dir);
 	}
 
+#ifdef _FLTK_DISABLED
 	main_win->redraw();
 	Fl::wait(0.1);
 	Fl::wait(0.1);
+#endif
 }
 
 

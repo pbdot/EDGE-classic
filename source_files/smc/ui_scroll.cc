@@ -36,11 +36,14 @@
 // UI_Scroll Constructor
 //
 UI_Scroll::UI_Scroll(int X, int Y, int W, int H, int _bar_side) :
+#ifdef _FLTK_DISABLED
 		Fl_Group(X, Y, W, H, NULL),
+#endif
 		bar_side(_bar_side),
 		resize_horiz_(false),
 		top_y(0), bottom_y(0)
 {
+#ifdef _FLTK_DISABLED	
 	end();
 
 	if (_bar_side < 0)
@@ -58,6 +61,7 @@ UI_Scroll::UI_Scroll(int X, int Y, int W, int H, int _bar_side) :
 	clip_children(1);
 
 	resizable(NULL);
+#endif
 }
 
 
@@ -71,6 +75,7 @@ UI_Scroll::~UI_Scroll()
 
 void UI_Scroll::resize(int X, int Y, int W, int H)
 {
+#ifdef _FLTK_DISABLED	
 //	int ox = x();
 //	int oy = y();
 //	int oh = h();
@@ -99,25 +104,31 @@ void UI_Scroll::resize(int X, int Y, int W, int H)
 			w->resize(X + (bar_side < 0 ? SBAR_W : 0), w->y(), W - SBAR_W, w->h());
 		}
 	}
+#endif
 }
 
 
 int UI_Scroll::handle(int event)
 {
+#ifdef _FLTK_DISABLED	
 	return Fl_Group::handle(event);
+#else
+	return 0;
+#endif
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_Scroll::bar_callback(Fl_Widget *w, void *data)
 {
 	UI_Scroll * that = (UI_Scroll *)data;
 
 	that->do_scroll();
 }
-
+#endif
 
 void UI_Scroll::do_scroll()
 {
+#ifdef _FLTK_DISABLED	
 	int pos = scrollbar->value();
 
 	int total_h = bottom_y - top_y;
@@ -127,11 +138,13 @@ void UI_Scroll::do_scroll()
 	reposition_all(y() - pos);
 
 	redraw();
+#endif
 }
 
 
 void UI_Scroll::calc_extents()
 {
+#ifdef _FLTK_DISABLED	
 	if (Children() == 0)
 	{
 		top_y = bottom_y = 0;
@@ -151,11 +164,13 @@ void UI_Scroll::calc_extents()
 		   top_y = MIN(top_y, w->y());
 		bottom_y = MAX(bottom_y, w->y() + w->h());
 	}
+#endif
 }
 
 
 void UI_Scroll::reposition_all(int start_y)
 {
+#ifdef _FLTK_DISABLED	
 	for (int i = 0 ; i < Children() ; i++)
 	{
 		Fl_Widget * w = Child(i);
@@ -168,11 +183,13 @@ void UI_Scroll::reposition_all(int start_y)
 	calc_extents();
 
 	init_sizes();
+#endif
 }
 
 
 void UI_Scroll::Scroll(int delta)
 {
+#ifdef _FLTK_DISABLED	
 	int pixels;
 	int line_size = scrollbar->linesize();
 
@@ -189,11 +206,13 @@ void UI_Scroll::Scroll(int delta)
 		pixels = -pixels;
 
 	ScrollByPixels(pixels);
+#endif
 }
 
 
 void UI_Scroll::ScrollByPixels(int pixels)
 {
+#ifdef _FLTK_DISABLED	
 	int pos = scrollbar->value() + pixels;
 
 	int total_h = bottom_y - top_y;
@@ -209,16 +228,19 @@ void UI_Scroll::ScrollByPixels(int pixels)
 	reposition_all(y() - pos);
 
 	redraw();
+#endif
 }
 
 
 void UI_Scroll::JumpToChild(int i)
 {
+#ifdef _FLTK_DISABLED	
 	const Fl_Widget * w = Child(i);
 
 	int diff = w->y() - top_y - scrollbar->value();
 
 	ScrollByPixels(diff);
+#endif
 }
 
 
@@ -226,7 +248,7 @@ void UI_Scroll::JumpToChild(int i)
 //
 //  PASS-THROUGHS
 //
-
+#ifdef _FLTK_DISABLED
 void UI_Scroll::Add(Fl_Widget *w)
 {
 	add(w);
@@ -236,30 +258,40 @@ void UI_Scroll::Remove(Fl_Widget *w)
 {
 	remove(w);
 }
+#endif
 
 void UI_Scroll::Remove_first()
 {
+#ifdef _FLTK_DISABLED	
 	// skip scrollbar
 	remove(1);
+#endif
 }
 
 void UI_Scroll::Remove_all()
 {
+#ifdef _FLTK_DISABLED	
 	remove(scrollbar);
 
 	clear();
 	resizable(NULL);
 
 	add(scrollbar);
+#endif
 }
 
 
 int UI_Scroll::Children() const
 {
+#ifdef _FLTK_DISABLED	
 	// ignore scrollbar
 	return children() - 1;
+#else
+	return 0;
+#endif
 }
 
+#ifdef _FLTK_DISABLED
 Fl_Widget * UI_Scroll::Child(int i) const
 {
 	SYS_ASSERT(child(0) == scrollbar);
@@ -267,10 +299,12 @@ Fl_Widget * UI_Scroll::Child(int i) const
 	// skip scrollbar
 	return child(1 + i);
 }
+#endif
 
 
 void UI_Scroll::Init_sizes()
 {
+#ifdef _FLTK_DISABLED	
 	calc_extents();
 
 	init_sizes();
@@ -278,12 +312,15 @@ void UI_Scroll::Init_sizes()
 	int total_h = bottom_y - top_y;
 
 	scrollbar->value(0, h(), 0, MAX(h(), total_h));
+#endif
 }
 
 
 void UI_Scroll::Line_size(int pixels)
 {
+#ifdef _FLTK_DISABLED
 	scrollbar->linesize(pixels);
+#endif	
 }
 
 
@@ -292,11 +329,14 @@ void UI_Scroll::Line_size(int pixels)
 #define INFO_BAR_H	30
 
 UI_CanvasScroll::UI_CanvasScroll(int X, int Y, int W, int H) :
+#ifdef _FLTK_DISABLED
 	Fl_Group(X, Y, W, H),
+#endif
 	enable_bars(true),
 	bound_x1(0), bound_x2(100),
 	bound_y1(0), bound_y2(100)
 {
+#ifdef _FLTK_DISABLED	
 	for (int i = 0 ; i < 4 ; i++)
 		last_bounds[i] = 12345678;
 
@@ -330,6 +370,7 @@ UI_CanvasScroll::UI_CanvasScroll(int X, int Y, int W, int H) :
 	status = new UI_StatusBar(X, Y, W, INFO_BAR_H);
 
 	end();
+#endif
 }
 
 
@@ -339,6 +380,7 @@ UI_CanvasScroll::~UI_CanvasScroll()
 
 void UI_CanvasScroll::UpdateRenderMode()
 {
+#ifdef _FLTK_DISABLED	
 	int old_bars = enable_bars ? 1 : 0;
 	int new_bars = map_scroll_bars && !edit.render3d ? 1 : 0;
 
@@ -375,6 +417,7 @@ void UI_CanvasScroll::UpdateRenderMode()
 		status->hide();
 
 	init_sizes();
+#endif	
 }
 
 
@@ -442,7 +485,9 @@ void UI_CanvasScroll::Adjust_X()
 	if (map_x > bound_x2 - map_w) map_x = bound_x2 - map_w;
 	if (map_x < bound_x1) map_x = bound_x1;
 
+#ifdef _FLTK_DISABLED
 	horiz->value(map_x, map_w, bound_x1, bound_x2 - bound_x1);
+#endif
 }
 
 
@@ -459,12 +504,15 @@ void UI_CanvasScroll::Adjust_Y()
 	if (map_y > bound_y2 - map_h) map_y = bound_y2 - map_h;
 	if (map_y < bound_y1) map_y = bound_y1;
 
+#ifdef _FLTK_DISABLED
 	vert->value(map_y, map_h, bound_y1, bound_y2 - bound_y1);
+#endif
 }
 
 
 void UI_CanvasScroll::Scroll_X()
 {
+#ifdef _FLTK_DISABLED	
 	int pos = horiz->value();
 
 	double map_w = canvas->w() / grid.Scale;
@@ -472,11 +520,13 @@ void UI_CanvasScroll::Scroll_X()
 	double new_x = pos + map_w / 2.0;
 
 	grid.MoveTo(new_x, grid.orig_y);
+#endif
 }
 
 
 void UI_CanvasScroll::Scroll_Y()
 {
+#ifdef _FLTK_DISABLED	
 	int pos = vert->value();
 
 	double map_h = canvas->h() / grid.Scale;
@@ -484,9 +534,11 @@ void UI_CanvasScroll::Scroll_Y()
 	double new_y = bound_y2 - map_h / 2.0 - (pos - bound_y1);
 
 	grid.MoveTo(grid.orig_x, new_y);
+#endif
 }
 
 
+#ifdef _FLTK_DISABLED
 void UI_CanvasScroll::bar_callback(Fl_Widget *w, void *data)
 {
 	UI_CanvasScroll * that = (UI_CanvasScroll *)data;
@@ -497,6 +549,7 @@ void UI_CanvasScroll::bar_callback(Fl_Widget *w, void *data)
 	if (w == that->vert)
 		that->Scroll_Y();
 }
+#endif
 
 
 //--- editor settings ---

@@ -20,16 +20,22 @@
 
 #include "main.h"
 #include "m_config.h"
+#include "m_files.h"
 #include "w_wad.h"
 
 #include "ui_window.h"
 
-
+#ifdef _FLTK_DISABLED
 class UI_TedStatusBar : public Fl_Group
+#else
+class UI_TedStatusBar
+#endif
 {
 private:
+#ifdef _FLTK_DISABLED
 	Fl_Box *row_col;
 	Fl_Box *mod_box;
+#endif
 
 	int  cur_row;
 	int  cur_column;
@@ -37,9 +43,12 @@ private:
 
 public:
 	UI_TedStatusBar(int X, int Y, int W, int H, const char *label = NULL) :
+#ifdef _FLTK_DISABLED	
 		Fl_Group(X, Y, W, H, label),
+#endif
 		cur_row(1), cur_column(1), cur_modified(false)
 	{
+#ifdef _FLTK_DISABLED		
 		box(FL_UP_BOX);
 
 		row_col = new Fl_Box(FL_FLAT_BOX, X, Y+1, W*2/3, H-2, "");
@@ -49,6 +58,7 @@ public:
 		mod_box->align(FL_ALIGN_INSIDE | FL_ALIGN_RIGHT);
 
 		end();
+#endif
 
 		Update();
 	}
@@ -83,7 +93,7 @@ private:
 		static char buffer[256];
 
 		snprintf(buffer, sizeof(buffer), " Line: %-6d Col: %d", cur_row, cur_column);
-
+#ifdef _FLTK_DISABLED
 		row_col->copy_label(buffer);
 
 		if (cur_modified)
@@ -93,6 +103,7 @@ private:
 
 		// ensure background gets redrawn
 		redraw();
+#endif
 	}
 };
 
@@ -101,11 +112,17 @@ private:
 
 // andrewj: this class only exists because a very useful method of
 //          Fl_Text_Display is not public.  FFS.
+#ifdef _FLTK_DISABLED
 class UI_TedWrapper : public Fl_Text_Editor
+#else
+class UI_TedWrapper
+#endif
 {
 public:
-	UI_TedWrapper(int X, int Y, int W, int H, const char *l=0) :
-		Fl_Text_Editor(X, Y, W, H, l)
+	UI_TedWrapper(int X, int Y, int W, int H, const char *l=0) 
+#ifdef _FLTK_DISABLED
+	: Fl_Text_Editor(X, Y, W, H, l)
+#endif
 	{ }
 
 	virtual ~UI_TedWrapper()
@@ -113,18 +130,23 @@ public:
 
 	bool GetLineAndColumn(int *line, int *col)
 	{
+#ifdef _FLTK_DISABLED		
 		if (position_to_linecol(insert_position(), line, col) == 0)
 			return false;
 
 		*col += 1;
 
 		return true;
+#else
+		return false;
+#endif
 	}
 };
 
 
 //------------------------------------------------------------------------
 
+#ifdef _FLTK_DISABLED
 void UI_TextEditor::menu_do_save(Fl_Widget *w, void *data)
 {
 	UI_TextEditor *win = (UI_TextEditor *)data;
@@ -290,7 +312,6 @@ void UI_TextEditor::menu_do_goto_bottom(Fl_Widget *w, void *data)
 	win->ted->show_insert_position();
 }
 
-
 #undef FCAL
 #define FCAL  (Fl_Callback *)
 
@@ -339,15 +360,19 @@ static Fl_Menu_Item ted_menu_items[] =
 	{ 0 }
 };
 
+#endif
 
 //------------------------------------------------------------------------
 
 UI_TextEditor::UI_TextEditor() :
+#ifdef _FLTK_DISABLED
 	Fl_Double_Window(600, 400, ""),
+#endif
 	want_close(false), want_save(false),
 	is_new(true), read_only(false), has_changes(false),
 	find_string(NULL)
 {
+#ifdef _FLTK_DISABLED	
 	size_range(520, 200);
 
 	callback((Fl_Callback *) close_callback, this);
@@ -379,21 +404,23 @@ UI_TextEditor::UI_TextEditor() :
 	resizable(ted);
 
 	end();
+#endif
 }
 
 
 UI_TextEditor::~UI_TextEditor()
 {
+#ifdef _FLTK_DISABLED	
 	ted->buffer(NULL);
-
 	delete tbuf; tbuf = NULL;
-
+#endif
 	StringFree(find_string);
 }
 
 
 int UI_TextEditor::Run()
 {
+#ifdef _FLTK_DISABLED
 	// it is safe to call these a second/third/etc time.
 	set_modal();
 	show();
@@ -417,12 +444,13 @@ int UI_TextEditor::Run()
 
 		UpdateStatus();
 	}
-
 	/* NOT REACHED */
+#endif
+
 	return RUN_Error;
 }
 
-
+#ifdef _FLTK_DISABLED
 void UI_TextEditor::close_callback(Fl_Widget *w, void *data)
 {
 	UI_TextEditor * win = (UI_TextEditor *)data;
@@ -439,7 +467,7 @@ void UI_TextEditor::close_callback(Fl_Widget *w, void *data)
 
 	win->want_close = true;
 }
-
+#endif
 
 void UI_TextEditor::text_modified_callback(int, int nInserted, int nDeleted, int, const char*, void *data)
 {
@@ -476,14 +504,16 @@ bool UI_TextEditor::LoadLump(Wad_file *wad, const char *lump_name)
 		return false;
 	}
 
-	static char line_buf[FL_PATH_MAX];
+	static char line_buf[SMC_PATH_MAX];
 
 	while (lump->GetLine(line_buf, sizeof(line_buf)))
 	{
 		StringRemoveCRLF(line_buf);
 
+#ifdef _FLTK_DISABLED
 		tbuf->append(line_buf);
 		tbuf->append("\n");
+#endif		
 	}
 
 	is_new = false;
@@ -507,7 +537,9 @@ void UI_TextEditor::LoadMemory(std::vector<byte> &buf)
 			continue;
 
 		charbuf[0] = buf[k];
+#ifdef _FLTK_DISABLED		
 		tbuf->append(charbuf);
+#endif
 	}
 
 	is_new = false;
@@ -516,6 +548,7 @@ void UI_TextEditor::LoadMemory(std::vector<byte> &buf)
 
 void UI_TextEditor::SaveLump(Wad_file *wad, const char *lump_name)
 {
+#ifdef _FLTK_DISABLED	
 	LogPrintf("Writing '%s' text lump\n", lump_name);
 
 	wad->BeginWrite();
@@ -543,11 +576,13 @@ void UI_TextEditor::SaveLump(Wad_file *wad, const char *lump_name)
 	lump->Finish();
 
 	wad->EndWrite();
+#endif
 }
 
 
 void UI_TextEditor::SaveMemory(std::vector<byte> &buf)
 {
+#ifdef _FLTK_DISABLED	
 	buf.clear();
 
 	int len = tbuf->length();
@@ -562,6 +597,7 @@ void UI_TextEditor::SaveMemory(std::vector<byte> &buf)
 
 		buf.push_back(ch);
 	}
+#endif
 }
 
 
@@ -578,7 +614,9 @@ void UI_TextEditor::SetTitle(const char *lump_name)
 
 	snprintf(title_buf, sizeof(title_buf), "Editing '%s' lump%s", lump_name, suffix);
 
+#ifdef _FLTK_DISABLED
 	copy_label(title_buf);
+#endif
 }
 
 
@@ -595,6 +633,7 @@ void UI_TextEditor::UpdateStatus()
 
 void UI_TextEditor::InsertFile()
 {
+#ifdef _FLTK_DISABLED	
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick file to insert");
@@ -619,7 +658,7 @@ void UI_TextEditor::InsertFile()
 	// if a selection is active, delete that text
 	tbuf->remove_selection();
 
-	static char line[FL_PATH_MAX];
+	static char line[SMC_PATH_MAX];
 
 	const char *filename = chooser.filename();
 
@@ -651,11 +690,13 @@ void UI_TextEditor::InsertFile()
 	}
 
 	fclose(fp);
+#endif
 }
 
 
 void UI_TextEditor::ExportToFile()
 {
+#ifdef _FLTK_DISABLED	
 	Fl_Native_File_Chooser chooser;
 
 	chooser.title("Pick file to export to");
@@ -678,7 +719,7 @@ void UI_TextEditor::ExportToFile()
 			break;
 	}
 
-	static char msgbuf[FL_PATH_MAX];
+	static char msgbuf[SMC_PATH_MAX];
 
 	const char *filename = chooser.filename();
 
@@ -736,12 +777,14 @@ void UI_TextEditor::ExportToFile()
 	fclose(fp);
 
 	has_changes = false;
+#endif
 }
 
 
 // returns false if the user cancelled
 bool UI_TextEditor::AskFindString()
 {
+#ifdef _FLTK_DISABLED	
 	// we don't pre-seed with the last search string, because FLTK does
 	// not select the text and it is a pain to delete it first.
 	const char *str = fl_input("Find what:", find_string);
@@ -751,6 +794,9 @@ bool UI_TextEditor::AskFindString()
 
 	SetFindString(str);
 	return true;
+#else
+	return false;
+#endif
 }
 
 
@@ -767,6 +813,7 @@ void UI_TextEditor::SetFindString(const char *str)
 
 bool UI_TextEditor::FindNext(int dir)
 {
+#ifdef _FLTK_DISABLED	
 	SYS_ASSERT(find_string);
 	SYS_ASSERT(find_string[0]);
 
@@ -816,17 +863,21 @@ bool UI_TextEditor::FindNext(int dir)
 	ted->show_insert_position();
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 
 bool UI_TextEditor::ContainsUnicode() const
 {
+#ifdef _FLTK_DISABLED	
 	int len = tbuf->length();
 
 	for (int i = 0 ; i < len ; i++)
 		if ((byte)tbuf->byte_at(i) & 0x80)
 			return true;
-
+#endif
 	return false;
 }
 
