@@ -1,0 +1,4 @@
+
+file(GLOB SMC_SOURE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+
+add_library(smc ${SMC_SOURE_FILES})

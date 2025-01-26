@@ -8,3 +8,5 @@ if (EDGE_CLASSIC)
   add_subdirectory(coal)
   add_subdirectory(dehacked)
 endif()
+
+add_subdirectory(smc)
