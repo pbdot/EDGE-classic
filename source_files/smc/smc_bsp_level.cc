@@ -2015,9 +2015,11 @@ static Lump_c *zout_lump;
 #ifdef _FLTK_DISABLED
 static z_stream zout_stream;
 static Bytef    zout_buffer[1024];
+#endif
 
 void ZLibBeginLump(Lump_c *lump)
 {
+#ifdef _FLTK_DISABLED
     zout_lump = lump;
 
     if (!cur_info->force_compress)
@@ -2032,10 +2034,12 @@ void ZLibBeginLump(Lump_c *lump)
 
     zout_stream.next_out  = zout_buffer;
     zout_stream.avail_out = sizeof(zout_buffer);
+#endif    
 }
 
 void ZLibAppendLump(const void *data, int length)
 {
+#ifdef _FLTK_DISABLED    
     // ASSERT(zout_lump)
     // ASSERT(length > 0)
 
@@ -2063,10 +2067,12 @@ void ZLibAppendLump(const void *data, int length)
             zout_stream.avail_out = sizeof(zout_buffer);
         }
     }
+#endif
 }
 
 void ZLibFinishLump(void)
 {
+#ifdef _FLTK_DISABLED    
     if (!cur_info->force_compress)
     {
         zout_lump = NULL;
@@ -2106,8 +2112,8 @@ void ZLibFinishLump(void)
 
     deflateEnd(&zout_stream);
     zout_lump = NULL;
-}
 #endif
+}
 
 /* ---------------------------------------------------------------- */
 

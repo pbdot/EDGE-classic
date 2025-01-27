@@ -515,7 +515,9 @@ static void ParseKeyBinding(const char **tokens, int num_tok)
     // this ensures all parameters are NUL terminated
     memset(&temp, 0, sizeof(temp));
 
+#ifdef _FLTK_DISABLED
     temp.key = M_ParseKeyString(tokens[1]);
+#endif
 
     if (!temp.key)
     {
@@ -715,8 +717,9 @@ void M_SaveBindings()
             // no need to write it if unchanged from install_dir
             if (BindingExists(install_binds, bind, true /* full match */))
                 continue;
-
+#ifdef _FLTK_DISABLED
             fprintf(fp, "%s\t%s\t%s", M_KeyContextString(bind.context), M_KeyToString(bind.key), bind.cmd->name);
+#endif
 
             for (int p = 0; p < MAX_EXEC_PARAM; p++)
             {
@@ -739,7 +742,9 @@ void M_SaveBindings()
 
             if (!BindingExists(all_bindings, bind, false /* full match */))
             {
+#ifdef _FLTK_DISABLED                
                 fprintf(fp, "%s\t%s\t%s\n", M_KeyContextString(bind.context), M_KeyToString(bind.key), "UNBOUND");
+#endif                
                 count++;
             }
         }
@@ -805,8 +810,10 @@ struct KeyBind_CMP_pred
         if (column == 'c' && k1.context != k2.context)
             return k1.context > k2.context;
 
+#ifdef _FLTK_DISABLED                
         if (column != 'f' && k1.key != k2.key)
             return M_KeyCmp(k1.key, k2.key) < 0;
+#endif            
 
         ///		if (column == 'k' && k1.context != k2.context)
         ///			return k1.context > k2.context;
@@ -822,8 +829,10 @@ struct KeyBind_CMP_pred
                 return cmp < 0;
         }
 
+#ifdef _FLTK_DISABLED                
         if (column == 'f' && k1.key != k2.key)
             return M_KeyCmp(k1.key, k2.key) < 0;
+#endif            
 
         return k1.context < k2.context;
     }

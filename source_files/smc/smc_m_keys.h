@@ -79,13 +79,17 @@ typedef enum
 
 /* --- general manipulation --- */
 
+#ifdef _FLTK_DISABLED                
 int M_KeyCmp(keycode_t A, keycode_t B);
+#endif
 
 key_context_e M_ParseKeyContext(const char *str);
 const char   *M_KeyContextString(key_context_e context);
 
+#ifdef _FLTK_DISABLED
 keycode_t   M_ParseKeyString(const char *str);
 const char *M_KeyToString(keycode_t key);
+#endif
 
 keycode_t M_TranslateKey(int key, int state);
 
