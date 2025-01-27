@@ -29,6 +29,9 @@
 #include "smc_m_select.h"
 #include "smc_e_objects.h"
 
+namespace smc
+{
+
 // #define NEED_SLOW_CLEAR
 
 #define INITIAL_BITVEC_SIZE   1024
@@ -517,5 +520,4 @@ void sel_iter_c::next()
     }
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

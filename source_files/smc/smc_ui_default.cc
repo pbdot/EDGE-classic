@@ -29,6 +29,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 #define HIDE_BG (gui_scheme == 2 ? FL_DARK3 : FL_DARK1)
 
 UI_DefaultProps::UI_DefaultProps(int X, int Y, int W, int H)
@@ -579,5 +582,4 @@ void Props_LoadValues()
         main_win->props_box->LoadValues();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

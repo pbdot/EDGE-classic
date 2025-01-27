@@ -21,6 +21,9 @@
 #include "smc_main.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define BUT_W 100
 #define BUT_H 26
 
@@ -301,5 +304,4 @@ int DLG_Confirm(const char *buttons, const char *msg, ...)
     return DialogShowAndRun('?', dialog_buffer, "Eureka - Confirmation", NULL, NULL, &labels);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_VERTEX_H__
-#define __EUREKA_UI_VERTEX_H__
+#pragma once
+
+namespace smc
+{
 
 #ifdef _FLTK_DISABLED
 class UI_VertexBox : public Fl_Group
@@ -73,7 +75,4 @@ class UI_VertexBox
 #endif
 };
 
-#endif /* __EUREKA_UI_VERTEX_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

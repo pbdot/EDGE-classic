@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_EDITOR_H__
-#define __EUREKA_UI_EDITOR_H__
+#pragma once
+
+namespace smc
+{
 
 class Wad_file;
 class UI_TedStatusBar;
@@ -126,7 +128,4 @@ class UI_TextEditor /*: public Fl_Double_Window */
 #endif
 };
 
-#endif /* __EUREKA_UI_EDITOR_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

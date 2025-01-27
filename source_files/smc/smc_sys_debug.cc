@@ -20,6 +20,9 @@
 
 #include "smc_main.h"
 
+namespace smc
+{
+
 bool Quiet     = false;
 bool Debugging = false;
 
@@ -170,5 +173,4 @@ void LogSaveTo(FILE *dest_fp)
     fseek(log_fp, 0L, SEEK_END);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

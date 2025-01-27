@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_CUTPASTE_H__
-#define __EUREKA_E_CUTPASTE_H__
+#pragma once
+
+namespace smc
+{
 
 void Clipboard_Clear();
 void Clipboard_ClearLocals();
@@ -57,7 +59,4 @@ void Texboard_SetTex(const char *new_tex);
 void Texboard_SetFlat(const char *new_flat);
 void Texboard_SetThing(int new_id);
 
-#endif /* __EUREKA_E_CUTPASTE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

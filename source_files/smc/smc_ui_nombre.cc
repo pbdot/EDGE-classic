@@ -24,6 +24,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_nombre.h"
 
+namespace smc
+{
+
 #define NOMBRBACK_COL (gui_scheme == 2 ? FL_GRAY0 + 1 : FL_GRAY0 + 3)
 
 //
@@ -115,5 +118,4 @@ void UI_Nombre::SetSelected(int _sel)
     }
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

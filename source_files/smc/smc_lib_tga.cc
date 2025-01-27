@@ -27,6 +27,9 @@
 
 #include "smc_lib_tga.h"
 
+namespace smc
+{
+
 typedef struct
 {
     u8_t  id_length;
@@ -392,5 +395,4 @@ void TGA_FreeImage(rgba_color_t *pixels)
     delete[] pixels;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

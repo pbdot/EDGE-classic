@@ -33,6 +33,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_wad.h"
 
+namespace smc
+{
+
 Wad_file *game_wad;
 Wad_file *edit_wad;
 
@@ -1425,5 +1428,4 @@ bool MasterDir_HaveFilename(const char *chk_path)
     return false;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

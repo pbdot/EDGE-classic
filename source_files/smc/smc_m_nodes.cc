@@ -27,6 +27,9 @@
 
 #include "smc_bsp.h"
 
+namespace smc
+{
+
 // config items
 bool bsp_on_save  = true;
 bool bsp_fast     = false;
@@ -524,5 +527,4 @@ void CMD_BuildAllNodes()
     LoadLevel(edit_wad, CurLevel.c_str());
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

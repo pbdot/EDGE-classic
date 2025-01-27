@@ -24,14 +24,7 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_MAIN_H__
-#define __EUREKA_MAIN_H__
-
-#define EUREKA_TITLE "Eureka DOOM Editor"
-
-#define EUREKA_VERSION "1.27b"
-
-#define EUREKA_LUMP "__EUREKA"
+#pragma once
 
 /*
  *  Windows support
@@ -67,6 +60,12 @@
 #include <vector>
 #include <string>
 
+#define EUREKA_TITLE "Eureka DOOM Editor"
+
+#define EUREKA_VERSION "1.27b"
+
+#define EUREKA_LUMP "__EUREKA"
+
 /*
  *  Additional libraries
  */
@@ -91,6 +90,9 @@
 #include "smc_e_basis.h"
 #include "smc_m_keys.h"
 #include "smc_e_objects.h"
+
+namespace smc
+{
 
 /*
  *  Miscellaneous
@@ -182,7 +184,4 @@ void Beep(const char *msg, ...);
 void Status_Set(const char *fmt, ...);
 void Status_Clear();
 
-#endif /* __EUREKA_MAIN_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

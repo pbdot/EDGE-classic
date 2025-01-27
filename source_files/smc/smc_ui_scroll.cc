@@ -25,6 +25,9 @@
 #include "smc_r_render.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define HUGE_DIST (1 << 24)
 
 #define SCRBAR_BACK (gui_scheme == 2 ? FL_DARK3 : FL_DARK2)
@@ -518,5 +521,4 @@ void UI_CanvasScroll::bar_callback(Fl_Widget *w, void *data)
 }
 #endif
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

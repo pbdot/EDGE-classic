@@ -19,8 +19,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_HYPER_H__
-#define __EUREKA_UI_HYPER_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_HyperLink /*: public Fl_Button*/
@@ -54,7 +56,4 @@ class UI_HyperLink /*: public Fl_Button*/
 #endif
 };
 
-#endif /* __EUREKA_UI_HYPER_H__ */
-
-//--- editor settings ---
-// vi:ts=2:sw=2:expandtab
+} // namespace smc

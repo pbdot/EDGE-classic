@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_STRINGS_H__
-#define __EUREKA_M_STRINGS_H__
+#pragma once
+
+namespace smc
+{
 
 class string_block_c;
 
@@ -57,7 +59,4 @@ class string_table_c
     int add_huge(const char *str, int len);
 };
 
-#endif /* __EUREKA_M_STRINGS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

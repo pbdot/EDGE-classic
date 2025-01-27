@@ -47,6 +47,9 @@
 #include "smc_w_rawdef.h" // MLF_xxx
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 #define CAMERA_COLOR fl_rgb_color(255, 192, 255)
 
 typedef enum
@@ -2731,5 +2734,4 @@ void UI_Canvas::RenderFontChar(int rx, int ry, Img_c *img, int ix, int iy, int i
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_BASIS_H__
-#define __EUREKA_E_BASIS_H__
+#pragma once
+
+namespace smc
+{
 
 class crc32_c;
 
@@ -550,7 +552,4 @@ bool BA_ChangeSD(int side, byte field, int value);
 bool BA_ChangeLD(int line, byte field, int value);
 bool BA_ChangeRAD(int rad, byte field, int value);
 
-#endif /* __EUREKA_E_BASIS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

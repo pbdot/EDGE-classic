@@ -18,8 +18,7 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_WINDOW_H__
-#define __EUREKA_UI_WINDOW_H__
+#pragma once
 
 #include "smc_ui_menu.h"
 #include "smc_ui_canvas.h"
@@ -40,6 +39,9 @@
 #include "smc_ui_sidedef.h"
 #include "smc_ui_linedef.h"
 #include "smc_ui_vertex.h"
+
+namespace smc
+{
 
 #define WINDOW_BG FL_DARK3
 
@@ -222,7 +224,4 @@ extern UI_LogViewer *log_viewer;
 
 void LogViewer_Open();
 
-#endif /* __EUREKA_UI_WINDOW_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -28,6 +28,9 @@
 #include "smc_r_grid.h"
 #include "smc_r_render.h"
 
+namespace smc
+{
+
 #define SNAP_COLOR (gui_scheme == 2 ? fl_rgb_color(255, 96, 0) : fl_rgb_color(255, 96, 0))
 #define FREE_COLOR (gui_scheme == 2 ? fl_rgb_color(0, 192, 0) : fl_rgb_color(128, 255, 128))
 
@@ -797,5 +800,4 @@ void Status_Clear()
     main_win->status_bar->SetStatus("");
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

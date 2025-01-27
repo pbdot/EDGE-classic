@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_SELECT_H__
-#define __EUREKA_M_SELECT_H__
+#pragma once
 
 #include "smc_m_bitvec.h"
+
+namespace smc
+{
 
 class sel_iter_c;
 
@@ -153,7 +155,4 @@ class sel_iter_c
     int operator*() const;
 };
 
-#endif /* __EUREKA_M_SELECT_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

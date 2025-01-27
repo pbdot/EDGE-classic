@@ -40,6 +40,9 @@
 #include "smc_w_texture.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define ERROR_MSG_COLOR   FL_RED
 #define WARNING_MSG_COLOR FL_BLUE
 
@@ -4381,5 +4384,4 @@ void Debug_CheckUnusedStuff()
     }
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

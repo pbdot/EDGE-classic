@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_KEYS_H__
-#define __EUREKA_M_KEYS_H__
+#pragma once
+
+namespace smc
+{
 
 /* Key value:
  *   - can be a printable ASCII character, e.g. 'a', '2', ';'
@@ -167,7 +169,4 @@ bool ExecuteCommand(const editor_command_t *cmd, const char *param1 = "", const 
 bool ExecuteCommand(const char *name, const char *param1 = "", const char *param2 = "", const char *param3 = "",
                     const char *param4 = "");
 
-#endif /* __EUREKA_M_KEYS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

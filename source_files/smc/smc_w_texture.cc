@@ -35,6 +35,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 //----------------------------------------------------------------------
 //    TEXTURE HANDLING
 //----------------------------------------------------------------------
@@ -839,5 +842,4 @@ void W_UnloadAllTextures()
     IM_UnloadDummyTextures();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

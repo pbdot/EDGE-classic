@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_BITVEC_H__
-#define __EUREKA_M_BITVEC_H__
+#pragma once
+
+namespace smc
+{
 
 typedef enum
 {
@@ -99,7 +101,4 @@ class bitvec_c
     }
 };
 
-#endif /* __EUREKA_M_BITVEC_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

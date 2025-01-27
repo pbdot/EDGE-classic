@@ -28,6 +28,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 extern short   loading_level;
 extern Lump_c *Load_LookupAndSeek(const char *name);
 
@@ -915,5 +918,4 @@ void UDMF_SwitchEngine()
     StringFree(namespace_l);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

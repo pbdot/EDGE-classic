@@ -48,6 +48,9 @@
 #include "smc_ui_misc.h"
 #include "smc_ui_prefs.h"
 
+namespace smc
+{
+
 // config items
 int minimum_drag_pixels = 5;
 
@@ -1635,5 +1638,4 @@ void Editor_RegisterCommands()
     M_RegisterCommandList(command_table);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

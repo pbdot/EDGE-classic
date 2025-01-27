@@ -26,9 +26,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __LIB_CRC_H__
-#define __LIB_CRC_H__
+#pragma once
 
+namespace smc
+{
 class crc32_c
 {
   public:
@@ -107,4 +108,4 @@ inline crc32_c &crc32_c::operator+=(bool value)
     return *this;
 }
 
-#endif // __LIB_CRC_H__
+} // namespace smc

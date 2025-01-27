@@ -30,6 +30,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_rawdef.h"
 
+namespace smc
+{
+
 #define MLF_ALL_AUTOMAP MLF_Secret | MLF_Mapped | MLF_DontDraw | MLF_XDoom_Translucent
 
 class line_flag_CB_data_c
@@ -1107,5 +1110,4 @@ const char *UI_LineBox::GeneralizedDesc(int type_num)
     return NULL; // not a generalized linetype
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -30,6 +30,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 //
 // UI_Pic Constructor
 //
@@ -446,5 +449,4 @@ int UI_DynInput::handle(int event)
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

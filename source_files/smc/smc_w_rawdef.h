@@ -18,8 +18,9 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_W_RAWDEF_H__
-#define __EUREKA_W_RAWDEF_H__
+#pragma once
+namespace smc
+{
 
 /* ----- The wad structures ---------------------- */
 
@@ -510,7 +511,4 @@ typedef enum
 #define ZDOOM_PO_SPAWN_TYPE      9301
 #define ZDOOM_PO_SPAWNCRUSH_TYPE 9302
 
-#endif /* __EUREKA_W_RAWDEF_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

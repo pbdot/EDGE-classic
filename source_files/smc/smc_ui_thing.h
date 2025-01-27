@@ -19,8 +19,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_THING_H__
-#define __EUREKA_UI_THING_H__
+#pragma once
+
+namespace smc
+{
 
 class Sticker;
 
@@ -139,7 +141,4 @@ class UI_ThingBox /*: public Fl_Group*/
 #endif
 };
 
-#endif /* __EUREKA_UI_THING_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

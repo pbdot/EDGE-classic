@@ -35,6 +35,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_wad.h"
 
+namespace smc
+{
+
 // posts are runs of non masked source pixels
 typedef struct
 {
@@ -372,5 +375,4 @@ char W_DetectImageFormat(Lump_c *lump)
     return 0;       // unknown!
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

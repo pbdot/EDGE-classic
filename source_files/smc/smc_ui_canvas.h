@@ -18,8 +18,7 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_CANVAS_H__
-#define __EUREKA_UI_CANVAS_H__
+#pragma once
 
 #ifdef _FLTK_DISABLED
 #ifndef NO_OPENGL
@@ -31,6 +30,9 @@
 #include "smc_m_select.h"
 #include "smc_e_objects.h"
 #include "smc_r_grid.h"
+
+namespace smc
+{
 
 class Img_c;
 
@@ -253,7 +255,4 @@ class UI_Canvas /*: public Fl_Gl_Window */
 #endif
 };
 
-#endif /* __EUREKA_UI_CANVAS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

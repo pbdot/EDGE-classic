@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_VERTEX_H__
-#define __EUREKA_E_VERTEX_H__
+#pragma once
+
+namespace smc
+{
 
 int Vertex_FindExact(fixcoord_t fx, fixcoord_t fy);
 int Vertex_FindDragOther(int v_num);
@@ -46,7 +48,4 @@ void CMD_SEC_Disconnect(void);
 void CMD_VT_ShapeLine(void);
 void CMD_VT_ShapeArc(void);
 
-#endif /* __EUREKA_E_VERTEX_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

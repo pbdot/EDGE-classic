@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_R_SUBDIV_H__
-#define __EUREKA_R_SUBDIV_H__
+#pragma once
+
+namespace smc
+{
 
 struct sector_polygon_t
 {
@@ -140,7 +142,4 @@ class sector_3dfloors_c
 
 sector_3dfloors_c *Subdiv_3DFloorsForSector(int num);
 
-#endif /* __EUREKA_R_SUBDIV_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

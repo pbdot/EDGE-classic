@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_PIC_H__
-#define __EUREKA_UI_PIC_H__
+#pragma once
+
+namespace smc
+{
 
 class Img_c;
 
@@ -136,7 +138,4 @@ class UI_DynInput /*: public Fl_Input */
 #endif
 };
 
-#endif /* __EUREKA_UI_PIC_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

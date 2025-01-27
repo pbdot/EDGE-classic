@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_IM_IMG_H__
-#define __EUREKA_IM_IMG_H__
+#pragma once
 
 #include "smc_im_color.h"
+
+namespace smc
+{
 
 #ifdef NO_OPENGL
 typedef unsigned int GLuint;
@@ -214,7 +216,4 @@ inline void IM_DecodePixel_medium(img_pixel_t p, byte &r, byte &g, byte &b)
     }
 }
 
-#endif /* __EUREKA_IM_IMG_H__*/
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

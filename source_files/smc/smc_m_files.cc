@@ -28,6 +28,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 // list of known iwads (mapping GAME name --> PATH)
 
 static std::map<std::string, std::string> known_iwads;
@@ -1147,5 +1150,4 @@ void M_BackupWad(Wad_file *wad)
     LogPrintf("Backed up wad to: %s\n", dest_name);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_TILE_H__
-#define __EUREKA_UI_TILE_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_Tile /* : public Fl_Tile */
@@ -63,7 +65,4 @@ class UI_Tile /* : public Fl_Tile */
     void ResizeBoth();
 };
 
-#endif /* __EUREKA_UI_TILE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

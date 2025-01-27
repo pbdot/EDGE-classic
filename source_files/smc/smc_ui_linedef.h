@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_LINEDEF_H__
-#define __EUREKA_UI_LINEDEF_H__
+#pragma once
+
+namespace smc
+{
 
 #ifdef _FLTK_DISABLED
 class UI_LineBox : public Fl_Group
@@ -129,7 +131,4 @@ class UI_LineBox
 #endif
 };
 
-#endif /* __EUREKA_UI_LINEDEF_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

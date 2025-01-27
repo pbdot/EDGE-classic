@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_EVENTS_H__
-#define __EUREKA_M_EVENTS_H__
+#pragma once
+
+namespace smc
+{
 
 typedef enum
 {
@@ -79,7 +81,4 @@ void M_LoadOperationMenus();
 
 void CMD_OperationMenu();
 
-#endif /* __EUREKA_M_EVENTS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

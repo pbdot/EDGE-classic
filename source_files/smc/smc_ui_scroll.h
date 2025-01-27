@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_SCROLL_H__
-#define __EUREKA_UI_SCROLL_H__
+#pragma once
+
+namespace smc
+{
 
 #define SBAR_W 16
 
@@ -144,7 +146,4 @@ class UI_CanvasScroll /*: public Fl_Group*/
 #endif
 };
 
-#endif /* __EUREKA_UI_SCROLL_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

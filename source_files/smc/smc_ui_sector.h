@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_SECTOR_H__
-#define __EUREKA_UI_SECTOR_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_SectorBox /*: public Fl_Group*/
@@ -135,7 +137,4 @@ class UI_SectorBox /*: public Fl_Group*/
 #endif
 };
 
-#endif /* __EUREKA_UI_SECTOR_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

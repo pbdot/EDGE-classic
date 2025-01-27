@@ -27,6 +27,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_file.h"
 
+namespace smc
+{
+
 #define FREE_COL fl_rgb_color(0x33, 0xFF, 0xAA)
 #define USED_COL (gui_scheme == 2 ? fl_rgb_color(0xFF, 0x11, 0x11) : fl_rgb_color(0xFF, 0x88, 0x88))
 
@@ -1269,5 +1272,4 @@ void UI_ProjectSetup::kill_callback(Fl_Button *w, void *data)
 }
 #endif
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

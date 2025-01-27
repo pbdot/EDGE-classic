@@ -31,6 +31,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 // config items
 int floor_bump_small  = 1;
 int floor_bump_medium = 8;
@@ -975,5 +978,4 @@ void UI_SectorBox::UpdateGameInfo()
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

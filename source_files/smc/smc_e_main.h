@@ -24,13 +24,15 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_LEVELS_H__
-#define __EUREKA_LEVELS_H__
+#pragma once
 
 #include <string>
 
 #include "smc_m_events.h"
 #include "smc_e_things.h"
+
+namespace smc
+{
 
 class SaveBucket_c;
 
@@ -274,7 +276,4 @@ void RecUsed_ClearAll();
 void RecUsed_WriteUser(FILE *fp);
 bool RecUsed_ParseUser(const char **tokens, int num_tok);
 
-#endif /* __EUREKA_LEVELS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

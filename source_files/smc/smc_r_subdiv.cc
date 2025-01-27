@@ -27,6 +27,9 @@
 #include "smc_m_game.h"
 #include "smc_r_subdiv.h"
 
+namespace smc
+{
+
 /* This file contains code for subdividing map sectors into a set
    of polygons, and also the logic for caching these subdivisions
    and rebuilding them whenever necessary.
@@ -1135,5 +1138,4 @@ sector_3dfloors_c *Subdiv_3DFloorsForSector(int num)
     return &exinfo.floors;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

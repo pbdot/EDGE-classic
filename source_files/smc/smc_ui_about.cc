@@ -23,6 +23,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_about.h"
 
+namespace smc
+{
+
 #define ABOUT_W (440) // matches logo image
 #define ABOUT_H (230 + 290)
 
@@ -220,5 +223,4 @@ void InitAboutDialog()
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

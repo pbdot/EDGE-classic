@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_DEFAULT_H__
-#define __EUREKA_UI_DEFAULT_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_DefaultProps /*: public Fl_Group */
@@ -92,7 +94,4 @@ bool Props_ParseUser(const char **tokens, int num_tok);
 void Props_WriteUser(FILE *fp);
 void Props_LoadValues();
 
-#endif /* __EUREKA_UI_DEFAULT_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

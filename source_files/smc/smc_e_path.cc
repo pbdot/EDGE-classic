@@ -38,6 +38,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_misc.h"
 
+namespace smc
+{
+
 typedef enum
 {
     SLP_Normal = 0,
@@ -659,5 +662,4 @@ const byte *SoundPropagation(int start_sec)
     return &sound_prop_vec[0];
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

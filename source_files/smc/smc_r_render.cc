@@ -42,6 +42,9 @@
 #include "smc_r_subdiv.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 // config items
 rgb_color_t transparent_col = RGB_MAKE(0, 255, 255);
 
@@ -2051,5 +2054,4 @@ void Render3D_RegisterCommands()
     M_RegisterCommandList(render_commands);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

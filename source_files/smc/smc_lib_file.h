@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __LIB_FILE_H__
-#define __LIB_FILE_H__
+#pragma once
+
+namespace smc
+{
 
 #ifdef WIN32
 #define DIR_SEP_CH  '\\'
@@ -82,7 +84,4 @@ int ScanDirectory(const char *path, directory_iter_f func, void *priv_dat);
 // entry in the directory.  Returns the total number of entries,
 // or a negative value on error (SCAN_ERR_xx value).
 
-#endif /* __LIB_FILE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

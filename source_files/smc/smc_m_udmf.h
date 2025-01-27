@@ -18,15 +18,14 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_UDMF_H__
-#define __EUREKA_M_UDMF_H__
+#pragma once
+
+namespace smc
+{
 
 void UDMF_LoadLevel();
 void UDMF_SaveLevel();
 
 void UDMF_SwitchEngine();
 
-#endif /* __EUREKA_M_UDMF_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

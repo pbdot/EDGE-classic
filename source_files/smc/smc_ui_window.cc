@@ -31,6 +31,9 @@
 #include <unistd.h>
 #endif
 
+namespace smc
+{
+
 #ifdef _FLTK_DISABLED
 #if (FL_MAJOR_VERSION != 1 || FL_MINOR_VERSION < 3)
 #error "Require FLTK version 1.3.0 or later"
@@ -889,5 +892,4 @@ void LogViewer_Open()
     log_viewer->JumpEnd();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

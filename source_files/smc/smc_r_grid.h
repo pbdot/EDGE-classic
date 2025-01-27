@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_R_GRID_H__
-#define __EUREKA_R_GRID_H__
+#pragma once
+
+namespace smc
+{
 
 class Grid_State_c
 {
@@ -132,7 +134,4 @@ extern Grid_State_c grid;
 bool Grid_ParseUser(const char **tokens, int num_tok);
 void Grid_WriteUser(FILE *fp);
 
-#endif /* __EUREKA_R_GRID_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

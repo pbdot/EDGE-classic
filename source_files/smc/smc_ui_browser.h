@@ -18,11 +18,13 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_BROWSER_H__
-#define __EUREKA_UI_BROWSER_H__
+#pragma once
 
 #include <map>
 #include <string>
+
+namespace smc
+{
 
 class Browser_Button;
 
@@ -260,7 +262,4 @@ class UI_Browser /*: public Fl_Group */
 bool Browser_ParseUser(const char **tokens, int num_tok);
 void Browser_WriteUser(FILE *fp);
 
-#endif /* __EUREKA_UI_BROWSER_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

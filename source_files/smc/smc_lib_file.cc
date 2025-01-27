@@ -34,6 +34,9 @@
 #include <mach-o/dyld.h> // _NSGetExecutablePath
 #endif
 
+namespace smc
+{
+
 #ifndef PATH_MAX
 #define PATH_MAX 2048
 #endif
@@ -646,5 +649,4 @@ const char *GetExecutablePath(const char *argv0)
     return path;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

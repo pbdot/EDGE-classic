@@ -30,6 +30,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 class number_group_c
 {
     // This represents a small group of numbers and number ranges,
@@ -1848,5 +1851,4 @@ void UI_FindAndReplace::Replace_SectorType(int idx)
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

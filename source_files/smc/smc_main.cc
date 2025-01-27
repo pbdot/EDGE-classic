@@ -56,6 +56,9 @@
 #include "OSXCalls.h"
 #endif
 
+namespace smc
+{
+
 //
 //  global variables
 //
@@ -1118,5 +1121,4 @@ quit:
     return 0;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

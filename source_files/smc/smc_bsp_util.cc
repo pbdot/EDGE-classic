@@ -23,7 +23,7 @@
 
 #include "smc_w_rawdef.h"
 
-namespace ajbsp
+namespace smc
 {
 
 #define DEBUG_ENABLED  0
@@ -774,7 +774,4 @@ bool VertexCheckOpen(vertex_t *vert, double dx, double dy)
     return true;
 }
 
-} // namespace ajbsp
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

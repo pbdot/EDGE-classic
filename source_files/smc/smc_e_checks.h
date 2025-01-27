@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_CHECKS_H__
-#define __EUREKA_E_CHECKS_H__
+#pragma once
 
 #include "smc_ui_window.h"
+
+namespace smc
+{
 
 void SideDefs_Unpack(bool is_after_load = false);
 void SideDefs_NormalizeMiddles();
@@ -97,7 +99,4 @@ check_result_e CHECK_LineDefs(int min_severity = 0);
 check_result_e CHECK_Textures(int min_severity = 0);
 check_result_e CHECK_Tags(int min_severity = 0);
 
-#endif /* __EUREKA_E_CHECKS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

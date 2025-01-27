@@ -35,6 +35,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 // config items
 bool leave_offsets_alone = true;
 
@@ -1660,5 +1663,4 @@ void DetectDuplicateSidedefs(void)
 }
 #endif
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

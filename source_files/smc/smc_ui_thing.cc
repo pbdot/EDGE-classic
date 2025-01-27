@@ -27,6 +27,9 @@
 #include "smc_m_game.h"
 #include "smc_w_rawdef.h"
 
+namespace smc
+{
+
 class thing_opt_CB_data_c
 {
   public:
@@ -1055,5 +1058,4 @@ void UI_ThingBox::UnselectPics()
     sprite->Selected(false);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

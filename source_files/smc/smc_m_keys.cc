@@ -24,6 +24,9 @@
 
 #include <algorithm>
 
+namespace smc
+{
+
 const char *EXEC_Param[MAX_EXEC_PARAM];
 const char *EXEC_Flags[MAX_EXEC_PARAM];
 
@@ -1328,5 +1331,4 @@ void Beep(const char *fmt, ...)
     EXEC_Errno = 1;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

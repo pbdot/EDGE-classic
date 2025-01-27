@@ -22,6 +22,9 @@
 
 #include "smc_m_strings.h"
 
+namespace smc
+{
+
 #define CHARS_PER_BLOCK 4096
 
 class string_block_c
@@ -216,5 +219,4 @@ int string_table_c::add_huge(const char *str, int len)
     return -(int)huge_ones.size();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

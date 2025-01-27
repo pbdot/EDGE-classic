@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_W_WAD_H__
-#define __EUREKA_W_WAD_H__
+#pragma once
+
+namespace smc
+{
 
 class Wad_file;
 
@@ -359,7 +361,4 @@ void MasterDir_CloseAll();
 
 extern bool udmf_testing;
 
-#endif /* __EUREKA_W_WAD_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

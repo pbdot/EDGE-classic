@@ -28,7 +28,7 @@
 #include <zlib.h>
 #endif
 
-namespace ajbsp
+namespace smc
 {
 
 #define DEBUG_BLOCKMAP 0
@@ -2240,12 +2240,9 @@ build_result_e BuildLevel(nodebuildinfo_t *info, short lev_idx)
     return ret;
 }
 
-} // namespace ajbsp
-
 build_result_e AJBSP_BuildLevel(nodebuildinfo_t *info, short lev_idx)
 {
-    return ajbsp::BuildLevel(info, lev_idx);
+    return BuildLevel(info, lev_idx);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

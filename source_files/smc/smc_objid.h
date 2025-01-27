@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_OBJ_ID_H__
-#define __EUREKA_OBJ_ID_H__
+#pragma once
+
+namespace smc
+{
 
 // main kinds of objects
 typedef enum
@@ -108,7 +110,4 @@ class Objid
     }
 };
 
-#endif /* __EUREKA_OBJ_ID_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

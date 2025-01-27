@@ -28,6 +28,9 @@
 
 #include "smc_m_bitvec.h"
 
+namespace smc
+{
+
 bitvec_c::bitvec_c(int n_elements) : num_elem(n_elements)
 {
     SYS_ASSERT(n_elements > 0);
@@ -165,5 +168,4 @@ void bitvec_c::toggle_all()
         *pos++ ^= 0xFF;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

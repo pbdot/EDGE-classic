@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_FILE_H__
-#define __EUREKA_UI_FILE_H__
+#pragma once
+
+namespace smc
+{
 
 class UI_ChooseMap : public UI_Escapable_Window
 {
@@ -216,7 +218,4 @@ class UI_ProjectSetup : public UI_Escapable_Window
     bool Run();
 };
 
-#endif /* __EUREKA_UI_FILE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

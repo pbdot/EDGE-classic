@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_PATH_H__
-#define __EUREKA_E_PATH_H__
+#pragma once
+
+namespace smc
+{
 
 /* find/next/prev stuff */
 
@@ -56,7 +58,4 @@ void CMD_PrevObject();
 
 void CMD_PruneUnused(void);
 
-#endif /* __EUREKA_E_PATH_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

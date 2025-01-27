@@ -43,6 +43,9 @@
 #include "smc_e_objects.h"
 #include "smc_r_render.h"
 
+namespace smc
+{
+
 std::vector<Thing *>   Things;
 std::vector<Vertex *>  Vertices;
 std::vector<Sector *>  Sectors;
@@ -1239,5 +1242,4 @@ void BA_LevelChecksum(crc32_c &crc)
         ChecksumLineDef(crc, LineDefs[i]);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

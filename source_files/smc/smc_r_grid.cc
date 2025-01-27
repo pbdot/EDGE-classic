@@ -30,6 +30,9 @@
 #include "smc_e_main.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 Grid_State_c grid;
 
 // config items
@@ -695,5 +698,4 @@ void Grid_WriteUser(FILE *fp)
     fprintf(fp, "snap %d\n", grid.snap ? 1 : 0);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

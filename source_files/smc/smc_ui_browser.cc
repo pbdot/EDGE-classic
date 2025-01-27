@@ -36,6 +36,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 extern std::map<std::string, Img_c *> flats;
 extern std::map<std::string, Img_c *> textures;
 
@@ -1977,5 +1980,4 @@ void Browser_WriteUser(FILE *fp)
     }
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

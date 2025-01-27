@@ -25,6 +25,9 @@
 #include "smc_m_files.h"
 #include "smc_m_loadsave.h"
 
+namespace smc
+{
+
 //------------------------------------------------------------------------
 //  FILE MENU
 //------------------------------------------------------------------------
@@ -791,5 +794,4 @@ Fl_Sys_Menu_Bar *Menu_Create(int x, int y, int w, int h)
 
 #endif
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

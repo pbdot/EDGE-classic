@@ -34,6 +34,9 @@
 #include "smc_m_game.h"
 #include "smc_r_grid.h"
 
+namespace smc
+{
+
 extern int vertex_radius(double scale);
 
 double ApproxDistToLineDef(const LineDef *L, double x, double y)
@@ -1288,5 +1291,4 @@ void FindCrossingPoints(crossing_state_c &cross, double x1, double y1, int possi
     cross.Sort();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -40,6 +40,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 Editor_State_t edit;
 
 double Map_bound_x1 = 32767;  /* minimum X value of map */
@@ -1392,5 +1395,4 @@ void Editor_WriteUser(FILE *fp)
     fprintf(fp, "show_object_numbers %d\n", edit.show_object_numbers ? 1 : 0);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

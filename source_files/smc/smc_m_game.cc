@@ -35,6 +35,9 @@
 #include "smc_m_game.h"
 #include "smc_e_things.h"
 
+namespace smc
+{
+
 #define UNKNOWN_THING_RADIUS 16
 #ifdef _FLTK_DISABLED
 #define UNKNOWN_THING_COLOR fl_rgb_color(0, 255, 255)
@@ -1546,5 +1549,4 @@ const char *M_TextureCategoryString(char *letters, bool do_flats)
     return buffer;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

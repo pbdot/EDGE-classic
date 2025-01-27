@@ -27,6 +27,9 @@
 #include "smc_main.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define LINK_BLUE FL_BLUE // fl_rgb_color(0,0,192)
 
 UI_HyperLink::UI_HyperLink(int x, int y, int w, int h, const char *label, const char *_url)
@@ -173,3 +176,5 @@ void UI_HyperLink::callback_Link(Fl_Widget *w, void *data)
     }
 }
 #endif
+
+} // namespace smc

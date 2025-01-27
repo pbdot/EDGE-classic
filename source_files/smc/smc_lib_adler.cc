@@ -30,6 +30,9 @@
 
 #include "smc_lib_adler.h"
 
+namespace smc
+{
+
 // ---- Primitive routines ----
 
 crc32_c &crc32_c::operator+=(u8_t data)
@@ -110,3 +113,5 @@ crc32_c &crc32_c::AddCStr(const char *str)
 {
     return AddBlock((const u8_t *)str, (int)strlen(str));
 }
+
+} // namespace smc

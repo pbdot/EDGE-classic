@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_LIB_UTIL_H__
-#define __EUREKA_LIB_UTIL_H__
+#pragma once
+
+namespace smc
+{
 
 int y_stricmp(const char *s1, const char *s2);
 int y_strnicmp(const char *s1, const char *s2, size_t len);
@@ -197,7 +199,4 @@ inline bool y_isprint(char c)
     return (c & 0x60) && (c != 0x7f);
 }
 
-#endif /* __EUREKA_YUTIL_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

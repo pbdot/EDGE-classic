@@ -37,6 +37,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define INVALID_SECTOR (-999999)
 
 class clipboard_data_c
@@ -1256,5 +1259,4 @@ success:
     RedrawMap();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

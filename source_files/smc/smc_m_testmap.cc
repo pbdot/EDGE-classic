@@ -26,6 +26,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 static const char *QueryName(const char *port = Port_name, const char *game = Game_name)
 {
     SYS_ASSERT(port);
@@ -483,5 +486,4 @@ void CMD_TestMap()
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

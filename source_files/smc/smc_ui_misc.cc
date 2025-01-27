@@ -25,6 +25,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_misc.h"
 
+namespace smc
+{
+
 UI_MoveDialog::UI_MoveDialog(bool want_dz) : UI_Escapable_Window(360, 205, "Move Objects"), want_close(false)
 {
 #ifdef _FLTK_DISABLED
@@ -449,5 +452,4 @@ void UI_JumpToDialog::input_callback(Fl_Widget *w, void *data)
 }
 #endif
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

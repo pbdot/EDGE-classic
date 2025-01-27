@@ -25,6 +25,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #ifdef _FLTK_DISABLED
 class UI_TedStatusBar : public Fl_Group
 #else
@@ -863,5 +866,4 @@ bool UI_TextEditor::ContainsUnicode() const
     return false;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

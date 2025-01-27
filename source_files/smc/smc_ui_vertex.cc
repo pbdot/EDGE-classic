@@ -25,6 +25,9 @@
 #include "smc_m_game.h"
 #include "smc_w_rawdef.h"
 
+namespace smc
+{
+
 // config items  [ TODO ]
 int vertex_bump_small  = 1;
 int vertex_bump_medium = 4;
@@ -239,5 +242,4 @@ void UI_VertexBox::UpdateTotal()
     which->SetTotal(NumVertices);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

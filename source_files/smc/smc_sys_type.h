@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __SYS_TYPE_H__
-#define __SYS_TYPE_H__
+#pragma once
+
+namespace smc
+{
 
 // basic types
 
@@ -33,7 +35,4 @@ typedef unsigned int   u32_t;
 
 typedef u8_t byte;
 
-#endif /* __SYS_TYPE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

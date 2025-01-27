@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_MISC_H__
-#define __EUREKA_UI_MISC_H__
+#pragma once
+
+namespace smc
+{
 
 class UI_MoveDialog : public UI_Escapable_Window
 {
@@ -142,7 +144,4 @@ class UI_JumpToDialog : public UI_Escapable_Window
 #endif
 };
 
-#endif /* __EUREKA_UI_MISC_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -40,6 +40,9 @@
 
 #include <algorithm>
 
+namespace smc
+{
+
 int Vertex_FindExact(fixcoord_t fx, fixcoord_t fy)
 {
     for (int i = 0; i < NumVertices; i++)
@@ -1296,5 +1299,4 @@ void CMD_VT_ShapeArc(void)
     BA_End();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

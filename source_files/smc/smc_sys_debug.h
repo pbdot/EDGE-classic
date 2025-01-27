@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __SYS_DEBUG_H__
-#define __SYS_DEBUG_H__
+#pragma once
+
+namespace smc
+{
 
 #define MSG_BUF_LEN 1024
 
@@ -55,7 +57,4 @@ void DebugPrintf(const char *str, ...);
 #define SYS_NULL_CHECK(ptr)   SYS_ASSERT((ptr) != NULL)
 #define SYS_ZERO_CHECK(value) SYS_ASSERT((value) != 0)
 
-#endif /* __SYS_DEBUG_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_W_TEXTURE_H__
-#define __EUREKA_W_TEXTURE_H__
+#pragma once
 
 #include "smc_im_img.h"
+
+namespace smc
+{
 
 void W_LoadTextures();
 
@@ -62,7 +64,4 @@ Img_c *W_GetSprite(int type);
 
 void W_UnloadAllTextures();
 
-#endif /* __EUREKA_W_TEXTURE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -40,6 +40,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 // this function ensures that sector won't get floor > ceil
 void SEC_SafeRaiseLower(int sec, int parts, int dz)
 {
@@ -1212,5 +1215,4 @@ bool AssignSectorToSpace(double map_x, double map_y, int new_sec, int model)
     return true;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

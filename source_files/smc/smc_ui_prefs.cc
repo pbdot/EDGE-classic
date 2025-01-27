@@ -30,6 +30,9 @@
 #include <FL/Fl_Color_Chooser.H>
 #endif
 
+namespace smc
+{
+
 #define PREF_WINDOW_W 600
 #define PREF_WINDOW_H 520
 
@@ -1949,5 +1952,4 @@ void CMD_Preferences()
     delete dialog;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+}

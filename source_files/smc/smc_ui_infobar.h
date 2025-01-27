@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_INFOBAR_H__
-#define __EUREKA_UI_INFOBAR_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_InfoBar /*: public Fl_Group */
@@ -109,7 +111,4 @@ class UI_StatusBar /*: public Fl_Widget */
     void IB_Flag(int &cx, int &cy, bool value, const char *label_on, const char *label_off);
 };
 
-#endif /* __EUREKA_UI_INFOBAR_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

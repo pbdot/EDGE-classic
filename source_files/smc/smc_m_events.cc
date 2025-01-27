@@ -36,6 +36,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_misc.h"
 
+namespace smc
+{
+
 void ClearStickyMod()
 {
     if (edit.sticky_mod)
@@ -1080,5 +1083,4 @@ void CMD_OperationMenu()
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

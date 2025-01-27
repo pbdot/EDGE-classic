@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_OBJECTS_H__
-#define __EUREKA_OBJECTS_H__
+#pragma once
+
+namespace smc
+{
 
 void MoveObjects(selection_c *list, double delta_x, double delta_y, double delta_z = 0);
 void DragSingleObject(Objid &obj, double delta_x, double delta_y, double delta_z = 0);
@@ -83,7 +85,4 @@ void CMD_Enlarge();
 void CMD_Shrink();
 void CMD_Quantize();
 
-#endif /* __EUREKA_OBJECTS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

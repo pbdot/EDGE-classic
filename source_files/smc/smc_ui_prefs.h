@@ -18,12 +18,11 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_PREFS_H__
-#define __EUREKA_UI_PREFS_H__
+#pragma once
+
+namespace smc
+{
 
 void CMD_Preferences();
 
-#endif /* __EUREKA_UI_PREFS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+}

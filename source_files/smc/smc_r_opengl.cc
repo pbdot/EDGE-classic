@@ -42,6 +42,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 extern rgb_color_t transparent_col;
 
 extern bool render_high_detail;
@@ -1781,6 +1784,4 @@ void RGL_RenderWorld(int ox, int oy, int ow, int oh)
 }
 
 #endif /* NO_OPENGL */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+}

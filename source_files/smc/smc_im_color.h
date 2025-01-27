@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_IM_COLOR_H__
-#define __EUREKA_IM_COLOR_H__
+#pragma once
+
+namespace smc
+{
 
 typedef u32_t rgb_color_t;
 
@@ -128,7 +130,4 @@ inline int R_DoomLightingEquation(int L, float dist)
 #define SECTOR_MODE_COL fl_rgb_color(255, 255, 0)
 #define VERTEX_MODE_COL fl_rgb_color(0, 255, 128)
 
-#endif /* __EUREKA_IM_COLOR_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

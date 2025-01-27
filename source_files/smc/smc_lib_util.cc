@@ -33,6 +33,9 @@
 
 #include "smc_w_rawdef.h"
 
+namespace smc
+{
+
 //
 // a case-insensitive strcmp()
 //
@@ -356,5 +359,4 @@ int RoundPOW2(int x)
     return x + 1;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

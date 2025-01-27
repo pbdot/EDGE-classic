@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_REPLACE_H__
-#define __EUREKA_UI_REPLACE_H__
+#pragma once
+
+namespace smc
+{
 
 class number_group_c;
 class UI_TripleCheckButton;
@@ -198,7 +200,4 @@ class UI_FindAndReplace
 #endif
 };
 
-#endif /* __EUREKA_UI_REPLACE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

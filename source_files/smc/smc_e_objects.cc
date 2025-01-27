@@ -41,6 +41,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 // config items
 int new_sector_size = 128;
 
@@ -2157,5 +2160,4 @@ void CMD_Quantize()
     edit.error_mode = true;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

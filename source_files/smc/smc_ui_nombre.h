@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_NOMBRE_H__
-#define __EUREKA_UI_NOMBRE_H__
+#pragma once
+
+namespace smc
+{
 
 // _FLTK_DISABLED
 class UI_Nombre /* : public Fl_Box */
@@ -43,7 +45,4 @@ class UI_Nombre /* : public Fl_Box */
     void SetSelected(int _sel);
 };
 
-#endif /* __EUREKA_UI_NOMBRE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

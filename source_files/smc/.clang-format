@@ -1,29 +1,4 @@
-BasedOnStyle: Microsoft
-AlignConsecutiveAssignments: Consecutive
-AlignConsecutiveBitFields: Consecutive
-AlignConsecutiveDeclarations: Consecutive
-AlignConsecutiveMacros: Consecutive
-AlignTrailingComments:
-  Kind: Always
-  OverEmptyLines: 2
-IncludeBlocks:   Regroup
-IncludeCategories:
-  - Regex:           '^<ext/.*\.h>'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*\.h>'
-    Priority:        1
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '^<.*'
-    Priority:        2
-    SortPriority:    0
-    CaseSensitive:   false
-  - Regex:           '.*'
-    Priority:        3
-    SortPriority:    0
-    CaseSensitive:   false
-IncludeIsMainRegex: '([-_](test|unittest))?$'
-IncludeIsMainSourceRegex: ''
+#override for smc as sorting includes currently breaks too much stuff
+
+BasedOnStyle: InheritParentConfig 
 SortIncludes: Never

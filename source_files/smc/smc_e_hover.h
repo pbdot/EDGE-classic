@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_X_HOVER_H__
-#define __EUREKA_X_HOVER_H__
+#pragma once
+
+namespace smc
+{
 
 class Objid;
 class bitvec_c;
@@ -100,7 +102,4 @@ class crossing_state_c
 void FindCrossingPoints(crossing_state_c &cross, double x1, double y1, int possible_v1, double x2, double y2,
                         int possible_v2);
 
-#endif /* __EUREKA_X_HOVER_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

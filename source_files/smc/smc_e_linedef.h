@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_LINEDEF_H__
-#define __EUREKA_E_LINEDEF_H__
+#pragma once
+
+namespace smc
+{
 
 void FlipLineDef(int ld);
 void FlipLineDefGroup(selection_c *flip);
@@ -72,7 +74,4 @@ void CMD_LIN_Align();
 void CMD_LIN_MergeTwo();
 void CMD_LIN_SplitHalf();
 
-#endif /* __EUREKA_E_LINEDEF_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

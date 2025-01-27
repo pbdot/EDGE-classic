@@ -18,10 +18,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_BSP_H__
-#define __EUREKA_BSP_H__
+#pragma once
 
 #include "smc_lib_util.h"
+
+namespace smc
+{
 
 class Lump_c;
 
@@ -108,9 +110,6 @@ build_result_e AJBSP_BuildLevel(nodebuildinfo_t *info, short lev_idx);
 //    INTERNAL STUFF FROM HERE ON
 //
 //======================================================================
-
-namespace ajbsp
-{
 
 // internal storage of node building parameters
 
@@ -620,9 +619,4 @@ void RoundOffBspTree();
 // free all the superblocks on the quick-alloc list
 void FreeQuickAllocSupers(void);
 
-} // namespace ajbsp
-
-#endif /* __EUREKA_BSP_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_CONFIG_H__
-#define __EUREKA_M_CONFIG_H__
+#pragma once
 
 #include "smc_im_color.h"
+
+namespace smc
+{
 
 /* ==== CONFIG VARIABLES ==================== */
 
@@ -136,7 +138,4 @@ bool M_SaveUserState();
 
 void M_DefaultUserState();
 
-#endif /* __EUREKA_M_CONFIG_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

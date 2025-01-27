@@ -34,6 +34,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 int calc_new_angle(int angle, int diff)
 {
     angle += diff;
@@ -207,5 +210,4 @@ void CMD_TH_Merge(void)
     BA_End();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

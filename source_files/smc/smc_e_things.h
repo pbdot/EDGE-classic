@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_THINGS_H__
-#define __EUREKA_E_THINGS_H__
+#pragma once
 
 #include "smc_im_color.h"
+
+namespace smc
+{
 
 /* starting areas */
 #define THING_PLAYER1    1
@@ -56,7 +58,4 @@ void CMD_TH_SpinThings(void);
 void CMD_TH_Disconnect(void);
 void CMD_TH_Merge(void);
 
-#endif /* __EUREKA_E_THINGS_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

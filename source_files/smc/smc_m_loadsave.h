@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_LOADSAVE_H__
-#define __EUREKA_E_LOADSAVE_H__
+#pragma once
 
 #include "smc_w_wad.h"
+
+namespace smc
+{
 
 void LoadLevel(Wad_file *wad, const char *level);
 void LoadLevelNum(Wad_file *wad, short lev_num);
@@ -66,7 +68,4 @@ void CMD_DeleteMap();
 // this one in m_testmap.cc
 void CMD_TestMap();
 
-#endif /* __EUREKA_E_LOADSAVE_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

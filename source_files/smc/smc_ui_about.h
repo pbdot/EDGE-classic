@@ -18,14 +18,13 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_ABOUT_H__
-#define __EUREKA_UI_ABOUT_H__
+#pragma once
+
+namespace smc
+{
 
 void InitAboutDialog();
 
 void DLG_AboutText(void);
 
-#endif /* __EUREKA_UI_ABOUT_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

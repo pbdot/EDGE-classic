@@ -41,6 +41,9 @@
 #include "smc_r_render.h"
 #include "smc_r_subdiv.h"
 
+namespace smc
+{
+
 extern rgb_color_t transparent_col;
 
 extern bool render_high_detail;
@@ -2147,5 +2150,4 @@ bool SW_QueryPoint(Objid &hl, int qx, int qy)
     return true;
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

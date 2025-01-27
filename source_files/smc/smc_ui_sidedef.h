@@ -18,8 +18,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_UI_SIDEDEF_H__
-#define __EUREKA_UI_SIDEDEF_H__
+#pragma once
+
+namespace smc
+{
 
 #define SETOBJ_NO_LINE -2
 
@@ -98,7 +100,4 @@ class UI_SideBox
 #endif
 };
 
-#endif /* __EUREKA_UI_SIDEDEF_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

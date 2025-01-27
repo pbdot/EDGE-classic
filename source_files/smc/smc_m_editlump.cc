@@ -24,6 +24,9 @@
 
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 #define BUTTON_COL FL_YELLOW
 
 // special (not real) lump names
@@ -538,5 +541,4 @@ void CMD_AddBehaviorLump()
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

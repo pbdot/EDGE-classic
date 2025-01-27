@@ -24,10 +24,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_R_RENDER__
-#define __EUREKA_R_RENDER__
+#pragma once
 
 #include "smc_im_img.h"
+
+namespace smc
+{
 
 struct Render_View_t
 {
@@ -127,7 +129,4 @@ bool SW_QueryPoint(Objid &hl, int qx, int qy);
 
 void RGL_RenderWorld(int ox, int oy, int ow, int oh);
 
-#endif /* __EUREKA_R_RENDER__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -19,8 +19,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __SYS_MACRO_H__
-#define __SYS_MACRO_H__
+#pragma once
+
+namespace smc
+{
 
 // basic macros
 
@@ -75,7 +77,4 @@
 #define PACKEDATTR
 #endif
 
-#endif /* __SYS_MACRO_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -44,6 +44,9 @@
 #include "smc_ui_window.h"
 #include "smc_ui_file.h"
 
+namespace smc
+{
+
 int last_given_file;
 
 // this is only used to prevent a M_SaveMap which happens inside
@@ -1991,5 +1994,4 @@ void CMD_DeleteMap()
     }
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

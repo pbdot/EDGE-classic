@@ -29,6 +29,9 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
 
+namespace smc
+{
+
 // config item
 bool swap_sidedefs           = false;
 bool show_full_one_sided     = false;
@@ -617,5 +620,4 @@ void UI_SideBox::UnselectPics()
     r_pic->Selected(false);
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

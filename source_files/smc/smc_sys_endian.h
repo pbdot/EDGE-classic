@@ -23,8 +23,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __SYS_ENDIAN_H__
-#define __SYS_ENDIAN_H__
+#pragma once
+
+namespace smc
+{
 
 // ---- determine byte order ----
 
@@ -117,7 +119,4 @@ static inline u32_t UT_Swap32(u32_t x)
 #define BE_S16(X) ((s16_t)BE_U16((u16_t)(X)))
 #define BE_S32(X) ((s32_t)BE_U32((u32_t)(X)))
 
-#endif // __SYS_ENDIAN_H__
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

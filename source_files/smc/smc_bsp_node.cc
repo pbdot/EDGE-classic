@@ -41,7 +41,7 @@
 
 #include "smc_w_rawdef.h"
 
-namespace ajbsp
+namespace smc
 {
 
 #define PRECIOUS_MULTIPLY 100
@@ -1922,7 +1922,4 @@ void RoundOffBspTree()
     }
 }
 
-} // namespace ajbsp
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

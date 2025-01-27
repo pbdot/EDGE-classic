@@ -30,6 +30,9 @@
 #include "smc_im_img.h" // TRANS_PIXEL
 #include "smc_w_wad.h"
 
+namespace smc
+{
+
 // config item
 int usegamma = 2;
 
@@ -358,5 +361,4 @@ int gammatable[5][256] = {
      237, 237, 238, 239, 239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 246, 246, 247, 247, 248,
      248, 249, 249, 250, 250, 251, 251, 252, 252, 253, 254, 254, 255, 255}};
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

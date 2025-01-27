@@ -18,13 +18,12 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_EDITLUMP_H__
-#define __EUREKA_M_EDITLUMP_H__
+#pragma once
+
+namespace smc
+{
 
 void CMD_EditLump();
 void CMD_AddBehaviorLump();
 
-#endif /* __EUREKA_M_EDITLUMP_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

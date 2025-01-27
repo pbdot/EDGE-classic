@@ -24,8 +24,10 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_E_SECTOR_H__
-#define __EUREKA_E_SECTOR_H__
+#pragma once
+
+namespace smc
+{
 
 class lineloop_c
 {
@@ -121,7 +123,4 @@ void CMD_SEC_Light(void);
 void CMD_SEC_Merge(void);
 void CMD_SEC_SwapFlats(void);
 
-#endif /* __EUREKA_E_SECTOR_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

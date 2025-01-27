@@ -24,11 +24,13 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_W_LOADPIC_H__
-#define __EUREKA_W_LOADPIC_H__
+#pragma once
 
 #include "smc_im_img.h"
 #include "smc_w_wad.h"
+
+namespace smc
+{
 
 bool LoadPicture(Img_c &dest, Lump_c *lump,     /* Lump containing picture */
                  const char *pic_name,          /* Picture name, for messages */
@@ -56,7 +58,4 @@ Img_c *LoadImage_TGA(Lump_c *lump, const char *name);
 //
 char W_DetectImageFormat(Lump_c *lump);
 
-#endif /* __EUREKA_W_LOADPIC_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

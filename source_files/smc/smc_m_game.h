@@ -24,12 +24,14 @@
 //
 //------------------------------------------------------------------------
 
-#ifndef __EUREKA_M_GAME_H__
-#define __EUREKA_M_GAME_H__
+#pragma once
 
 #include "smc_im_color.h"
 
 #include <map>
+
+namespace smc
+{
 
 /*
  *  Data structures for game definition data
@@ -275,7 +277,4 @@ const char *M_LineCategoryString(char *letters);
 const char *M_ThingCategoryString(char *letters);
 const char *M_TextureCategoryString(char *letters, bool do_flats);
 
-#endif /* __EUREKA_M_GAME_H__ */
-
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

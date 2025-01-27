@@ -22,6 +22,9 @@
 #include "smc_ui_tile.h"
 #include "smc_ui_window.h"
 
+namespace smc
+{
+
 //
 // UI_Tile Constructor
 //
@@ -184,5 +187,4 @@ void UI_Tile::WriteUser(FILE *fp)
 #endif
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc

@@ -41,6 +41,9 @@
 
 #include "smc_ui_window.h" // Browser_xxx, Props_xxx
 
+namespace smc
+{
+
 //------------------------------------------------------------------------
 
 //
@@ -1089,5 +1092,4 @@ void M_DefaultUserState()
     Editor_DefaultState();
 }
 
-//--- editor settings ---
-// vi:ts=4:sw=4:noexpandtab
+} // namespace smc
