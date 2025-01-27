@@ -33,10 +33,8 @@ void Clipboard_NotifyEnd();
 void UnusedVertices(selection_c *lines, selection_c *result);
 void UnusedSideDefs(selection_c *lines, selection_c *secs, selection_c *result);
 
-void DeleteObjects_WithUnused(selection_c *list,
-			bool keep_things = false,
-			bool keep_verts  = false,
-			bool keep_lines  = false);
+void DeleteObjects_WithUnused(selection_c *list, bool keep_things = false, bool keep_verts = false,
+                              bool keep_lines = false);
 
 void CMD_Delete();
 void CMD_CopyAndPaste();
@@ -44,7 +42,6 @@ void CMD_CopyAndPaste();
 void CMD_Clipboard_Cut();
 void CMD_Clipboard_Copy();
 void CMD_Clipboard_Paste();
-
 
 //----------------------------------------------------------------------
 //  Texture Clipboard
@@ -60,8 +57,7 @@ void Texboard_SetTex(const char *new_tex);
 void Texboard_SetFlat(const char *new_flat);
 void Texboard_SetThing(int new_id);
 
-
-#endif  /* __EUREKA_E_CUTPASTE_H__ */
+#endif /* __EUREKA_E_CUTPASTE_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

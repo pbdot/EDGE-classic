@@ -23,7 +23,7 @@
 
 void CMD_Preferences();
 
-#endif  /* __EUREKA_UI_PREFS_H__ */
+#endif /* __EUREKA_UI_PREFS_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

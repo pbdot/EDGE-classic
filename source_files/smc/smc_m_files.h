@@ -31,16 +31,15 @@ void M_OpenRecentFromMenu(void *priv_data);
 bool M_TryOpenMostRecent();
 
 // these three only for menu code
-int M_RecentCount();
+int         M_RecentCount();
 std::string M_RecentShortName(int index);
-void * M_RecentData(int index);
+void       *M_RecentData(int index);
 
-
-void M_LookForIWADs();
-void M_AddKnownIWAD(const char *path);
-const char * M_QueryKnownIWAD(const char *game);
-const char * M_CollectGamesForMenu(int *exist_val, const char *exist_name);
-const char * M_PickDefaultIWAD();
+void        M_LookForIWADs();
+void        M_AddKnownIWAD(const char *path);
+const char *M_QueryKnownIWAD(const char *game);
+const char *M_CollectGamesForMenu(int *exist_val, const char *exist_name);
+const char *M_PickDefaultIWAD();
 
 void M_ValidateGivenFiles();
 int  M_FindGivenFile(const char *filename);
@@ -54,16 +53,15 @@ void M_BackupWad(Wad_file *wad);
 
 typedef struct port_path_info_t
 {
-	char exe_filename[SMC_PATH_MAX];
+    char exe_filename[SMC_PATH_MAX];
 
 } port_path_info_t;
 
-port_path_info_t * M_QueryPortPath(const char *name, bool create_it = false);
+port_path_info_t *M_QueryPortPath(const char *name, bool create_it = false);
 
 bool M_IsPortPathValid(const port_path_info_t *info);
 
-
-#endif  /* __EUREKA_M_FILES_H__ */
+#endif /* __EUREKA_M_FILES_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

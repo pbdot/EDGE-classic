@@ -21,31 +21,29 @@
 #ifndef __EUREKA_UI_NOMBRE_H__
 #define __EUREKA_UI_NOMBRE_H__
 
-
 // _FLTK_DISABLED
 class UI_Nombre /* : public Fl_Box */
 {
-private:
-	int index;
-	int total;
-	int selected;
+  private:
+    int index;
+    int total;
+    int selected;
 
-	const char *type_name;
+    const char *type_name;
 
-	void Update();
+    void Update();
 
-public:
-	UI_Nombre(int X, int Y, int W, int H, const char *what = NULL);
-	virtual ~UI_Nombre();
+  public:
+    UI_Nombre(int X, int Y, int W, int H, const char *what = NULL);
+    virtual ~UI_Nombre();
 
-public:
-	void SetIndex(int _idx);  // _idx < 0 means "no index"
-	void SetTotal(int _tot);
-	void SetSelected(int _sel);
+  public:
+    void SetIndex(int _idx); // _idx < 0 means "no index"
+    void SetTotal(int _tot);
+    void SetSelected(int _sel);
 };
 
-
-#endif  /* __EUREKA_UI_NOMBRE_H__ */
+#endif /* __EUREKA_UI_NOMBRE_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

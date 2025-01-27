@@ -27,51 +27,53 @@ class UI_VertexBox : public Fl_Group
 class UI_VertexBox
 #endif
 {
-private:
-	int obj;
-	int count;
+  private:
+    int obj;
+    int count;
 
-public:
-	UI_Nombre *which;
+  public:
+    UI_Nombre *which;
 
 #ifdef _FLTK_DISABLED
-	Fl_Int_Input *pos_x;
-	Fl_Int_Input *pos_y;
+    Fl_Int_Input *pos_x;
+    Fl_Int_Input *pos_y;
 
-	Fl_Button *move_left;
-	Fl_Button *move_right;
-	Fl_Button *move_up;
-	Fl_Button *move_down;
+    Fl_Button *move_left;
+    Fl_Button *move_right;
+    Fl_Button *move_up;
+    Fl_Button *move_down;
 #endif
 
-public:
-	UI_VertexBox(int X, int Y, int W, int H, const char *label = NULL);
-	virtual ~UI_VertexBox();
+  public:
+    UI_VertexBox(int X, int Y, int W, int H, const char *label = NULL);
+    virtual ~UI_VertexBox();
 
-public:
-	int handle(int event);
-	// FLTK virtual method for handling input events.
+  public:
+    int handle(int event);
+    // FLTK virtual method for handling input events.
 
-public:
-	void SetObj(int _index, int _count);
+  public:
+    void SetObj(int _index, int _count);
 
-	int GetObj() const { return obj; }
+    int GetObj() const
+    {
+        return obj;
+    }
 
-	// call this if the vertex was externally changed.
-	void UpdateField();
+    // call this if the vertex was externally changed.
+    void UpdateField();
 
-	void UpdateTotal();
+    void UpdateTotal();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	static void x_callback(Fl_Widget *, void *);
-	static void y_callback(Fl_Widget *, void *);
-	static void button_callback(Fl_Widget *, void *);
+    static void x_callback(Fl_Widget *, void *);
+    static void y_callback(Fl_Widget *, void *);
+    static void button_callback(Fl_Widget *, void *);
 #endif
 };
 
-
-#endif  /* __EUREKA_UI_VERTEX_H__ */
+#endif /* __EUREKA_UI_VERTEX_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

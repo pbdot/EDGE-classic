@@ -29,31 +29,26 @@
 
 #include "smc_im_color.h"
 
-
 /* starting areas */
-#define THING_PLAYER1         1
-#define THING_PLAYER2         2
-#define THING_PLAYER3         3
-#define THING_PLAYER4         4
-#define THING_DEATHMATCH      11
+#define THING_PLAYER1    1
+#define THING_PLAYER2    2
+#define THING_PLAYER3    3
+#define THING_PLAYER4    4
+#define THING_DEATHMATCH 11
 
-
-#define MAX_RADIUS  128
-
+#define MAX_RADIUS 128
 
 /*
  *  angle_to_direction - convert angle to direction (0-7)
  *
  *  Return a value that is guaranteed to be within [0-7].
  */
-inline int angle_to_direction (int angle)
+inline int angle_to_direction(int angle)
 {
-  return ((unsigned) angle / 45) % 8;
+    return ((unsigned)angle / 45) % 8;
 }
 
-
 int calc_new_angle(int angle, int diff);
-
 
 /* commands */
 
@@ -61,8 +56,7 @@ void CMD_TH_SpinThings(void);
 void CMD_TH_Disconnect(void);
 void CMD_TH_Merge(void);
 
-
-#endif  /* __EUREKA_E_THINGS_H__ */
+#endif /* __EUREKA_E_THINGS_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

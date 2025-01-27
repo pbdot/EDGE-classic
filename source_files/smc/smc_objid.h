@@ -27,79 +27,88 @@
 #ifndef __EUREKA_OBJ_ID_H__
 #define __EUREKA_OBJ_ID_H__
 
-
 // main kinds of objects
 typedef enum
 {
-	OBJ_THINGS,
-	OBJ_LINEDEFS,
-	OBJ_SIDEDEFS,
-	OBJ_VERTICES,
-	OBJ_SECTORS,
-}
-obj_type_e;
-
+    OBJ_THINGS,
+    OBJ_LINEDEFS,
+    OBJ_SIDEDEFS,
+    OBJ_VERTICES,
+    OBJ_SECTORS,
+} obj_type_e;
 
 // special object number for "NONE"
-#define NIL_OBJ		-1
-
+#define NIL_OBJ -1
 
 // bit flags for object parts (bit zero is reserved)
-#define PART_FLOOR		0x02
-#define PART_CEIL		0x04
-#define PART_SEC_ALL	(PART_FLOOR + PART_CEIL)
+#define PART_FLOOR   0x02
+#define PART_CEIL    0x04
+#define PART_SEC_ALL (PART_FLOOR + PART_CEIL)
 
-#define PART_RT_LOWER		0x02
-#define PART_RT_UPPER		0x04
-#define PART_RT_RAIL		0x08
-#define PART_RT_ALL			(PART_RT_LOWER | PART_RT_UPPER | PART_RT_RAIL)
+#define PART_RT_LOWER 0x02
+#define PART_RT_UPPER 0x04
+#define PART_RT_RAIL  0x08
+#define PART_RT_ALL   (PART_RT_LOWER | PART_RT_UPPER | PART_RT_RAIL)
 
-#define PART_LF_LOWER		0x20
-#define PART_LF_UPPER		0x40
-#define PART_LF_RAIL		0x80
-#define PART_LF_ALL			(PART_LF_LOWER | PART_LF_UPPER | PART_LF_RAIL)
-
+#define PART_LF_LOWER 0x20
+#define PART_LF_UPPER 0x40
+#define PART_LF_RAIL  0x80
+#define PART_LF_ALL   (PART_LF_LOWER | PART_LF_UPPER | PART_LF_RAIL)
 
 class Objid
 {
-public:
-	obj_type_e type;
+  public:
+    obj_type_e type;
 
-	int num;
+    int num;
 
-	// this is some combination of PART_XXX flags, or 0 which
-	// represents the object as a whole.
-	int parts;
+    // this is some combination of PART_XXX flags, or 0 which
+    // represents the object as a whole.
+    int parts;
 
-public:
-	Objid() : type(OBJ_THINGS), num(NIL_OBJ), parts(0) { }
-	Objid(obj_type_e t, int n) : type(t), num(n), parts(0) { }
-	Objid(obj_type_e t, int n, int p) : type(t), num(n), parts(p) { }
-	Objid(const Objid& other) : type(other.type), num(other.num), parts(other.parts) { }
+  public:
+    Objid() : type(OBJ_THINGS), num(NIL_OBJ), parts(0)
+    {
+    }
+    Objid(obj_type_e t, int n) : type(t), num(n), parts(0)
+    {
+    }
+    Objid(obj_type_e t, int n, int p) : type(t), num(n), parts(p)
+    {
+    }
+    Objid(const Objid &other) : type(other.type), num(other.num), parts(other.parts)
+    {
+    }
 
-	void clear()
-	{
-		num = NIL_OBJ;
-		parts = 0;
-	}
+    void clear()
+    {
+        num   = NIL_OBJ;
+        parts = 0;
+    }
 
-	bool valid()  const { return num >= 0; }
-	bool is_nil() const { return num <  0; }
+    bool valid() const
+    {
+        return num >= 0;
+    }
+    bool is_nil() const
+    {
+        return num < 0;
+    }
 
-	bool operator== (const Objid& other) const
-	{
-		return  (other.type  == type) &&
-				(other.num   == num) &&
-				(other.parts == parts);
-	}
+    bool operator==(const Objid &other) const
+    {
+        return (other.type == type) && (other.num == num) && (other.parts == parts);
+    }
 
-private:
-	// not generally available
-	bool operator!= (const Objid& other) const { return false; }
+  private:
+    // not generally available
+    bool operator!=(const Objid &other) const
+    {
+        return false;
+    }
 };
 
-
-#endif  /* __EUREKA_OBJ_ID_H__ */
+#endif /* __EUREKA_OBJ_ID_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

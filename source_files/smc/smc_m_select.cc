@@ -29,429 +29,408 @@
 #include "smc_m_select.h"
 #include "smc_e_objects.h"
 
+// #define NEED_SLOW_CLEAR
 
-//#define NEED_SLOW_CLEAR
+#define INITIAL_BITVEC_SIZE   1024
+#define INITIAL_EXTENDED_SIZE 256
 
-#define INITIAL_BITVEC_SIZE    1024
-#define INITIAL_EXTENDED_SIZE  256
-
-
-selection_c::selection_c(obj_type_e _type, bool _extended) :
-	type(_type),
-	count(0), bv(NULL),
-	extended(NULL), ext_size(0),
-	maxobj(-1), first_obj(-1)
+selection_c::selection_c(obj_type_e _type, bool _extended)
+    : type(_type), count(0), bv(NULL), extended(NULL), ext_size(0), maxobj(-1), first_obj(-1)
 {
-	if (_extended)
-	{
-		ext_size = INITIAL_EXTENDED_SIZE;
-		extended  = new byte[ext_size];
+    if (_extended)
+    {
+        ext_size = INITIAL_EXTENDED_SIZE;
+        extended = new byte[ext_size];
 
-		memset(extended, 0, (size_t)ext_size);
-	}
+        memset(extended, 0, (size_t)ext_size);
+    }
 }
 
 selection_c::~selection_c()
 {
-	if (bv)
-		delete bv;
+    if (bv)
+        delete bv;
 
-	if (extended)
-		delete[] extended;
+    if (extended)
+        delete[] extended;
 }
-
 
 void selection_c::change_type(obj_type_e new_type)
 {
-	type = new_type;
+    type = new_type;
 
-	clear_all();
+    clear_all();
 }
-
 
 bool selection_c::empty() const
 {
-	return count == 0;
+    return count == 0;
 }
-
 
 int selection_c::count_obj() const
 {
-	return count;
+    return count;
 }
-
 
 bool selection_c::get(int n) const
 {
-	if (extended)
-		return get_ext(n) != 0;
+    if (extended)
+        return get_ext(n) != 0;
 
-	if (bv)
-		return bv->get(n);
+    if (bv)
+        return bv->get(n);
 
-	for (int i = 0 ; i < count ; i++)
-		if (objs[i] == n)
-			return true;
+    for (int i = 0; i < count; i++)
+        if (objs[i] == n)
+            return true;
 
-	return false;
+    return false;
 }
-
 
 void selection_c::set(int n)
 {
-	if (extended)
-	{
-		set_ext(n, 1);
-		return;
-	}
+    if (extended)
+    {
+        set_ext(n, 1);
+        return;
+    }
 
-	if (get(n))
-		return;
+    if (get(n))
+        return;
 
-	if (maxobj < n)
-		maxobj = n;
+    if (maxobj < n)
+        maxobj = n;
 
-	if (first_obj < 0 && empty())
-		first_obj = n;
+    if (first_obj < 0 && empty())
+        first_obj = n;
 
-	if (!bv && count >= MAX_STORE_SEL)
-	{
-		ConvertToBitvec();
-	}
+    if (!bv && count >= MAX_STORE_SEL)
+    {
+        ConvertToBitvec();
+    }
 
-	if (bv)
-	{
-		bv->set(n);
-		count++;
-		return;
-	}
+    if (bv)
+    {
+        bv->set(n);
+        count++;
+        return;
+    }
 
-	objs[count++] = n;
+    objs[count++] = n;
 }
-
 
 void selection_c::clear(int n)
 {
-	if (extended)
-	{
-		if (get_ext(n) == 0)
-			return;
+    if (extended)
+    {
+        if (get_ext(n) == 0)
+            return;
 
-		// n should be safe to access directly, due to above check
-		extended[n] = 0;
-		count--;
-	}
-	else if (bv)
-	{
-		if (! get(n))
-			return;
+        // n should be safe to access directly, due to above check
+        extended[n] = 0;
+        count--;
+    }
+    else if (bv)
+    {
+        if (!get(n))
+            return;
 
-		bv->clear(n);
-		count--;
-	}
-	else
-	{
-		int i;
+        bv->clear(n);
+        count--;
+    }
+    else
+    {
+        int i;
 
-		for (i = 0 ; i < count ; i++)
-			if (objs[i] == n)
-				break;
+        for (i = 0; i < count; i++)
+            if (objs[i] == n)
+                break;
 
-		if (i >= count)
-			return;  // not present
+        if (i >= count)
+            return; // not present
 
-		count--;
+        count--;
 
 #ifdef NEED_SLOW_CLEAR
-		for ( ; i < count ; i++)
-			objs[i] = objs[i+1];
+        for (; i < count; i++)
+            objs[i] = objs[i + 1];
 #else
-		if (i < count)
-			objs[i] = objs[count];
+        if (i < count)
+            objs[i] = objs[count];
 #endif
-	}
+    }
 
-	if (maxobj == n)
-		RecomputeMaxObj();
+    if (maxobj == n)
+        RecomputeMaxObj();
 
-	if (first_obj == n)
-		first_obj = -1;
+    if (first_obj == n)
+        first_obj = -1;
 }
-
 
 void selection_c::toggle(int n)
 {
-	if (get(n))
-		clear(n);
-	else
-		set(n);
+    if (get(n))
+        clear(n);
+    else
+        set(n);
 }
-
 
 void selection_c::clear_all()
 {
-	count = 0;
-	maxobj = -1;
-	first_obj = -1;
+    count     = 0;
+    maxobj    = -1;
+    first_obj = -1;
 
-	if (extended)
-	{
-		memset(extended, 0, (size_t)ext_size);
-	}
-	else if (bv)
-	{
-		delete bv;
-		bv = NULL;
-	}
+    if (extended)
+    {
+        memset(extended, 0, (size_t)ext_size);
+    }
+    else if (bv)
+    {
+        delete bv;
+        bv = NULL;
+    }
 }
-
 
 byte selection_c::get_ext(int n) const
 {
-	if (! extended)
-		return get(n) ? 255 : 0;
+    if (!extended)
+        return get(n) ? 255 : 0;
 
-	if (n >= ext_size)
-		return 0;
+    if (n >= ext_size)
+        return 0;
 
-	return extended[n];
+    return extended[n];
 }
-
 
 void selection_c::set_ext(int n, byte value)
 {
-	// set_ext() should not be used with plain selections
-	if (! extended)
-		return;
+    // set_ext() should not be used with plain selections
+    if (!extended)
+        return;
 
-	if (value == 0)
-	{
-		clear(n);
-		return;
-	}
+    if (value == 0)
+    {
+        clear(n);
+        return;
+    }
 
-	if (maxobj < n)
-		maxobj = n;
+    if (maxobj < n)
+        maxobj = n;
 
-	if (first_obj < 0 && empty())
-		first_obj = n;
+    if (first_obj < 0 && empty())
+        first_obj = n;
 
-	// need to resize the array?
-	while (n >= ext_size)
-	{
-		ResizeExtended(ext_size * 2);
-	}
+    // need to resize the array?
+    while (n >= ext_size)
+    {
+        ResizeExtended(ext_size * 2);
+    }
 
-	if (extended[n] == 0)
-		count++;
+    if (extended[n] == 0)
+        count++;
 
-	extended[n] = value;
+    extended[n] = value;
 }
-
 
 void selection_c::frob(int n, sel_op_e op)
 {
-	switch (op)
-	{
-		case BOP_ADD: set(n); break;
-		case BOP_REMOVE: clear(n); break;
-		default: toggle(n); break;
-	}
+    switch (op)
+    {
+    case BOP_ADD:
+        set(n);
+        break;
+    case BOP_REMOVE:
+        clear(n);
+        break;
+    default:
+        toggle(n);
+        break;
+    }
 }
-
 
 void selection_c::frob_range(int n1, int n2, sel_op_e op)
 {
-	for ( ; n1 <= n2 ; n1++)
-	{
-		frob(n1, op);
-	}
+    for (; n1 <= n2; n1++)
+    {
+        frob(n1, op);
+    }
 }
 
-
-void selection_c::merge(const selection_c& other)
+void selection_c::merge(const selection_c &other)
 {
-	if (extended && other.extended)
-	{
-		for (int i = 0 ; i <= other.maxobj ; i++)
-		{
-			byte value = other.get_ext(i);
+    if (extended && other.extended)
+    {
+        for (int i = 0; i <= other.maxobj; i++)
+        {
+            byte value = other.get_ext(i);
 
-			set_ext(i, get_ext(i) | value);
-		}
-	}
-	else if (other.bv || other.extended)
-	{
-		for (int i = 0 ; i <= other.maxobj ; i++)
-			if (other.get(i) && !get(i))
-				set(i);
-	}
-	else
-	{
-		for (int i = 0 ; i < other.count ; i++)
-			if (!get(other.objs[i]))
-				set(other.objs[i]);
-	}
+            set_ext(i, get_ext(i) | value);
+        }
+    }
+    else if (other.bv || other.extended)
+    {
+        for (int i = 0; i <= other.maxobj; i++)
+            if (other.get(i) && !get(i))
+                set(i);
+    }
+    else
+    {
+        for (int i = 0; i < other.count; i++)
+            if (!get(other.objs[i]))
+                set(other.objs[i]);
+    }
 }
 
-
-void selection_c::unmerge(const selection_c& other)
+void selection_c::unmerge(const selection_c &other)
 {
-	if (other.bv || other.extended)
-	{
-		for (int i = 0 ; i <= other.maxobj ; i++)
-			if (other.get(i))
-				clear(i);
-	}
-	else
-	{
-		for (int i = 0 ; i < other.count ; i++)
-			clear(other.objs[i]);
-	}
+    if (other.bv || other.extended)
+    {
+        for (int i = 0; i <= other.maxobj; i++)
+            if (other.get(i))
+                clear(i);
+    }
+    else
+    {
+        for (int i = 0; i < other.count; i++)
+            clear(other.objs[i]);
+    }
 }
 
-
-void selection_c::intersect(const selection_c& other)
+void selection_c::intersect(const selection_c &other)
 {
-	for (int i = 0 ; i <= maxobj ; i++)
-		if (get(i) && !other.get(i))
-			clear(i);
+    for (int i = 0; i <= maxobj; i++)
+        if (get(i) && !other.get(i))
+            clear(i);
 }
 
-
-bool selection_c::test_equal(const selection_c& other)
+bool selection_c::test_equal(const selection_c &other)
 {
-	if (type != other.type)
-		return false;
+    if (type != other.type)
+        return false;
 
-	if (maxobj != other.maxobj)
-		return false;
+    if (maxobj != other.maxobj)
+        return false;
 
-	if (count_obj() != other.count_obj())
-		return false;
+    if (count_obj() != other.count_obj())
+        return false;
 
-	// the quick tests have passed, now perform the expensive one
+    // the quick tests have passed, now perform the expensive one
 
-	for (sel_iter_c it(this) ; !it.done() ; it.next())
-		if (! other.get(*it))
-			return false;
+    for (sel_iter_c it(this); !it.done(); it.next())
+        if (!other.get(*it))
+            return false;
 
-	return true;
+    return true;
 }
-
 
 void selection_c::ConvertToBitvec()
 {
-	SYS_ASSERT(! bv);
+    SYS_ASSERT(!bv);
 
-	int size = INITIAL_BITVEC_SIZE;
+    int size = INITIAL_BITVEC_SIZE;
 
-	if (size < maxobj+1)
-		size = maxobj+1;
+    if (size < maxobj + 1)
+        size = maxobj + 1;
 
-	bv = new bitvec_c(size);
+    bv = new bitvec_c(size);
 
-	for (int i = 0 ; i < count ; i++)
-	{
-		bv->set(objs[i]);
-	}
+    for (int i = 0; i < count; i++)
+    {
+        bv->set(objs[i]);
+    }
 }
-
 
 void selection_c::RecomputeMaxObj()
 {
-	maxobj = -1;
+    maxobj = -1;
 
-	if (extended)
-	{
-		// search backwards so we can early out
-		for (int i = ext_size-1 ; i >= 0 ; i--)
-		{
-			if (get_ext(i))
-			{
-				maxobj = i;
-				break;
-			}
-		}
-	}
-	else if (bv)
-	{
-		// search backwards so we can early out
-		for (int i = bv->size()-1 ; i >= 0 ; i--)
-		{
-			if (bv->get(i))
-			{
-				maxobj = i;
-				break;
-			}
-		}
-	}
-	else
-	{
-		// cannot optimise here, values are not sorted
-		for (int i = 0 ; i < count ; i++)
-		{
-			maxobj = MAX(maxobj, objs[i]);
-		}
-	}
+    if (extended)
+    {
+        // search backwards so we can early out
+        for (int i = ext_size - 1; i >= 0; i--)
+        {
+            if (get_ext(i))
+            {
+                maxobj = i;
+                break;
+            }
+        }
+    }
+    else if (bv)
+    {
+        // search backwards so we can early out
+        for (int i = bv->size() - 1; i >= 0; i--)
+        {
+            if (bv->get(i))
+            {
+                maxobj = i;
+                break;
+            }
+        }
+    }
+    else
+    {
+        // cannot optimise here, values are not sorted
+        for (int i = 0; i < count; i++)
+        {
+            maxobj = MAX(maxobj, objs[i]);
+        }
+    }
 }
-
 
 void selection_c::ResizeExtended(int new_size)
 {
-	SYS_ASSERT(new_size > 0);
+    SYS_ASSERT(new_size > 0);
 
-	byte *d = new byte[new_size];
+    byte *d = new byte[new_size];
 
-	// copy existing values
-	memcpy(d, extended, (size_t)MIN(ext_size, new_size));
+    // copy existing values
+    memcpy(d, extended, (size_t)MIN(ext_size, new_size));
 
-	// clear values at top end
-	if (new_size > ext_size)
-		memset(d+ext_size, 0, (size_t)(new_size - ext_size));
+    // clear values at top end
+    if (new_size > ext_size)
+        memset(d + ext_size, 0, (size_t)(new_size - ext_size));
 
-	delete[] extended;
+    delete[] extended;
 
-	extended = d;
-	ext_size = new_size;
+    extended = d;
+    ext_size = new_size;
 }
-
 
 int selection_c::find_first() const
 {
-	if (first_obj >= 0)
-	{
-		SYS_ASSERT(get(first_obj));
+    if (first_obj >= 0)
+    {
+        SYS_ASSERT(get(first_obj));
 
-		return first_obj;
-	}
+        return first_obj;
+    }
 
-	sel_iter_c it(this);
+    sel_iter_c it(this);
 
-	return it.done() ? -1 : *it;
+    return it.done() ? -1 : *it;
 }
-
 
 int selection_c::find_second() const
 {
-	sel_iter_c it(this);
+    sel_iter_c it(this);
 
-	if (it.done())
-		return -1;
+    if (it.done())
+        return -1;
 
-	// the logic here is trickier than it looks.
-	//
-	// When first_obj exists AND is the same as the very first object
-	// in the group, then this test fails and we move onto the next
-	// object in the group.
-	if (first_obj >= 0 && *it != first_obj)
-		return *it;
+    // the logic here is trickier than it looks.
+    //
+    // When first_obj exists AND is the same as the very first object
+    // in the group, then this test fails and we move onto the next
+    // object in the group.
+    if (first_obj >= 0 && *it != first_obj)
+        return *it;
 
-	it.next();
+    it.next();
 
-	return it.done() ? -1 : *it;
+    return it.done() ? -1 : *it;
 }
-
 
 //------------------------------------------------------------------------
 //  ITERATOR STUFF
@@ -459,89 +438,84 @@ int selection_c::find_second() const
 
 sel_iter_c::sel_iter_c()
 {
-	// dummy values -- cannot use a bare iterator
-	sel = NULL;
-	pos = -777777;
+    // dummy values -- cannot use a bare iterator
+    sel = NULL;
+    pos = -777777;
 }
 
-
-sel_iter_c::sel_iter_c(const sel_iter_c& other)
+sel_iter_c::sel_iter_c(const sel_iter_c &other)
 {
-	sel = other.sel;
-	pos = other.pos;
+    sel = other.sel;
+    pos = other.pos;
 }
-
 
 sel_iter_c::sel_iter_c(const selection_c *_sel)
 {
-	sel = _sel;
-	pos = 0;
+    sel = _sel;
+    pos = 0;
 
-	if (sel->bv || sel->extended)
-	{
-		// for bit vector, need to find the first one bit.
-		// Note: this logic is slightly hacky...
+    if (sel->bv || sel->extended)
+    {
+        // for bit vector, need to find the first one bit.
+        // Note: this logic is slightly hacky...
 
-		pos = -1; next();
-	}
+        pos = -1;
+        next();
+    }
 }
 
-
-sel_iter_c::sel_iter_c(const selection_c& _sel)
+sel_iter_c::sel_iter_c(const selection_c &_sel)
 {
-	sel = &_sel;
-	pos = 0;
+    sel = &_sel;
+    pos = 0;
 
-	if (sel->bv || sel->extended)
-	{
-		pos = -1; next();
-	}
+    if (sel->bv || sel->extended)
+    {
+        pos = -1;
+        next();
+    }
 }
-
 
 bool sel_iter_c::done() const
 {
-	SYS_ASSERT(sel);
+    SYS_ASSERT(sel);
 
-	if (sel->extended)
-		return (pos >= sel->ext_size);
-	else if (sel->bv)
-		return (pos >= sel->bv->size());
-	else
-		return (pos >= sel->count);
+    if (sel->extended)
+        return (pos >= sel->ext_size);
+    else if (sel->bv)
+        return (pos >= sel->bv->size());
+    else
+        return (pos >= sel->count);
 }
 
-
-int sel_iter_c::operator* () const
+int sel_iter_c::operator*() const
 {
-	SYS_ASSERT(sel);
+    SYS_ASSERT(sel);
 
-	if (sel->bv || sel->extended)
-		return pos;
-	else
-		return sel->objs[pos];
+    if (sel->bv || sel->extended)
+        return pos;
+    else
+        return sel->objs[pos];
 }
-
 
 void sel_iter_c::next()
 {
-	SYS_ASSERT(sel);
+    SYS_ASSERT(sel);
 
-	pos++;
+    pos++;
 
-	if (sel->extended)
-	{
-		while (pos < sel->ext_size && sel->extended[pos] == 0)
-			pos++;
-	}
-	else if (sel->bv)
-	{
-		// this could be optimised....
-		while (pos < sel->bv->size() && !sel->bv->get(pos))
-			pos++;
-	}
+    if (sel->extended)
+    {
+        while (pos < sel->ext_size && sel->extended[pos] == 0)
+            pos++;
+    }
+    else if (sel->bv)
+    {
+        // this could be optimised....
+        while (pos < sel->bv->size() && !sel->bv->get(pos))
+            pos++;
+    }
 }
-
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -25,7 +25,7 @@ void BuildNodesAfterSave(short lev_idx);
 
 void CMD_BuildAllNodes();
 
-#endif  /* __EUREKA_E_NODES_H__ */
+#endif /* __EUREKA_E_NODES_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -23,12 +23,11 @@
 
 #include "smc_im_color.h"
 
-rgba_color_t * TGA_DecodeImage(const byte *buffer, size_t length,
-							  int& width, int& height);
+rgba_color_t *TGA_DecodeImage(const byte *buffer, size_t length, int &width, int &height);
 
 void TGA_FreeImage(rgba_color_t *pixels);
 
-#endif  /* __EUREKA_TGA_LOADER_H__ */
+#endif /* __EUREKA_TGA_LOADER_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

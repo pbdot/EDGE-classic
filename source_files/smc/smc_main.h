@@ -27,13 +27,11 @@
 #ifndef __EUREKA_MAIN_H__
 #define __EUREKA_MAIN_H__
 
+#define EUREKA_TITLE "Eureka DOOM Editor"
 
-#define EUREKA_TITLE  "Eureka DOOM Editor"
+#define EUREKA_VERSION "1.27b"
 
-#define EUREKA_VERSION  "1.27b"
-
-#define EUREKA_LUMP  "__EUREKA"
-
+#define EUREKA_LUMP "__EUREKA"
 
 /*
  *  Windows support
@@ -42,11 +40,10 @@
 #if defined(WIN32) || defined(_WIN32) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-  #ifndef WIN32
-  #define WIN32
-  #endif
+#ifndef WIN32
+#define WIN32
 #endif
-
+#endif
 
 /*
  *  Standard headers
@@ -70,13 +67,11 @@
 #include <vector>
 #include <string>
 
-
 /*
  *  Additional libraries
  */
 
 #include "smc_hdr_fltk.h"
-
 
 /*
  *  Commonly-used headers
@@ -97,28 +92,24 @@
 #include "smc_m_keys.h"
 #include "smc_e_objects.h"
 
-
 /*
  *  Miscellaneous
  */
 
-typedef std::vector< const char * > string_list_t;
-
+typedef std::vector<const char *> string_list_t;
 
 typedef enum
 {
-	MAPF_INVALID = 0,
+    MAPF_INVALID = 0,
 
-	MAPF_Doom,
-	MAPF_Hexen,
-	MAPF_UDMF
+    MAPF_Doom,
+    MAPF_Hexen,
+    MAPF_UDMF
 
 } map_format_e;
 
-
 // for this, set/clear/test bits using (1 << MAPF_xxx)
 typedef int map_format_bitset_t;
-
 
 /*
  *  Interfile global variables
@@ -129,43 +120,39 @@ extern bool want_quit;
 extern bool app_has_focus;
 extern bool in_fatal_error;
 
-extern const char *install_dir;  // install dir (e.g. /usr/share/eureka)
-extern const char *home_dir;     // home dir (e.g. $HOME/.eureka)
-extern const char *cache_dir;    // for caches and backups, can be same as home_dir
+extern const char *install_dir;     // install dir (e.g. /usr/share/eureka)
+extern const char *home_dir;        // home dir (e.g. $HOME/.eureka)
+extern const char *cache_dir;       // for caches and backups, can be same as home_dir
 
-extern const char *Game_name;   // Name of game "doom", "doom2", "heretic", ...
-extern const char *Port_name;   // Name of source port "vanilla", "boom", ...
-extern const char *Level_name;  // Name of map lump we are editing
+extern const char *Game_name;       // Name of game "doom", "doom2", "heretic", ...
+extern const char *Port_name;       // Name of source port "vanilla", "boom", ...
+extern const char *Level_name;      // Name of map lump we are editing
 
 extern map_format_e Level_format;   // format of current map
 extern std::string  Udmf_namespace; // for UDMF, the current namespace
 
-extern const char *config_file; // Name of the configuration file, or NULL
-extern const char *log_file;    // Name of log file, or NULL
+extern const char *config_file;     // Name of the configuration file, or NULL
+extern const char *log_file;        // Name of log file, or NULL
 
-extern const char *Iwad_name;   // Filename of the iwad
-extern const char *Pwad_name;   // Filename of current wad, or NULL
+extern const char *Iwad_name;       // Filename of the iwad
+extern const char *Pwad_name;       // Filename of current wad, or NULL
 
-extern std::vector< const char * > Pwad_list;
-extern std::vector< const char * > Resource_list;
+extern std::vector<const char *> Pwad_list;
+extern std::vector<const char *> Resource_list;
 
+extern int default_floor_h;
+extern int default_ceil_h;
+extern int default_light_level;
+extern int default_thing;
 
-extern int	default_floor_h;
-extern int	default_ceil_h;
-extern int	default_light_level;
-extern int	default_thing;
+extern const char *default_wall_tex;
+extern const char *default_floor_tex;
+extern const char *default_ceil_tex;
 
-extern const char * default_wall_tex;
-extern const char * default_floor_tex;
-extern const char * default_ceil_tex;
-
-
-extern int   show_help;		// Print usage message and exit.
-extern int   show_version;	// Print version info and exit.
-
+extern int show_help;    // Print usage message and exit.
+extern int show_version; // Print version info and exit.
 
 extern int MadeChanges;
-
 
 /*
  *  Various global functions
@@ -180,25 +167,22 @@ __attribute__((noreturn))
 #endif
 void FatalError(const char *fmt, ...);
 
-#define BugError  FatalError
-
+#define BugError FatalError
 
 void DLG_ShowError(const char *msg, ...);
 void DLG_Notify(const char *msg, ...);
 int  DLG_Confirm(const char *buttons, const char *msg, ...);
 
-const char * GameNameFromIWAD(const char *iwad_name);
+const char *GameNameFromIWAD(const char *iwad_name);
 
-const char * Main_FileOpFolder();
-
+const char *Main_FileOpFolder();
 
 void Beep(const char *msg, ...);
 
 void Status_Set(const char *fmt, ...);
 void Status_Clear();
 
-
-#endif  /* __EUREKA_MAIN_H__ */
+#endif /* __EUREKA_MAIN_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

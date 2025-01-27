@@ -24,249 +24,243 @@
 #include <map>
 #include <string>
 
-
 class Browser_Button;
 
 // _FLTK_DISABLED
 class Browser_Item /* : public Fl_Group */
 {
-private:
+  private:
+  public:
+    std::string desc;
+    std::string real_name; // for textures and flats only
 
-public:
-	std::string desc;
-	std::string real_name;	// for textures and flats only
+    int number;
 
-	int number;
+    char kind; // generally matches browser kind: T/F/O/S/L
+    char category;
 
-	char kind;  // generally matches browser kind: T/F/O/S/L
-	char category;
+    int recent_idx;
 
-	int recent_idx;
+    Browser_Button *button;
 
-	Browser_Button * button;
+    UI_Pic *pic;
 
-	UI_Pic *pic;
+  public:
+    // this constructor makes a simple text button
+    Browser_Item(int X, int Y, int W, int H, const char *_desc, const char *_realname, int _num, char _kind,
+                 char _category);
 
-public:
-	// this constructor makes a simple text button
-	Browser_Item(int X, int Y, int W, int H,
-	             const char *_desc, const char *_realname,
-				 int _num, char _kind, char _category);
+    // this constructor makes a picture with a text label below it
+    Browser_Item(int X, int Y, int W, int H, const char *_desc, const char *_realname, int _num, char _kind,
+                 char _category, int pic_w, int pic_h, UI_Pic *_pic);
 
-	// this constructor makes a picture with a text label below it
-	Browser_Item(int X, int Y, int W, int H,
-	             const char * _desc, const char *_realname,
-				 int _num, char _kind, char _category,
-	             int pic_w, int pic_h, UI_Pic *_pic);
+    virtual ~Browser_Item();
 
-	virtual ~Browser_Item();
+    bool MatchName(const char *name) const;
 
-	bool MatchName(const char *name) const;
-
-public:
+  public:
 #ifdef _FLTK_DISABLED
-	static void texture_callback(Fl_Widget *w, void *data);
-	static void    flat_callback(Fl_Widget *w, void *data);
-	static void   thing_callback(Fl_Widget *w, void *data);
-	static void    line_callback(Fl_Widget *w, void *data);
-	static void  sector_callback(Fl_Widget *w, void *data);
+    static void texture_callback(Fl_Widget *w, void *data);
+    static void flat_callback(Fl_Widget *w, void *data);
+    static void thing_callback(Fl_Widget *w, void *data);
+    static void line_callback(Fl_Widget *w, void *data);
+    static void sector_callback(Fl_Widget *w, void *data);
 #endif
 
-private:
+  private:
 };
 
 // _FLTK_DISABLED
 class UI_Browser_Box /* : public Fl_Group */
 {
-private:
-	char kind;
+  private:
+    char kind;
 
 #ifdef _FLTK_DISABLED
-	Fl_Choice *category;
-	Fl_Input  *search;
+    Fl_Choice *category;
+    Fl_Input  *search;
 
-	Fl_Check_Button *alpha;
-	Fl_Check_Button *pics;
+    Fl_Check_Button *alpha;
+    Fl_Check_Button *pics;
 
-	Fl_Check_Button *do_tex;
-	Fl_Check_Button *do_flats;
+    Fl_Check_Button *do_tex;
+    Fl_Check_Button *do_flats;
 #endif
 
-	UI_Scroll *scroll;
+    UI_Scroll *scroll;
 
-	bool pic_mode;
+    bool pic_mode;
 
-	char cat_letters[64];
+    char cat_letters[64];
 
-public:
-	UI_Browser_Box(int X, int Y, int W, int H, const char *label, char _kind);
-	virtual ~UI_Browser_Box();
+  public:
+    UI_Browser_Box(int X, int Y, int W, int H, const char *label, char _kind);
+    virtual ~UI_Browser_Box();
 
-	/* FLTK method */
-	void resize(int X, int Y, int W, int H);
+    /* FLTK method */
+    void resize(int X, int Y, int W, int H);
 
-public:
-	void Populate();
+  public:
+    void Populate();
 
-	void SetCategories(const char *cats, const char *letters);
+    void SetCategories(const char *cats, const char *letters);
 
-	void CycleCategory(int dir);
-	void ToggleRecent(bool force_recent);
-	void ClearSearchBox();
-	void Scroll(int delta);
+    void CycleCategory(int dir);
+    void ToggleRecent(bool force_recent);
+    void ClearSearchBox();
+    void Scroll(int delta);
 
-	char GetKind() const { return kind; }
+    char GetKind() const
+    {
+        return kind;
+    }
 
-	// ensure the given texture or type/special is visible
-	void JumpToTex(const char *tex_name);
-	void JumpToValue(int value);
+    // ensure the given texture or type/special is visible
+    void JumpToTex(const char *tex_name);
+    void JumpToValue(int value);
 
-	void RecentUpdate();
+    void RecentUpdate();
 
-	bool ParseUser(const char ** tokens, int num_tok);
-	void WriteUser(FILE *fp);
+    bool ParseUser(const char **tokens, int num_tok);
+    void WriteUser(FILE *fp);
 
-private:
-	// adjust the widgets in the Fl_Scroll based on current search
-	// parameters.  Returns true if something changed.
-	bool Filter(bool force_update = false);
+  private:
+    // adjust the widgets in the Fl_Scroll based on current search
+    // parameters.  Returns true if something changed.
+    bool Filter(bool force_update = false);
 
-	void Sort();
+    void Sort();
 
-	bool SearchMatch(Browser_Item *item) const;
+    bool SearchMatch(Browser_Item *item) const;
 
-	void Populate_Images(char imkind, std::map<std::string, Img_c *> & img_list);
-	void Populate_Sprites();
+    void Populate_Images(char imkind, std::map<std::string, Img_c *> &img_list);
+    void Populate_Sprites();
 
-	void Populate_ThingTypes();
-	void Populate_LineTypes();
-	void Populate_SectorTypes();
+    void Populate_ThingTypes();
+    void Populate_LineTypes();
+    void Populate_SectorTypes();
 
-	bool Recent_UpdateItem(Browser_Item *item);
+    bool Recent_UpdateItem(Browser_Item *item);
 
-	bool CategoryByLetter(char letter);
+    bool CategoryByLetter(char letter);
 
 #ifdef _FLTK_DISABLED
-	static void category_callback(Fl_Widget *w, void *data);
-	static void   search_callback(Fl_Widget *w, void *data);
+    static void category_callback(Fl_Widget *w, void *data);
+    static void search_callback(Fl_Widget *w, void *data);
 
-	static void   hide_callback(Fl_Widget *w, void *data);
-	static void  repop_callback(Fl_Widget *w, void *data);
-	static void   sort_callback(Fl_Widget *w, void *data);
+    static void hide_callback(Fl_Widget *w, void *data);
+    static void repop_callback(Fl_Widget *w, void *data);
+    static void sort_callback(Fl_Widget *w, void *data);
 #endif
 };
-
 
 class UI_Generalized_Page;
 
 // _FLTK_DISABLED
 class UI_Generalized_Box /*: public Fl_Group */
 {
-private:
+  private:
+#ifdef _FLTK_DISABLED
+    // overall kind of line (DOOR, LIFT, etc...)
+    Fl_Choice *category;
+
+    // this is shown when not in Boom mode
+    Fl_Box *no_boom;
+#endif
+
+    enum
+    {
+        MAX_PAGES = 16
+    };
+
+    UI_Generalized_Page *pages[MAX_PAGES];
+
+    int num_pages;
+
+    int in_update;
+
+  public:
+    UI_Generalized_Box(int X, int Y, int W, int H, const char *label);
+    virtual ~UI_Generalized_Box();
+
+    void Populate();
+
+    void UpdateGenType(int line_type);
+
+  private:
+    void CreatePages();
+
+    int ComputeType() const;
 
 #ifdef _FLTK_DISABLED
-	// overall kind of line (DOOR, LIFT, etc...)
-	Fl_Choice * category;
-
-	// this is shown when not in Boom mode
-	Fl_Box * no_boom;
-#endif	
-
-	enum
-	{
-		MAX_PAGES = 16
-	};
-
-	UI_Generalized_Page * pages[MAX_PAGES];
-
-	int num_pages;
-
-	int in_update;
-
-public:
-	UI_Generalized_Box(int X, int Y, int W, int H, const char *label);
-	virtual ~UI_Generalized_Box();
-
-	void Populate();
-
-	void UpdateGenType(int line_type);
-
-private:
-	void CreatePages();
-
-	int ComputeType() const;
-
-#ifdef _FLTK_DISABLED
-	static void hide_callback(Fl_Widget *w, void *data);
-	static void  cat_callback(Fl_Widget *w, void *data);
-	static void edit_callback(Fl_Widget *w, void *data);
+    static void hide_callback(Fl_Widget *w, void *data);
+    static void cat_callback(Fl_Widget *w, void *data);
+    static void edit_callback(Fl_Widget *w, void *data);
 #endif
 };
-
 
 // _FLTK_DISABLED
 class UI_Browser /*: public Fl_Group */
 {
-	/* this widget basically just contains all the browser boxes,
-	 * and controls which one is visible at any time.
-	 */
+    /* this widget basically just contains all the browser boxes,
+     * and controls which one is visible at any time.
+     */
 
-private:
-	UI_Browser_Box *browsers[5];
+  private:
+    UI_Browser_Box *browsers[5];
 
-	UI_Generalized_Box *gen_box;
+    UI_Generalized_Box *gen_box;
 
-	enum
-	{
-		ACTIVE_GENERALIZED = 5
-	};
+    enum
+    {
+        ACTIVE_GENERALIZED = 5
+    };
 
- 	// currently active browser box (may be hidden though)
-	int active;
+    // currently active browser box (may be hidden though)
+    int active;
 
-public:
-	UI_Browser(int X, int Y, int W, int H, const char *label = NULL);
-	virtual ~UI_Browser();
+  public:
+    UI_Browser(int X, int Y, int W, int H, const char *label = NULL);
+    virtual ~UI_Browser();
 
-public:
-	void Populate();
+  public:
+    void Populate();
 
-	void SetActive(int new_active);
+    void SetActive(int new_active);
 
-	char GetMode() const;
-	void ChangeMode(char new_mode);
-	void NewEditMode(obj_type_e edit_mode);
+    char GetMode() const;
+    void ChangeMode(char new_mode);
+    void NewEditMode(obj_type_e edit_mode);
 
-	// ensure the given texture or type/special is visible
-	void JumpToTex(const char *tex_name);
-	void JumpToValue(int value);
+    // ensure the given texture or type/special is visible
+    void JumpToTex(const char *tex_name);
+    void JumpToValue(int value);
 
-	// dir is +1 or -1, or 0 to set the category to "ALL"
-	void CycleCategory(int dir);
-	void ToggleRecent(bool force_recent = false);
+    // dir is +1 or -1, or 0 to set the category to "ALL"
+    void CycleCategory(int dir);
+    void ToggleRecent(bool force_recent = false);
 
-	void ClearSearchBox();
+    void ClearSearchBox();
 
-	void Scroll(int delta);
+    void Scroll(int delta);
 
-	// recently used textures (etc) has changed
-	void RecentUpdate();
+    // recently used textures (etc) has changed
+    void RecentUpdate();
 
-	// for the generalized box
-	void UpdateGenType(int line_type);
+    // for the generalized box
+    void UpdateGenType(int line_type);
 
-	bool ParseUser(const char ** tokens, int num_tok);
-	void WriteUser(FILE *fp);
+    bool ParseUser(const char **tokens, int num_tok);
+    void WriteUser(FILE *fp);
 
-private:
-//	static void mode_callback(Fl_Widget *w, void *data);
+  private:
+    //	static void mode_callback(Fl_Widget *w, void *data);
 };
 
-
-bool Browser_ParseUser(const char ** tokens, int num_tok);
+bool Browser_ParseUser(const char **tokens, int num_tok);
 void Browser_WriteUser(FILE *fp);
 
-#endif  /* __EUREKA_UI_BROWSER_H__ */
+#endif /* __EUREKA_UI_BROWSER_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

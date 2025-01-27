@@ -21,97 +21,95 @@
 #ifndef __EUREKA_UI_INFOBAR_H__
 #define __EUREKA_UI_INFOBAR_H__
 
-
 // _FLTK_DISABLED
 class UI_InfoBar /*: public Fl_Group */
 {
-public:
-	UI_InfoBar(int X, int Y, int W, int H, const char *label = NULL);
-	virtual ~UI_InfoBar();
+  public:
+    UI_InfoBar(int X, int Y, int W, int H, const char *label = NULL);
+    virtual ~UI_InfoBar();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Menu_Button *mode;
-	Fl_Menu_Button *scale;
-	Fl_Menu_Button *grid_size;
-	Fl_Menu_Button *sec_rend;
-	Fl_Menu_Button *ratio_lock;
+    Fl_Menu_Button *mode;
+    Fl_Menu_Button *scale;
+    Fl_Menu_Button *grid_size;
+    Fl_Menu_Button *sec_rend;
+    Fl_Menu_Button *ratio_lock;
 
-	Fl_Toggle_Button *grid_snap;
+    Fl_Toggle_Button *grid_snap;
 #endif
 
-public:
-	// FLTK virtual method for handling input events.
-	int handle(int event);
+  public:
+    // FLTK virtual method for handling input events.
+    int handle(int event);
 
-public:
-	void NewEditMode(obj_type_e new_mode);
+  public:
+    void NewEditMode(obj_type_e new_mode);
 
-	void SetMouse(double mx, double my);
+    void SetMouse(double mx, double my);
 
-	void SetScale(double new_scale);
-	void SetGrid(int new_step);
+    void SetScale(double new_scale);
+    void SetGrid(int new_step);
 
-	void UpdateSnap();
-	void UpdateSecRend();
-	void UpdateRatio();
+    void UpdateSnap();
+    void UpdateSecRend();
+    void UpdateRatio();
 
-private:
-	static const char  *scale_options_str;
-	static const double scale_amounts[9];
+  private:
+    static const char  *scale_options_str;
+    static const double scale_amounts[9];
 
-	static const char *grid_options_str;
-	static const int   grid_amounts[12];
+    static const char *grid_options_str;
+    static const int   grid_amounts[12];
 
-	void UpdateModeColor();
-	void UpdateSnapText();
+    void UpdateModeColor();
+    void UpdateSnapText();
 
 #ifdef _FLTK_DISABLED
-	static void mode_callback(Fl_Widget *, void *);
-	static void rend_callback(Fl_Widget *, void *);
-	static void scale_callback(Fl_Widget *, void *);
-	static void sc_minus_callback(Fl_Widget *, void *);
-	static void sc_plus_callback(Fl_Widget *, void *);
-	static void grid_callback(Fl_Widget *, void *);
-	static void snap_callback(Fl_Widget *, void *);
-	static void ratio_callback(Fl_Widget *, void *);
+    static void mode_callback(Fl_Widget *, void *);
+    static void rend_callback(Fl_Widget *, void *);
+    static void scale_callback(Fl_Widget *, void *);
+    static void sc_minus_callback(Fl_Widget *, void *);
+    static void sc_plus_callback(Fl_Widget *, void *);
+    static void grid_callback(Fl_Widget *, void *);
+    static void snap_callback(Fl_Widget *, void *);
+    static void ratio_callback(Fl_Widget *, void *);
 #endif
 };
-
 
 //------------------------------------------------------------------------
 
 // _FLTK_DISABLED
 class UI_StatusBar /*: public Fl_Widget */
 {
-private:
-	std::string status;
+  private:
+    std::string status;
 
-public:
-	UI_StatusBar(int X, int Y, int W, int H, const char *label = NULL);
-	virtual ~UI_StatusBar();
+  public:
+    UI_StatusBar(int X, int Y, int W, int H, const char *label = NULL);
+    virtual ~UI_StatusBar();
 
-public:
-	// FLTK methods
-	void draw();
-	int handle(int event);
+  public:
+    // FLTK methods
+    void draw();
+    int  handle(int event);
 
-	// this only used by Status_Set() and Status_Clear()
-	void SetStatus(const char *str);
+    // this only used by Status_Set() and Status_Clear()
+    void SetStatus(const char *str);
 
-private:
-	void IB_ShowDrag(int cx, int cy);
-	void IB_ShowTransform(int cx, int cy);
-	void IB_ShowOffsets(int cx, int cy);
-	void IB_ShowDrawLine(int cx, int cy);
+  private:
+    void IB_ShowDrag(int cx, int cy);
+    void IB_ShowTransform(int cx, int cy);
+    void IB_ShowOffsets(int cx, int cy);
+    void IB_ShowDrawLine(int cx, int cy);
 
-	void IB_String(int& cx, int& cy, const char *str);
-	void IB_Number(int& cx, int& cy, const char *label, int value, int size);
-	void IB_Coord (int& cx, int& cy, const char *label, float value);
-	void IB_Flag  (int& cx, int& cy, bool value, const char *label_on, const char *label_off);
+    void IB_String(int &cx, int &cy, const char *str);
+    void IB_Number(int &cx, int &cy, const char *label, int value, int size);
+    void IB_Coord(int &cx, int &cy, const char *label, float value);
+    void IB_Flag(int &cx, int &cy, bool value, const char *label_on, const char *label_off);
 };
 
-#endif  /* __EUREKA_UI_INFOBAR_H__ */
+#endif /* __EUREKA_UI_INFOBAR_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -28,105 +28,105 @@ class UI_TedWrapper;
 // _FLTK_DISABLED
 class UI_TextEditor /*: public Fl_Double_Window */
 {
-private:
-	bool want_close;
-	bool want_save;
+  private:
+    bool want_close;
+    bool want_save;
 
-	bool is_new;
-	bool read_only;
-	bool has_changes;
+    bool is_new;
+    bool read_only;
+    bool has_changes;
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Menu_Bar *menu_bar;
-#endif	
-
-	UI_TedStatusBar *status;
-
-	UI_TedWrapper  *ted;
-#ifdef _FLTK_DISABLED	
-	Fl_Text_Buffer *tbuf;
+    Fl_Menu_Bar *menu_bar;
 #endif
 
-	// use SetFindString() to set this
-	const char *find_string;
+    UI_TedStatusBar *status;
 
-public:
-	UI_TextEditor();
-	virtual ~UI_TextEditor();
+    UI_TedWrapper *ted;
+#ifdef _FLTK_DISABLED
+    Fl_Text_Buffer *tbuf;
+#endif
 
-	void SetReadOnly()
-	{
-		read_only = true;
-	}
+    // use SetFindString() to set this
+    const char *find_string;
 
-	void SetTitle(const char *lump_name);
+  public:
+    UI_TextEditor();
+    virtual ~UI_TextEditor();
 
-	bool LoadLump(Wad_file *wad, const char *lump_name);
-	void SaveLump(Wad_file *wad, const char *lump_name);
+    void SetReadOnly()
+    {
+        read_only = true;
+    }
 
-	void LoadMemory(std::vector<byte> &buf);
-	void SaveMemory(std::vector<byte> &buf);
+    void SetTitle(const char *lump_name);
 
-	enum
-	{
-		RUN_Quit = 0,
-		RUN_Save = 1,
-		RUN_Error = 2
-	};
+    bool LoadLump(Wad_file *wad, const char *lump_name);
+    void SaveLump(Wad_file *wad, const char *lump_name);
 
-	// returns a RUN_XXX value.
-	// when RUN_Save is returned, Run() should be re-entered.
-	int Run();
+    void LoadMemory(std::vector<byte> &buf);
+    void SaveMemory(std::vector<byte> &buf);
 
-	void InsertFile();
-	void ExportToFile();
+    enum
+    {
+        RUN_Quit  = 0,
+        RUN_Save  = 1,
+        RUN_Error = 2
+    };
 
-private:
-	bool AskFindString();
-	void SetFindString(const char *str);
+    // returns a RUN_XXX value.
+    // when RUN_Save is returned, Run() should be re-entered.
+    int Run();
 
-	// dir should be +1 for forward, -1 for backward
-	bool FindNext(int dir);
+    void InsertFile();
+    void ExportToFile();
 
-	void UpdateStatus();
+  private:
+    bool AskFindString();
+    void SetFindString(const char *str);
 
-	bool ContainsUnicode() const;
+    // dir should be +1 for forward, -1 for backward
+    bool FindNext(int dir);
+
+    void UpdateStatus();
+
+    bool ContainsUnicode() const;
 
 #ifdef _FLTK_DISABLED
-	static void  close_callback(Fl_Widget *, void *);
-	static void button_callback(Fl_Widget *, void *);
-#endif	
+    static void close_callback(Fl_Widget *, void *);
+    static void button_callback(Fl_Widget *, void *);
+#endif
 
-	static void text_modified_callback(int, int nInserted, int nDeleted, int, const char*, void *);
+    static void text_modified_callback(int, int nInserted, int nDeleted, int, const char *, void *);
 
-public:
+  public:
 #ifdef _FLTK_DISABLED
-	// File menu
-	static void menu_do_save(Fl_Widget *w, void *data);
-	static void menu_do_insert(Fl_Widget *w, void *data);
-	static void menu_do_export(Fl_Widget *w, void *data);
-	static void menu_do_close(Fl_Widget *w, void *data);
+    // File menu
+    static void menu_do_save(Fl_Widget *w, void *data);
+    static void menu_do_insert(Fl_Widget *w, void *data);
+    static void menu_do_export(Fl_Widget *w, void *data);
+    static void menu_do_close(Fl_Widget *w, void *data);
 
-	// Edit menu
-	static void menu_do_undo(Fl_Widget *w, void *data);
-	static void menu_do_cut(Fl_Widget *w, void *data);
-	static void menu_do_copy(Fl_Widget *w, void *data);
-	static void menu_do_paste(Fl_Widget *w, void *data);
-	static void menu_do_delete(Fl_Widget *w, void *data);
-	static void menu_do_select_all(Fl_Widget *w, void *data);
-	static void menu_do_unselect_all(Fl_Widget *w, void *data);
+    // Edit menu
+    static void menu_do_undo(Fl_Widget *w, void *data);
+    static void menu_do_cut(Fl_Widget *w, void *data);
+    static void menu_do_copy(Fl_Widget *w, void *data);
+    static void menu_do_paste(Fl_Widget *w, void *data);
+    static void menu_do_delete(Fl_Widget *w, void *data);
+    static void menu_do_select_all(Fl_Widget *w, void *data);
+    static void menu_do_unselect_all(Fl_Widget *w, void *data);
 
-	// Search menu
-	static void menu_do_find(Fl_Widget *w, void *data);
-	static void menu_do_find_next(Fl_Widget *w, void *data);
-	static void menu_do_find_prev(Fl_Widget *w, void *data);
-	static void menu_do_goto_top(Fl_Widget *w, void *data);
-	static void menu_do_goto_bottom(Fl_Widget *w, void *data);
+    // Search menu
+    static void menu_do_find(Fl_Widget *w, void *data);
+    static void menu_do_find_next(Fl_Widget *w, void *data);
+    static void menu_do_find_prev(Fl_Widget *w, void *data);
+    static void menu_do_goto_top(Fl_Widget *w, void *data);
+    static void menu_do_goto_bottom(Fl_Widget *w, void *data);
 #endif
 };
 
-#endif  /* __EUREKA_UI_EDITOR_H__ */
+#endif /* __EUREKA_UI_EDITOR_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

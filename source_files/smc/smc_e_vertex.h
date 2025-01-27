@@ -44,9 +44,9 @@ void CMD_LIN_Disconnect(void);
 void CMD_SEC_Disconnect(void);
 
 void CMD_VT_ShapeLine(void);
-void CMD_VT_ShapeArc (void);
+void CMD_VT_ShapeArc(void);
 
-#endif  /* __EUREKA_E_VERTEX_H__ */
+#endif /* __EUREKA_E_VERTEX_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

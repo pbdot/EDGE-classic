@@ -66,7 +66,7 @@ void CMD_DeleteMap();
 // this one in m_testmap.cc
 void CMD_TestMap();
 
-#endif  /* __EUREKA_E_LOADSAVE_H__ */
+#endif /* __EUREKA_E_LOADSAVE_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

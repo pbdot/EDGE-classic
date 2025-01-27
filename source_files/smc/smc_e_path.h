@@ -29,22 +29,20 @@
 
 /* find/next/prev stuff */
 
-void GoToObject(const Objid& objid);
+void GoToObject(const Objid &objid);
 void GoToSelection();
 void GoToErrors();
 
-
 typedef enum
 {
-	PGL_Never = 0,	// can never be heared
-	PGL_Maybe,		// a possibility of being heared
-	PGL_Level_1,	// reduced by a single level
-	PGL_Level_2		// no blocking at all
+    PGL_Never = 0, // can never be heared
+    PGL_Maybe,     // a possibility of being heared
+    PGL_Level_1,   // reduced by a single level
+    PGL_Level_2    // no blocking at all
 
 } propagate_level_e;
 
-const byte * SoundPropagation(int start_sec);
-
+const byte *SoundPropagation(int start_sec);
 
 /* commands */
 
@@ -58,8 +56,7 @@ void CMD_PrevObject();
 
 void CMD_PruneUnused(void);
 
-
-#endif  /* __EUREKA_E_PATH_H__ */
+#endif /* __EUREKA_E_PATH_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

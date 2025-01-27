@@ -29,79 +29,75 @@
 
 #include "smc_ui_window.h"
 
-
 void SideDefs_Unpack(bool is_after_load = false);
 void SideDefs_NormalizeMiddles();
 
 void Tags_ApplyNewValue(int new_tag);
 void Tags_UsedRange(int *min_tag, int *max_tag);
 
-
 void CMD_MapCheck();
 
 void CMD_ApplyTag();
-
 
 //------------------------------------------------------------------------
 
 // the CHECK_xxx functions return the following values:
 typedef enum
 {
-	CKR_OK = 0,            // no issues at all
-	CKR_MinorProblem,      // only minor issues
-	CKR_MajorProblem,      // some major problems
-	CKR_Highlight,         // need to highlight stuff (skip further checks)
-	CKR_TookAction         // [internal use : user took some action]
+    CKR_OK = 0,       // no issues at all
+    CKR_MinorProblem, // only minor issues
+    CKR_MajorProblem, // some major problems
+    CKR_Highlight,    // need to highlight stuff (skip further checks)
+    CKR_TookAction    // [internal use : user took some action]
 
 } check_result_e;
 
-
 class UI_Check_base : public UI_Escapable_Window
 {
-protected:
-	bool want_close;
+  protected:
+    bool want_close;
 
-	check_result_e  user_action;
-
-#ifdef _FLTK_DISABLED
-	Fl_Group * line_group;
-#endif	
-
-	int cy;
-	int worst_severity;
-
-private:
-#ifdef _FLTK_DISABLED
-	static void close_callback(Fl_Widget *, void *);
-#endif	
-
-public:
-	UI_Check_base(int W, int H, bool all_mode, const char *L,
-	              const char *header_txt);
-	virtual ~UI_Check_base();
-
-	void Reset();
-
-	void AddGap(int H);
+    check_result_e user_action;
 
 #ifdef _FLTK_DISABLED
-	void AddLine(const char *msg, int severity = 0, int W = -1,
-	             const char *button1 = NULL, Fl_Callback *cb1 = NULL,
-	             const char *button2 = NULL, Fl_Callback *cb2 = NULL,
-	             const char *button3 = NULL, Fl_Callback *cb3 = NULL);
-#endif				 
+    Fl_Group *line_group;
+#endif
 
-	check_result_e  Run();
+    int cy;
+    int worst_severity;
 
-	int WorstSeverity() const { return worst_severity; }
+  private:
+#ifdef _FLTK_DISABLED
+    static void close_callback(Fl_Widget *, void *);
+#endif
+
+  public:
+    UI_Check_base(int W, int H, bool all_mode, const char *L, const char *header_txt);
+    virtual ~UI_Check_base();
+
+    void Reset();
+
+    void AddGap(int H);
+
+#ifdef _FLTK_DISABLED
+    void AddLine(const char *msg, int severity = 0, int W = -1, const char *button1 = NULL, Fl_Callback *cb1 = NULL,
+                 const char *button2 = NULL, Fl_Callback *cb2 = NULL, const char *button3 = NULL,
+                 Fl_Callback *cb3 = NULL);
+#endif
+
+    check_result_e Run();
+
+    int WorstSeverity() const
+    {
+        return worst_severity;
+    }
 };
-
 
 check_result_e CHECK_LineDefs(int min_severity = 0);
 check_result_e CHECK_Textures(int min_severity = 0);
-check_result_e CHECK_Tags    (int min_severity = 0);
+check_result_e CHECK_Tags(int min_severity = 0);
 
-#endif  /* __EUREKA_E_CHECKS_H__ */
+#endif /* __EUREKA_E_CHECKS_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

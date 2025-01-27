@@ -33,354 +33,328 @@
 
 #include "smc_w_rawdef.h"
 
-
 //
 // a case-insensitive strcmp()
 //
 int y_stricmp(const char *s1, const char *s2)
 {
-	for (;;)
-	{
-		if (tolower(*s1) != tolower(*s2))
-			return (int)(unsigned char)(*s1) - (int)(unsigned char)(*s2);
+    for (;;)
+    {
+        if (tolower(*s1) != tolower(*s2))
+            return (int)(unsigned char)(*s1) - (int)(unsigned char)(*s2);
 
-		if (*s1 && *s2)
-		{
-			s1++;
-			s2++;
-			continue;
-		}
+        if (*s1 && *s2)
+        {
+            s1++;
+            s2++;
+            continue;
+        }
 
-		// both *s1 and *s2 must be zero
-		return 0;
-	}
+        // both *s1 and *s2 must be zero
+        return 0;
+    }
 }
-
 
 //
 // a case-insensitive strncmp()
 //
 int y_strnicmp(const char *s1, const char *s2, size_t len)
 {
-	SYS_ASSERT(len != 0);
+    SYS_ASSERT(len != 0);
 
-	while (len-- > 0)
-	{
-		if (tolower(*s1) != tolower(*s2))
-			return (int)(unsigned char)(*s1) - (int)(unsigned char)(*s2);
+    while (len-- > 0)
+    {
+        if (tolower(*s1) != tolower(*s2))
+            return (int)(unsigned char)(*s1) - (int)(unsigned char)(*s2);
 
-		if (*s1 && *s2)
-		{
-			s1++;
-			s2++;
-			continue;
-		}
+        if (*s1 && *s2)
+        {
+            s1++;
+            s2++;
+            continue;
+        }
 
-		// both *s1 and *s2 must be zero
-		return 0;
-	}
+        // both *s1 and *s2 must be zero
+        return 0;
+    }
 
-	return 0;
+    return 0;
 }
-
 
 //
 // upper-case a string (in situ)
 //
 void y_strupr(char *str)
 {
-	for ( ; *str ; str++)
-	{
-		*str = toupper(*str);
-	}
+    for (; *str; str++)
+    {
+        *str = toupper(*str);
+    }
 }
-
 
 //
 // lower-case a string (in situ)
 //
 void y_strlowr(char *str)
 {
-	for ( ; *str ; str++)
-	{
-		*str = tolower(*str);
-	}
+    for (; *str; str++)
+    {
+        *str = tolower(*str);
+    }
 }
-
 
 char *StringNew(int length)
 {
-	// length does not include the trailing NUL.
+    // length does not include the trailing NUL.
 
-	char *s = (char *) calloc(length + 1, 1);
+    char *s = (char *)calloc(length + 1, 1);
 
-	if (! s)
-		FatalError("Out of memory (%d bytes for string)\n", length);
+    if (!s)
+        FatalError("Out of memory (%d bytes for string)\n", length);
 
-	return s;
+    return s;
 }
-
 
 char *StringDup(const char *orig, int limit)
 {
-	if (! orig)
-		return NULL;
+    if (!orig)
+        return NULL;
 
-	if (limit < 0)
-	{
-		char *s = strdup(orig);
+    if (limit < 0)
+    {
+        char *s = strdup(orig);
 
-		if (! s)
-			FatalError("Out of memory (copy string)\n");
+        if (!s)
+            FatalError("Out of memory (copy string)\n");
 
-		return s;
-	}
+        return s;
+    }
 
-	char * s = StringNew(limit+1);
-	strncpy(s, orig, limit);
-	s[limit] = 0;
+    char *s = StringNew(limit + 1);
+    strncpy(s, orig, limit);
+    s[limit] = 0;
 
-	return s;
+    return s;
 }
-
 
 char *StringUpper(const char *name)
 {
-	char *copy = StringDup(name);
+    char *copy = StringDup(name);
 
-	for (char *p = copy; *p; p++)
-		*p = toupper(*p);
+    for (char *p = copy; *p; p++)
+        *p = toupper(*p);
 
-	return copy;
+    return copy;
 }
-
 
 char *StringLower(const char *name)
 {
-	char *copy = StringDup(name);
+    char *copy = StringDup(name);
 
-	for (char *p = copy; *p; p++)
-		*p = tolower(*p);
+    for (char *p = copy; *p; p++)
+        *p = tolower(*p);
 
-	return copy;
+    return copy;
 }
-
 
 char *StringPrintf(const char *str, ...)
 {
-	// Algorithm: keep doubling the allocated buffer size
-	// until the output fits. Based on code by Darren Salt.
+    // Algorithm: keep doubling the allocated buffer size
+    // until the output fits. Based on code by Darren Salt.
 
-	char *buf = NULL;
-	int buf_size = 128;
+    char *buf      = NULL;
+    int   buf_size = 128;
 
-	for (;;)
-	{
-		va_list args;
-		int out_len;
+    for (;;)
+    {
+        va_list args;
+        int     out_len;
 
-		buf_size *= 2;
+        buf_size *= 2;
 
-		buf = (char*)realloc(buf, buf_size);
-		if (!buf)
-			FatalError("Out of memory (formatting string)\n");
+        buf = (char *)realloc(buf, buf_size);
+        if (!buf)
+            FatalError("Out of memory (formatting string)\n");
 
-		va_start(args, str);
-		out_len = vsnprintf(buf, buf_size, str, args);
-		va_end(args);
+        va_start(args, str);
+        out_len = vsnprintf(buf, buf_size, str, args);
+        va_end(args);
 
-		// old versions of vsnprintf() simply return -1 when
-		// the output doesn't fit.
-		if (out_len < 0 || out_len >= buf_size)
-			continue;
+        // old versions of vsnprintf() simply return -1 when
+        // the output doesn't fit.
+        if (out_len < 0 || out_len >= buf_size)
+            continue;
 
-		return buf;
-	}
+        return buf;
+    }
 }
-
 
 void StringFree(const char *str)
 {
-	if (str)
-	{
-		free((void*) str);
-	}
+    if (str)
+    {
+        free((void *)str);
+    }
 }
-
 
 void StringRemoveCRLF(char *str)
 {
-	size_t len = strlen(str);
+    size_t len = strlen(str);
 
-	if (len > 0 && str[len - 1] == '\n')
-		str[--len] = 0;
+    if (len > 0 && str[len - 1] == '\n')
+        str[--len] = 0;
 
-	if (len > 0 && str[len - 1] == '\r')
-		str[--len] = 0;
+    if (len > 0 && str[len - 1] == '\r')
+        str[--len] = 0;
 }
 
-
-char * StringTidy(const char *str, const char *bad_chars)
+char *StringTidy(const char *str, const char *bad_chars)
 {
-	char *buf  = StringNew(static_cast<int>(strlen(str) + 2));
-	char *dest = buf;
+    char *buf  = StringNew(static_cast<int>(strlen(str) + 2));
+    char *dest = buf;
 
-	for ( ; *str ; str++)
-		if (isprint(*str) && ! strchr(bad_chars, *str))
-			*dest++ = *str;
+    for (; *str; str++)
+        if (isprint(*str) && !strchr(bad_chars, *str))
+            *dest++ = *str;
 
-	*dest = 0;
+    *dest = 0;
 
-	return buf;
+    return buf;
 }
-
 
 void TimeDelay(unsigned int millies)
 {
-	SYS_ASSERT(millies < 300000);
+    SYS_ASSERT(millies < 300000);
 
 #ifdef WIN32
-	::Sleep(millies);
+    ::Sleep(millies);
 
 #else // LINUX or MacOSX
 
-	usleep(millies * 1000);
+    usleep(millies * 1000);
 #endif
 }
-
 
 unsigned int TimeGetMillies()
 {
-	// Note: you *MUST* handle overflow (it *WILL* happen)
+    // Note: you *MUST* handle overflow (it *WILL* happen)
 
 #ifdef WIN32
-	return GetTickCount();
+    return GetTickCount();
 #else
-	struct timeval tv;
-	struct timezone tz;
+    struct timeval  tv;
+    struct timezone tz;
 
-	gettimeofday(&tv, &tz);
+    gettimeofday(&tv, &tz);
 
-	return ((int)tv.tv_sec * 1000 + (int)tv.tv_usec / 1000);
+    return ((int)tv.tv_sec * 1000 + (int)tv.tv_usec / 1000);
 #endif
 }
-
 
 //
 // sanity checks for the sizes and properties of certain types.
 // useful when porting.
 //
 
-#define assert_size(type,size)            \
-  do                  \
-  {                 \
-    if (sizeof (type) != size)            \
-      FatalError("sizeof " #type " is %d (should be " #size ")\n",  \
-  (int) sizeof (type));           \
-  }                 \
-  while (0)
+#define assert_size(type, size)                                                                                        \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        if (sizeof(type) != size)                                                                                      \
+            FatalError("sizeof " #type " is %d (should be " #size ")\n", (int)sizeof(type));                           \
+    } while (0)
 
-#define assert_wrap(type,high,low)          \
-  do                  \
-  {                 \
-    type n = high;              \
-    if (++n != low)             \
-      FatalError("Type " #type " wraps around to %lu (should be " #low ")\n",\
-  (unsigned long) n);           \
-  }                 \
-  while (0)
-
+#define assert_wrap(type, high, low)                                                                                   \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        type n = high;                                                                                                 \
+        if (++n != low)                                                                                                \
+            FatalError("Type " #type " wraps around to %lu (should be " #low ")\n", (unsigned long)n);                 \
+    } while (0)
 
 void CheckTypeSizes()
 {
-	assert_size(u8_t,  1);
-	assert_size(s8_t,  1);
-	assert_size(u16_t, 2);
-	assert_size(s16_t, 2);
-	assert_size(u32_t, 4);
-	assert_size(s32_t, 4);
+    assert_size(u8_t, 1);
+    assert_size(s8_t, 1);
+    assert_size(u16_t, 2);
+    assert_size(s16_t, 2);
+    assert_size(u32_t, 4);
+    assert_size(s32_t, 4);
 
-	assert_size(raw_linedef_t, 14);
-	assert_size(raw_sector_s,  26);
-	assert_size(raw_sidedef_t, 30);
-	assert_size(raw_thing_t,   10);
-	assert_size(raw_vertex_t,   4);
+    assert_size(raw_linedef_t, 14);
+    assert_size(raw_sector_s, 26);
+    assert_size(raw_sidedef_t, 30);
+    assert_size(raw_thing_t, 10);
+    assert_size(raw_vertex_t, 4);
 }
-
 
 //
 // translate (dx, dy) into an integer angle value (0-65535)
 //
 unsigned int ComputeAngle(int dx, int dy)
 {
-	return (unsigned int) (atan2 ((double) dy, (double) dx) * 10430.37835 + 0.5);
+    return (unsigned int)(atan2((double)dy, (double)dx) * 10430.37835 + 0.5);
 }
-
-
 
 //
 // compute the distance from (0, 0) to (dx, dy)
 //
 unsigned int ComputeDist(int dx, int dy)
 {
-	return (unsigned int) (hypot ((double) dx, (double) dy) + 0.5);
+    return (unsigned int)(hypot((double)dx, (double)dy) + 0.5);
 }
 
-
-double PerpDist(double x, double y,
-                double x1, double y1, double x2, double y2)
+double PerpDist(double x, double y, double x1, double y1, double x2, double y2)
 {
-	x  -= x1; y  -= y1;
-	x2 -= x1; y2 -= y1;
+    x -= x1;
+    y -= y1;
+    x2 -= x1;
+    y2 -= y1;
 
-	double len = sqrt(x2*x2 + y2*y2);
+    double len = sqrt(x2 * x2 + y2 * y2);
 
-	SYS_ASSERT(len > 0);
+    SYS_ASSERT(len > 0);
 
-	return (x * y2 - y * x2) / len;
+    return (x * y2 - y * x2) / len;
 }
 
-
-double AlongDist(double x, double y,
-                 double x1, double y1, double x2, double y2)
+double AlongDist(double x, double y, double x1, double y1, double x2, double y2)
 {
-	x  -= x1; y  -= y1;
-	x2 -= x1; y2 -= y1;
+    x -= x1;
+    y -= y1;
+    x2 -= x1;
+    y2 -= y1;
 
-	double len = sqrt(x2*x2 + y2*y2);
+    double len = sqrt(x2 * x2 + y2 * y2);
 
-	SYS_ASSERT(len > 0);
+    SYS_ASSERT(len > 0);
 
-	return (x * x2 + y * y2) / len;
+    return (x * x2 + y * y2) / len;
 }
-
 
 const char *Int_TmpStr(int value)
 {
-	static char buffer[200];
+    static char buffer[200];
 
-	snprintf(buffer, sizeof(buffer), "%d", value);
+    snprintf(buffer, sizeof(buffer), "%d", value);
 
-	return buffer;
+    return buffer;
 }
-
 
 //
 // rounds the value _up_ to the nearest power of two.
 //
 int RoundPOW2(int x)
 {
-	if (x <= 2)
-		return x;
+    if (x <= 2)
+        return x;
 
-	x--;
+    x--;
 
-	for (int tmp = x >> 1 ; tmp ; tmp >>= 1)
-		x |= tmp;
+    for (int tmp = x >> 1; tmp; tmp >>= 1)
+        x |= tmp;
 
-	return x + 1;
+    return x + 1;
 }
-
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

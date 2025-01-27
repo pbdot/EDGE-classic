@@ -21,115 +21,122 @@
 #ifndef __EUREKA_UI_PIC_H__
 #define __EUREKA_UI_PIC_H__
 
-
 class Img_c;
-
 
 // _FLTK_DISABLED
 class UI_Pic /*: public Fl_Box */
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_RGB_Image *rgb;
+    Fl_RGB_Image *rgb;
 #endif
 
-	enum
-	{
-		SP_None = 0,
-		SP_Unknown,   // texture name is not found
-		SP_Missing,   // texture is '-' but should be present
-		SP_Special,   // texture begins with '#'
-	};
+    enum
+    {
+        SP_None = 0,
+        SP_Unknown, // texture name is not found
+        SP_Missing, // texture is '-' but should be present
+        SP_Special, // texture begins with '#'
+    };
 
-	int special;
+    int special;
 
-	bool allow_hl;
+    bool allow_hl;
 
-	bool highlighted;
-	bool selected;
+    bool highlighted;
+    bool selected;
 
-	const char *what_text;
-#ifdef _FLTK_DISABLED	
-	Fl_Color    what_color;
+    const char *what_text;
+#ifdef _FLTK_DISABLED
+    Fl_Color what_color;
 #endif
 
-public:
-	UI_Pic(int X, int Y, int W, int H, const char *L = "");
-	virtual ~UI_Pic();
+  public:
+    UI_Pic(int X, int Y, int W, int H, const char *L = "");
+    virtual ~UI_Pic();
 
-	// FLTK method for event handling
-	int handle(int event);
+    // FLTK method for event handling
+    int handle(int event);
 
-public:
-	void Clear();
+  public:
+    void Clear();
 
-	void MarkUnknown();
-	void MarkMissing();
-	void MarkSpecial();
+    void MarkUnknown();
+    void MarkMissing();
+    void MarkSpecial();
 
-	void GetFlat(const char * fname);
-	void GetTex (const char * tname);
-#ifdef _FLTK_DISABLED	
-	void GetSprite(int type, Fl_Color back_color);
+    void GetFlat(const char *fname);
+    void GetTex(const char *tname);
+#ifdef _FLTK_DISABLED
+    void GetSprite(int type, Fl_Color back_color);
 #endif
 
 #ifdef _FLTK_DISABLED
-	void AllowHighlight(bool enable) { allow_hl = enable; redraw(); }
+    void AllowHighlight(bool enable)
+    {
+        allow_hl = enable;
+        redraw();
+    }
 #endif
-	bool Highlighted() const { return allow_hl && highlighted; }
-	void Unhighlight();
+    bool Highlighted() const
+    {
+        return allow_hl && highlighted;
+    }
+    void Unhighlight();
 
-	bool Selected() const { return selected; }
-	void Selected(bool _val);
+    bool Selected() const
+    {
+        return selected;
+    }
+    void Selected(bool _val);
 
-private:
-	// FLTK virtual method for drawing.
-	void draw();
+  private:
+    // FLTK virtual method for drawing.
+    void draw();
 
-	void draw_highlighted();
-	void draw_selected();
+    void draw_highlighted();
+    void draw_selected();
 
-	void UploadRGB(const byte *buf, int depth);
+    void UploadRGB(const byte *buf, int depth);
 
-	void TiledImg(Img_c *img);
+    void TiledImg(Img_c *img);
 };
-
 
 //------------------------------------------------------------------------
 
 // _FLTK_DISABLED
 class UI_DynInput /*: public Fl_Input */
 {
-	/* this widget provides a secondary callback which can be
-	 * used to dynamically update a picture or description.
-	 */
+    /* this widget provides a secondary callback which can be
+     * used to dynamically update a picture or description.
+     */
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Callback *callback2_;
-#endif	
-	void *data2_;
-
-public:
-	UI_DynInput(int X, int Y, int W, int H, const char *L = NULL);
-	virtual ~UI_DynInput();
-
-	// FLTK method for event handling
-	int handle(int event);
-
-#ifdef _FLTK_DISABLED	
-
-	// main callback is done on ENTER or RELEASE, but this
-	// secondary callback is done on each change by the user.
-	void callback2(Fl_Callback *cb, void *data)
-	{
-		callback2_ = cb; data2_ = data;
-	}
+    Fl_Callback *callback2_;
 #endif
-	
+    void *data2_;
+
+  public:
+    UI_DynInput(int X, int Y, int W, int H, const char *L = NULL);
+    virtual ~UI_DynInput();
+
+    // FLTK method for event handling
+    int handle(int event);
+
+#ifdef _FLTK_DISABLED
+
+    // main callback is done on ENTER or RELEASE, but this
+    // secondary callback is done on each change by the user.
+    void callback2(Fl_Callback *cb, void *data)
+    {
+        callback2_ = cb;
+        data2_     = data;
+    }
+#endif
 };
 
-#endif  /* __EUREKA_UI_PIC_H__ */
+#endif /* __EUREKA_UI_PIC_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

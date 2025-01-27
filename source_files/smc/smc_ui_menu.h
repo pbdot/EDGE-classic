@@ -22,10 +22,10 @@
 #define __EUREKA_UI_MENU_H__
 
 #ifdef _FLTK_DISABLED
-Fl_Sys_Menu_Bar * Menu_Create(int x, int y, int w, int h);
+Fl_Sys_Menu_Bar *Menu_Create(int x, int y, int w, int h);
 #endif
 
-#endif  /* __EUREKA_UI_MENU_H__ */
+#endif /* __EUREKA_UI_MENU_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

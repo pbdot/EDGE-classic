@@ -31,63 +31,80 @@
 
 class crc32_c
 {
-public:
-	u32_t raw;
-	u32_t extra;
+  public:
+    u32_t raw;
+    u32_t extra;
 
-private:
-	static const u32_t INIT_VALUE = 1;
+  private:
+    static const u32_t INIT_VALUE = 1;
 
-public:
-	crc32_c() : raw(INIT_VALUE), extra(0) { }
-	crc32_c(const crc32_c &rhs) { raw = rhs.raw; extra = rhs.extra; }
-	~crc32_c() { }
+  public:
+    crc32_c() : raw(INIT_VALUE), extra(0)
+    {
+    }
+    crc32_c(const crc32_c &rhs)
+    {
+        raw   = rhs.raw;
+        extra = rhs.extra;
+    }
+    ~crc32_c()
+    {
+    }
 
-	void Reset(void) { raw = INIT_VALUE; extra = 0; }
+    void Reset(void)
+    {
+        raw   = INIT_VALUE;
+        extra = 0;
+    }
 
-	crc32_c& operator= (const crc32_c &rhs)
-  {
-    raw = rhs.raw; extra = rhs.extra; return *this;
-  }
+    crc32_c &operator=(const crc32_c &rhs)
+    {
+        raw   = rhs.raw;
+        extra = rhs.extra;
+        return *this;
+    }
 
-	crc32_c& operator+= (u8_t value);
-	crc32_c& operator+= (s8_t value);
-	crc32_c& operator+= (u16_t value);
-	crc32_c& operator+= (s16_t value);
-	crc32_c& operator+= (u32_t value);
-	crc32_c& operator+= (s32_t value);
-	crc32_c& operator+= (float value);
-	crc32_c& operator+= (bool value);
+    crc32_c &operator+=(u8_t value);
+    crc32_c &operator+=(s8_t value);
+    crc32_c &operator+=(u16_t value);
+    crc32_c &operator+=(s16_t value);
+    crc32_c &operator+=(u32_t value);
+    crc32_c &operator+=(s32_t value);
+    crc32_c &operator+=(float value);
+    crc32_c &operator+=(bool value);
 
-	crc32_c& AddBlock(const u8_t *data, int len);
-	crc32_c& AddCStr(const char *str);
+    crc32_c &AddBlock(const u8_t *data, int len);
+    crc32_c &AddCStr(const char *str);
 
-  // TODO: operator==  and  operator!=
+    // TODO: operator==  and  operator!=
 };
-
 
 //------------------------------------------------------------------------
 // IMPLEMENTATION
 //------------------------------------------------------------------------
 
-inline crc32_c& crc32_c::operator+= (s8_t value)
+inline crc32_c &crc32_c::operator+=(s8_t value)
 {
-	*this += (u8_t) value; return *this;
+    *this += (u8_t)value;
+    return *this;
 }
 
-inline crc32_c& crc32_c::operator+= (s16_t value)
+inline crc32_c &crc32_c::operator+=(s16_t value)
 {
-	*this += (u16_t) value; return *this;
+    *this += (u16_t)value;
+    return *this;
 }
 
-inline crc32_c& crc32_c::operator+= (s32_t value)
+inline crc32_c &crc32_c::operator+=(s32_t value)
 {
-	*this += (u32_t) value; return *this;
+    *this += (u32_t)value;
+    return *this;
 }
 
-inline crc32_c& crc32_c::operator+= (bool value)
+inline crc32_c &crc32_c::operator+=(bool value)
 {
-	*this += (value ? (u8_t)1 : (u8_t)0); return *this;
+    *this += (value ? (u8_t)1 : (u8_t)0);
+    return *this;
 }
 
 #endif // __LIB_CRC_H__

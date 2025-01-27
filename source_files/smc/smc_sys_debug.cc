@@ -20,164 +20,155 @@
 
 #include "smc_main.h"
 
-
-bool Quiet = false;
+bool Quiet     = false;
 bool Debugging = false;
 
-
-static FILE * log_fp;
+static FILE *log_fp;
 
 // need to keep an in-memory copy of logs until the log viewer is open
 static bool log_window_open;
 
 static std::vector<const char *> kept_messages;
 
-
 // hack here to avoid bringing in ui_window.h and FLTK headers
 extern void LogViewer_AddLine(const char *str);
 
-
 void LogOpenFile(const char *filename)
 {
-	log_fp = fopen(filename, "w+");
+    log_fp = fopen(filename, "w+");
 
-	if (! log_fp)
-		FatalError("Cannot open log file: %s\n", filename);
+    if (!log_fp)
+        FatalError("Cannot open log file: %s\n", filename);
 
-	fprintf(log_fp, "======= START OF LOGS =======\n\n");
+    fprintf(log_fp, "======= START OF LOGS =======\n\n");
 
-	// add all messages saved so far
+    // add all messages saved so far
 
-	for (unsigned int i = 0 ; i < kept_messages.size() ; i++)
-		fputs(kept_messages[i], log_fp);
+    for (unsigned int i = 0; i < kept_messages.size(); i++)
+        fputs(kept_messages[i], log_fp);
 }
-
 
 void LogOpenWindow()
 {
-	log_window_open = true;
+    log_window_open = true;
 
-	// retrieve all messages saved so far
+    // retrieve all messages saved so far
 
-	for (unsigned int i = 0 ; i < kept_messages.size() ; i++)
-		LogViewer_AddLine(kept_messages[i]);
+    for (unsigned int i = 0; i < kept_messages.size(); i++)
+        LogViewer_AddLine(kept_messages[i]);
 }
-
 
 void LogClose()
 {
-	if (log_fp)
-	{
-		fprintf(log_fp, "\n\n======== END OF LOGS ========\n");
+    if (log_fp)
+    {
+        fprintf(log_fp, "\n\n======== END OF LOGS ========\n");
 
-		fclose(log_fp);
+        fclose(log_fp);
 
-		log_fp = NULL;
-	}
+        log_fp = NULL;
+    }
 
-	log_window_open = false;
+    log_window_open = false;
 }
-
 
 void LogPrintf(const char *str, ...)
 {
-	static char buffer[MSG_BUF_LEN];
+    static char buffer[MSG_BUF_LEN];
 
-	va_list args;
+    va_list args;
 
-	va_start(args, str);
-	vsnprintf(buffer, MSG_BUF_LEN, str, args);
-	va_end(args);
+    va_start(args, str);
+    vsnprintf(buffer, MSG_BUF_LEN, str, args);
+    va_end(args);
 
-	buffer[MSG_BUF_LEN-1] = 0;
+    buffer[MSG_BUF_LEN - 1] = 0;
 
-	if (log_fp)
-	{
-		fputs(buffer, log_fp);
-		fflush(log_fp);
-	}
+    if (log_fp)
+    {
+        fputs(buffer, log_fp);
+        fflush(log_fp);
+    }
 
-	if (log_window_open && !in_fatal_error)
-		LogViewer_AddLine(buffer);
-	else
-		kept_messages.push_back(StringDup(buffer));
+    if (log_window_open && !in_fatal_error)
+        LogViewer_AddLine(buffer);
+    else
+        kept_messages.push_back(StringDup(buffer));
 
-	if (! Quiet)
-	{
-		fputs(buffer, stdout);
-		fflush(stdout);
-	}
+    if (!Quiet)
+    {
+        fputs(buffer, stdout);
+        fflush(stdout);
+    }
 }
-
 
 void DebugPrintf(const char *str, ...)
 {
-	if (Debugging && log_fp)
-	{
-		static char buffer[MSG_BUF_LEN];
+    if (Debugging && log_fp)
+    {
+        static char buffer[MSG_BUF_LEN];
 
-		va_list args;
+        va_list args;
 
-		va_start(args, str);
-		vsnprintf(buffer, MSG_BUF_LEN-1, str, args);
-		va_end(args);
+        va_start(args, str);
+        vsnprintf(buffer, MSG_BUF_LEN - 1, str, args);
+        va_end(args);
 
-		buffer[MSG_BUF_LEN-2] = 0;
+        buffer[MSG_BUF_LEN - 2] = 0;
 
-		// prefix each debugging line with a special symbol
+        // prefix each debugging line with a special symbol
 
-		char *pos = buffer;
-		char *next;
+        char *pos = buffer;
+        char *next;
 
-		while (pos && *pos)
-		{
-			next = strchr(pos, '\n');
+        while (pos && *pos)
+        {
+            next = strchr(pos, '\n');
 
-			if (next) *next++ = 0;
+            if (next)
+                *next++ = 0;
 
-			fprintf(log_fp, "# %s\n", pos);
-			fflush(log_fp);
+            fprintf(log_fp, "# %s\n", pos);
+            fflush(log_fp);
 
-			if (! Quiet)
-			{
-				fprintf(stderr, "# %s\n", pos);
-			}
+            if (!Quiet)
+            {
+                fprintf(stderr, "# %s\n", pos);
+            }
 
-			pos = next;
-		}
-	}
+            pos = next;
+        }
+    }
 }
-
 
 void LogSaveTo(FILE *dest_fp)
 {
-	byte buffer[256];
+    byte buffer[256];
 
-	if (! log_fp)
-	{
-		fprintf(dest_fp, "No logs.\n");
-		return;
-	}
+    if (!log_fp)
+    {
+        fprintf(dest_fp, "No logs.\n");
+        return;
+    }
 
-	// copy the log file
+    // copy the log file
 
-	rewind(log_fp);
+    rewind(log_fp);
 
-	while (true)
-	{
-		size_t rlen = fread(buffer, 1, sizeof(buffer), log_fp);
+    while (true)
+    {
+        size_t rlen = fread(buffer, 1, sizeof(buffer), log_fp);
 
-		if (rlen == 0)
-			break;
+        if (rlen == 0)
+            break;
 
-		fwrite(buffer, 1, rlen, dest_fp);
-	}
+        fwrite(buffer, 1, rlen, dest_fp);
+    }
 
-	// restore write position for the log file
+    // restore write position for the log file
 
-	fseek(log_fp, 0L, SEEK_END);
+    fseek(log_fp, 0L, SEEK_END);
 }
-
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

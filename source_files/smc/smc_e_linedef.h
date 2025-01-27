@@ -30,7 +30,6 @@
 void FlipLineDef(int ld);
 void FlipLineDefGroup(selection_c *flip);
 
-
 void LineDefs_SetLength(int new_len);
 
 bool LineDefAlreadyExists(int v1, int v2);
@@ -46,29 +45,24 @@ void LD_FixForLostSide(int ld);
 
 double LD_AngleBetweenLines(int A, int B, int C);
 
-bool LD_GetTwoNeighbors(int new_ld, int v1, int v2,
-						int *ld1, int *side1,
-						int *ld2, int *side2);
+bool LD_GetTwoNeighbors(int new_ld, int v1, int v2, int *ld1, int *side1, int *ld2, int *side2);
 
 std::string LD_RatioName(fixcoord_t idx, fixcoord_t idy, bool number_only);
 
-bool LD_RailHeights(int& z1, int& z2, const LineDef *L, const SideDef *sd,
-					const Sector *front, const Sector *back);
+bool LD_RailHeights(int &z1, int &z2, const LineDef *L, const SideDef *sd, const Sector *front, const Sector *back);
 
 typedef enum
 {
-	LINALIGN_X		= (1 << 0),		// align the X offset
-	LINALIGN_Y		= (1 << 1),		// align the Y offset
-	LINALIGN_Clear	= (1 << 2),		// clear the offset(s), instead of aligning
-	LINALIGN_Unpeg	= (1 << 3),		// change the unpegging flags
-	LINALIGN_Right	= (1 << 4)		// align with sidedef on RIGHT of this one [ otherwise do LEFT ]
-}
-linedef_align_flag_e;
+    LINALIGN_X     = (1 << 0), // align the X offset
+    LINALIGN_Y     = (1 << 1), // align the Y offset
+    LINALIGN_Clear = (1 << 2), // clear the offset(s), instead of aligning
+    LINALIGN_Unpeg = (1 << 3), // change the unpegging flags
+    LINALIGN_Right = (1 << 4)  // align with sidedef on RIGHT of this one [ otherwise do LEFT ]
+} linedef_align_flag_e;
 
-bool Line_AlignOffsets(const Objid& obj, int align_flags);
+bool Line_AlignOffsets(const Objid &obj, int align_flags);
 
-void Line_AlignGroup(std::vector<Objid> & group, int align_flags);
-
+void Line_AlignGroup(std::vector<Objid> &group, int align_flags);
 
 /* commands */
 
@@ -78,7 +72,7 @@ void CMD_LIN_Align();
 void CMD_LIN_MergeTwo();
 void CMD_LIN_SplitHalf();
 
-#endif  /* __EUREKA_E_LINEDEF_H__ */
+#endif /* __EUREKA_E_LINEDEF_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

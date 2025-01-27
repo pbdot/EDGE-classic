@@ -34,145 +34,136 @@
 
 class SaveBucket_c;
 
-
 typedef enum
 {
-	SREND_Nothing = 0,
-	SREND_Floor,
-	SREND_Ceiling,
-	SREND_Lighting,
-	SREND_FloorBright,
-	SREND_CeilBright,
-	SREND_SoundProp
+    SREND_Nothing = 0,
+    SREND_Floor,
+    SREND_Ceiling,
+    SREND_Lighting,
+    SREND_FloorBright,
+    SREND_CeilBright,
+    SREND_SoundProp
 
 } sector_rendering_mode_e;
-
 
 //
 // this holds some important editor state
 //
 struct Editor_State_t
 {
-	obj_type_e  mode;  // current mode (OBJ_LINEDEFS, OBJ_SECTORS, etc...)
+    obj_type_e mode;            // current mode (OBJ_LINEDEFS, OBJ_SECTORS, etc...)
 
-	bool render3d;     // 3D view is active
+    bool render3d;              // 3D view is active
 
-	editor_action_e  action;  // an in-progress action, usually ACT_NOTHING
+    editor_action_e action;     // an in-progress action, usually ACT_NOTHING
 
-	keycode_t sticky_mod;  // if != 0, waiting for next key  (fake meta)
+    keycode_t sticky_mod;       // if != 0, waiting for next key  (fake meta)
 
-	bool pointer_in_window;  // whether the mouse is over the 2D/3D view
-	double map_x, map_y, map_z;  // map coordinates of pointer (no Z in 2D)
+    bool   pointer_in_window;   // whether the mouse is over the 2D/3D view
+    double map_x, map_y, map_z; // map coordinates of pointer (no Z in 2D)
 
-	selection_c *Selected;    // all selected objects (usually empty)
+    selection_c *Selected;      // all selected objects (usually empty)
 
-	Objid highlight;   // the highlighted object
+    Objid highlight;            // the highlighted object
 
-	Objid split_line;  // linedef which would be split by a new vertex
-	double split_x;
-	double split_y;
+    Objid  split_line;          // linedef which would be split by a new vertex
+    double split_x;
+    double split_y;
 
+    /* rendering stuff */
 
-	/* rendering stuff */
+    bool error_mode;        // draw selection in red?
 
-	bool error_mode;   // draw selection in red?
+    int sector_render_mode; // one of the SREND_XXX values
+    int thing_render_mode;
 
-	int  sector_render_mode;   // one of the SREND_XXX values
-	int   thing_render_mode;
+    bool show_object_numbers;
 
-	bool show_object_numbers;
+    /* navigation stuff */
 
+    bool is_navigating; // user is holding down a navigation key
+    bool is_panning;    // user is panning the map (turning in 3D) via RMB
 
-	/* navigation stuff */
+    float nav_fwd, nav_back;
+    float nav_left, nav_right;
+    float nav_up, nav_down;
+    float nav_turn_L, nav_turn_R;
+    bool  nav_lax;
 
-	bool is_navigating;  // user is holding down a navigation key
-	bool is_panning;     // user is panning the map (turning in 3D) via RMB
+    float panning_speed;
+    bool  panning_lax;
 
-	float nav_fwd,    nav_back;
-	float nav_left,   nav_right;
-	float nav_up,     nav_down;
-	float nav_turn_L, nav_turn_R;
-	bool  nav_lax;
+    /* click stuff (ACT_CLICK) */
 
-	float panning_speed;
-	bool  panning_lax;
+    Objid clicked;                                // object under the pointer when ACT_Click occurred
 
+    int click_screen_x, click_screen_y;           // screen coord of the click
 
-	/* click stuff (ACT_CLICK) */
+    double click_map_x, click_map_y, click_map_z; // location of the click
 
-	Objid clicked;    // object under the pointer when ACT_Click occurred
+    bool click_check_drag;
+    bool click_check_select;
+    bool click_force_single;
 
-	int click_screen_x, click_screen_y;  // screen coord of the click
+    /* line drawing stuff (ACT_DRAW_LINE) */
 
-	double click_map_x, click_map_y, click_map_z;  // location of the click
+    Objid draw_from;             // the vertex we are drawing a line from
 
-	bool click_check_drag;
-	bool click_check_select;
-	bool click_force_single;
+    double draw_to_x, draw_to_y; // target coordinate of current line
 
+    /* selection-box stuff (ACT_SELBOX) */
 
-	/* line drawing stuff (ACT_DRAW_LINE) */
+    double selbox_x1, selbox_y1; // map coords
+    double selbox_x2, selbox_y2;
 
-	Objid draw_from;  // the vertex we are drawing a line from
+    /* transforming state (ACT_TRANSFORM) */
 
-	double draw_to_x, draw_to_y;  // target coordinate of current line
+    double trans_start_x;
+    double trans_start_y;
 
+    transform_keyword_e trans_mode;
+    transform_t         trans_param;
 
-	/* selection-box stuff (ACT_SELBOX) */
+    selection_c *trans_lines;
 
-	double selbox_x1, selbox_y1;  // map coords
-	double selbox_x2, selbox_y2;
+    /* dragging state (ACT_DRAG) */
 
+    Objid dragged; // the object we are dragging, or nil for whole selection
 
-	/* transforming state (ACT_TRANSFORM) */
+    int drag_screen_dx, drag_screen_dy;
 
-	double trans_start_x;
-	double trans_start_y;
+    double drag_start_x, drag_start_y, drag_start_z;
+    double drag_focus_x, drag_focus_y, drag_focus_z;
+    double drag_cur_x, drag_cur_y, drag_cur_z;
 
-	transform_keyword_e trans_mode;
-	transform_t trans_param;
+    float drag_point_dist;
+    float drag_sector_dz;
+    int   drag_other_vert; // used to ratio-lock a dragged vertex
 
-	selection_c *trans_lines;
+    int   drag_thing_num;
+    float drag_thing_floorh;
+    bool  drag_thing_up_down;
 
+    selection_c *drag_lines;
 
-	/* dragging state (ACT_DRAG) */
+    /* adjusting state (ACT_ADJUST_OFS) */
 
-	Objid dragged;    // the object we are dragging, or nil for whole selection
+    float adjust_dx, adjust_dy;
+    bool  adjust_lax;
 
-	int drag_screen_dx, drag_screen_dy;
+    SaveBucket_c *adjust_bucket;
 
-	double drag_start_x, drag_start_y, drag_start_z;
-	double drag_focus_x, drag_focus_y, drag_focus_z;
-	double drag_cur_x,   drag_cur_y,   drag_cur_z;
-
-	float drag_point_dist;
-	float drag_sector_dz;
-	int   drag_other_vert;  // used to ratio-lock a dragged vertex
-
-	int   drag_thing_num;
-	float drag_thing_floorh;
-	bool  drag_thing_up_down;
-
-	selection_c *drag_lines;
-
-
-	/* adjusting state (ACT_ADJUST_OFS) */
-
-	float adjust_dx, adjust_dy;
-	bool  adjust_lax;
-
-	SaveBucket_c * adjust_bucket;
-
-	struct { float x1, y1, x2, y2; } adjust_bbox;
+    struct
+    {
+        float x1, y1, x2, y2;
+    } adjust_bbox;
 };
 
-
-extern Editor_State_t  edit;
-
+extern Editor_State_t edit;
 
 void Editor_Init();
 void Editor_DefaultState();
-bool Editor_ParseUser(const char ** tokens, int num_tok);
+bool Editor_ParseUser(const char **tokens, int num_tok);
 void Editor_WriteUser(FILE *fp);
 
 void Editor_ClearErrorMode();
@@ -184,14 +175,12 @@ void UpdateHighlight();
 void RedrawMap();
 void ZoomWholeMap();
 
-
-extern double Map_bound_x1;   /* minimum X value of map */
-extern double Map_bound_y1;   /* minimum Y value of map */
-extern double Map_bound_x2;   /* maximum X value of map */
-extern double Map_bound_y2;   /* maximum Y value of map */
+extern double Map_bound_x1; /* minimum X value of map */
+extern double Map_bound_y1; /* minimum Y value of map */
+extern double Map_bound_x2; /* maximum X value of map */
+extern double Map_bound_y2; /* maximum Y value of map */
 
 void CalculateLevelBounds();
-
 
 void MapStuff_NotifyBegin();
 void MapStuff_NotifyInsert(obj_type_e type, int objnum);
@@ -199,13 +188,11 @@ void MapStuff_NotifyDelete(obj_type_e type, int objnum);
 void MapStuff_NotifyChange(obj_type_e type, int objnum, int field);
 void MapStuff_NotifyEnd();
 
-
 void ObjectBox_NotifyBegin();
 void ObjectBox_NotifyInsert(obj_type_e type, int objnum);
 void ObjectBox_NotifyDelete(obj_type_e type, int objnum);
 void ObjectBox_NotifyChange(obj_type_e type, int objnum, int field);
 void ObjectBox_NotifyEnd();
-
 
 void Selection_NotifyBegin();
 void Selection_NotifyInsert(obj_type_e type, int objnum);
@@ -213,16 +200,15 @@ void Selection_NotifyDelete(obj_type_e type, int objnum);
 void Selection_NotifyChange(obj_type_e type, int objnum, int field);
 void Selection_NotifyEnd();
 
+void DumpSelection(selection_c *list);
 
-void DumpSelection (selection_c * list);
-
-void ConvertSelection(selection_c * src, selection_c * dest);
+void ConvertSelection(selection_c *src, selection_c *dest);
 
 int Selection_FirstLine(selection_c *list);
 
-void Selection_Add(Objid& obj);
-void Selection_Remove(Objid& obj);
-void Selection_Toggle(Objid& obj);
+void Selection_Add(Objid &obj);
+void Selection_Remove(Objid &obj);
+void Selection_Toggle(Objid &obj);
 
 void Selection_Clear(bool no_save = false);
 void Selection_Push();
@@ -230,70 +216,65 @@ void Selection_InvalidateLast();
 
 typedef enum
 {
-	SOH_OK = 0,       // using selection, nothing else needed
-	SOH_Unselect = 1, // using highlight, must unselect at end
-	SOH_Empty = 2     // both selection or highlight are empty
+    SOH_OK       = 0, // using selection, nothing else needed
+    SOH_Unselect = 1, // using highlight, must unselect at end
+    SOH_Empty    = 2  // both selection or highlight are empty
 } soh_type_e;
 
 soh_type_e Selection_Or_Highlight();
 
 void SelectObjectsInBox(selection_c *list, int objtype, double x1, double y1, double x2, double y2);
 
-
 /* commands */
 
 void CMD_LastSelection();
-
 
 //----------------------------------------------------------------------
 //  Helper for handling either the highlight or selection
 //----------------------------------------------------------------------
 
-
-
 //----------------------------------------------------------------------
 //  Recently used textures, flats and things
 //----------------------------------------------------------------------
 
-#define RECENTLY_USED_MAX	32
+#define RECENTLY_USED_MAX 32
 
 class Recently_used
 {
-private:
-	int size;
-	int keep_num;
+  private:
+    int size;
+    int keep_num;
 
-	const char *name_set[RECENTLY_USED_MAX];
+    const char *name_set[RECENTLY_USED_MAX];
 
-public:
-	 Recently_used();
-	~Recently_used();
+  public:
+    Recently_used();
+    ~Recently_used();
 
-	int find(const char *name);
-	int find_number(int val);
+    int find(const char *name);
+    int find_number(int val);
 
-	void insert(const char *name);
-	void insert_number(int val);
+    void insert(const char *name);
+    void insert_number(int val);
 
-	void clear();
+    void clear();
 
-	void WriteUser(FILE *fp, char letter);
+    void WriteUser(FILE *fp, char letter);
 
-private:
-	void erase(int index);
-	void push_front(const char *name);
+  private:
+    void erase(int index);
+    void push_front(const char *name);
 };
 
-extern Recently_used  recent_textures;
-extern Recently_used  recent_flats;
-extern Recently_used  recent_things;
+extern Recently_used recent_textures;
+extern Recently_used recent_flats;
+extern Recently_used recent_things;
 
 void RecUsed_ClearAll();
 void RecUsed_WriteUser(FILE *fp);
-bool RecUsed_ParseUser(const char ** tokens, int num_tok);
+bool RecUsed_ParseUser(const char **tokens, int num_tok);
 
-
-#endif  /* __EUREKA_LEVELS_H__ */
+#endif /* __EUREKA_LEVELS_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

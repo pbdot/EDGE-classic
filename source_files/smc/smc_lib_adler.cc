@@ -32,82 +32,81 @@
 
 // ---- Primitive routines ----
 
-crc32_c& crc32_c::operator+= (u8_t data)
+crc32_c &crc32_c::operator+=(u8_t data)
 {
-	u32_t s1 = raw & 0xFFFF;
-	u32_t s2 = (raw >> 16) & 0xFFFF;
+    u32_t s1 = raw & 0xFFFF;
+    u32_t s2 = (raw >> 16) & 0xFFFF;
 
-	s1 = (s1 + data) % 65521;
-	s2 = (s2 + s1)   % 65521;
+    s1 = (s1 + data) % 65521;
+    s2 = (s2 + s1) % 65521;
 
-	raw = (s2 << 16) | s1;
-
-  extra += s2;
-
-  // modulo the extra value by a large prime number
-  if (extra >= 0xFFFEFFF9)
-      extra -= 0xFFFEFFF9;
-
-	return *this;
-}
-
-crc32_c& crc32_c::AddBlock(const u8_t *data, int len)
-{
-	u32_t s1 = raw & 0xFFFF;
-	u32_t s2 = (raw >> 16) & 0xFFFF;
-
-	for (; len > 0; data++, len--)
-	{
-		s1 = (s1 + *data) % 65521;
-		s2 = (s2 + s1)    % 65521;
+    raw = (s2 << 16) | s1;
 
     extra += s2;
+
+    // modulo the extra value by a large prime number
     if (extra >= 0xFFFEFFF9)
         extra -= 0xFFFEFFF9;
-	}
 
-	raw = (s2 << 16) | s1;
+    return *this;
+}
 
-	return *this;
+crc32_c &crc32_c::AddBlock(const u8_t *data, int len)
+{
+    u32_t s1 = raw & 0xFFFF;
+    u32_t s2 = (raw >> 16) & 0xFFFF;
+
+    for (; len > 0; data++, len--)
+    {
+        s1 = (s1 + *data) % 65521;
+        s2 = (s2 + s1) % 65521;
+
+        extra += s2;
+        if (extra >= 0xFFFEFFF9)
+            extra -= 0xFFFEFFF9;
+    }
+
+    raw = (s2 << 16) | s1;
+
+    return *this;
 }
 
 // ---- Non-primitive routines ----
 
-crc32_c& crc32_c::operator+= (u16_t value)
+crc32_c &crc32_c::operator+=(u16_t value)
 {
-	*this += (u8_t) (value >> 8);
-	*this += (u8_t) (value);
+    *this += (u8_t)(value >> 8);
+    *this += (u8_t)(value);
 
-	return *this;
+    return *this;
 }
 
-crc32_c& crc32_c::operator+= (u32_t value)
+crc32_c &crc32_c::operator+=(u32_t value)
 {
-	*this += (u8_t) (value >> 24);
-	*this += (u8_t) (value >> 16);
-	*this += (u8_t) (value >> 8);
-	*this += (u8_t) (value);
+    *this += (u8_t)(value >> 24);
+    *this += (u8_t)(value >> 16);
+    *this += (u8_t)(value >> 8);
+    *this += (u8_t)(value);
 
-	return *this;
+    return *this;
 }
 
-crc32_c& crc32_c::operator+= (float value)
+crc32_c &crc32_c::operator+=(float value)
 {
-	bool neg = (value < 0.0f);
-	value = (float)fabs(value);
+    bool neg = (value < 0.0f);
+    value    = (float)fabs(value);
 
-	int exp;
-	u32_t mant = (u32_t) (ldexp(frexp(value, &exp), 30));
+    int   exp;
+    u32_t mant = (u32_t)(ldexp(frexp(value, &exp), 30));
 
-	*this += (u8_t) (neg ? '-' : '+');
-	*this += (u32_t) exp;
-	*this += mant;
+    *this += (u8_t)(neg ? '-' : '+');
+    *this += (u32_t)exp;
+    *this += mant;
 
-	return *this;
+    return *this;
 }
 
-crc32_c& crc32_c::AddCStr(const char *str)
+crc32_c &crc32_c::AddCStr(const char *str)
 {
-	return AddBlock((const u8_t *) str, (int)strlen(str));
+    return AddBlock((const u8_t *)str, (int)strlen(str));
 }
-

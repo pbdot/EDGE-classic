@@ -21,16 +21,14 @@
 #ifndef __EUREKA_UI_SIDEDEF_H__
 #define __EUREKA_UI_SIDEDEF_H__
 
-
-#define SETOBJ_NO_LINE  -2
+#define SETOBJ_NO_LINE -2
 
 // solid_mask bits : when set, that part requires a texture
 enum
 {
-	SOLID_LOWER = (1 << 0),
-	SOLID_MID   = (1 << 1),
-	SOLID_UPPER = (1 << 2)
-
+    SOLID_LOWER = (1 << 0),
+    SOLID_MID   = (1 << 1),
+    SOLID_UPPER = (1 << 2)
 };
 
 #ifdef _FLTK_DISABLED
@@ -39,69 +37,68 @@ class UI_SideBox : public Fl_Group
 class UI_SideBox
 #endif
 {
-private:
-	int  obj;
-	bool is_front;
+  private:
+    int  obj;
+    bool is_front;
 
-	int what_is_solid;
-	bool on_2S_line;
+    int  what_is_solid;
+    bool on_2S_line;
 
-public:
+  public:
 #ifdef _FLTK_DISABLED
-	Fl_Int_Input *x_ofs;
-	Fl_Int_Input *y_ofs;
-	Fl_Int_Input *sec;
+    Fl_Int_Input *x_ofs;
+    Fl_Int_Input *y_ofs;
+    Fl_Int_Input *sec;
 #endif
 
-	UI_Pic *l_pic;
-	UI_Pic *u_pic;
-	UI_Pic *r_pic;
+    UI_Pic *l_pic;
+    UI_Pic *u_pic;
+    UI_Pic *r_pic;
 
-	UI_DynInput *l_tex;
-	UI_DynInput *u_tex;
-	UI_DynInput *r_tex;
-
-#ifdef _FLTK_DISABLED
-	Fl_Button *add_button;
-	Fl_Button *del_button;
-#endif
-
-public:
-	UI_SideBox(int X, int Y, int W, int H, int _side);
-	virtual ~UI_SideBox();
-
-public:
-	// this can be a sidedef number or -1 for none, or the special
-	// value SETOBJ_NO_LINE when there is no linedef at all.
-	// solid_mask is a bit field of parts which require a texture.
-	// two_sided is from the linedef, will show all parts if true.
-	void SetObj(int index, int solid_mask, bool two_sided);
-
-	void UpdateField();
-
-	// returns a bitmask of PART_RT_XXX values.
-	int GetSelectedPics() const;
-	int GetHighlightedPics() const;
-
-	void UnselectPics();
-
-private:
-	void UpdateLabel();
-	void UpdateHiding();
-	void UpdateAddDel();
+    UI_DynInput *l_tex;
+    UI_DynInput *u_tex;
+    UI_DynInput *r_tex;
 
 #ifdef _FLTK_DISABLED
-	static void    tex_callback(Fl_Widget *, void *);
-	static void dyntex_callback(Fl_Widget *, void *);
-	static void offset_callback(Fl_Widget *, void *);
-	static void sector_callback(Fl_Widget *, void *);
-	static void    add_callback(Fl_Widget *, void *);
-	static void delete_callback(Fl_Widget *, void *);
+    Fl_Button *add_button;
+    Fl_Button *del_button;
 #endif
 
+  public:
+    UI_SideBox(int X, int Y, int W, int H, int _side);
+    virtual ~UI_SideBox();
+
+  public:
+    // this can be a sidedef number or -1 for none, or the special
+    // value SETOBJ_NO_LINE when there is no linedef at all.
+    // solid_mask is a bit field of parts which require a texture.
+    // two_sided is from the linedef, will show all parts if true.
+    void SetObj(int index, int solid_mask, bool two_sided);
+
+    void UpdateField();
+
+    // returns a bitmask of PART_RT_XXX values.
+    int GetSelectedPics() const;
+    int GetHighlightedPics() const;
+
+    void UnselectPics();
+
+  private:
+    void UpdateLabel();
+    void UpdateHiding();
+    void UpdateAddDel();
+
+#ifdef _FLTK_DISABLED
+    static void tex_callback(Fl_Widget *, void *);
+    static void dyntex_callback(Fl_Widget *, void *);
+    static void offset_callback(Fl_Widget *, void *);
+    static void sector_callback(Fl_Widget *, void *);
+    static void add_callback(Fl_Widget *, void *);
+    static void delete_callback(Fl_Widget *, void *);
+#endif
 };
 
-#endif  /* __EUREKA_UI_SIDEDEF_H__ */
+#endif /* __EUREKA_UI_SIDEDEF_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

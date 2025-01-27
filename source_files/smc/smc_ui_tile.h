@@ -24,48 +24,46 @@
 // _FLTK_DISABLED
 class UI_Tile /* : public Fl_Tile */
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Widget * left;
-	Fl_Widget * right;
+    Fl_Widget *left;
+    Fl_Widget *right;
 
-	Fl_Box * limiter;
-#endif	
-
-	// when the right widget (the browser) is hidden, this remembers
-	// how much of the available width it was using, so can restore it
-	// where the user expects.
-	//
-	// NOTE: not set or used while right widget is visible.
-	int right_W;
-
-public:
-#ifdef _FLTK_DISABLED
-	UI_Tile(int X, int Y, int W, int H, const char *what,
-	        Fl_Widget *_left, Fl_Widget *_right);
+    Fl_Box *limiter;
 #endif
 
-	virtual ~UI_Tile();
+    // when the right widget (the browser) is hidden, this remembers
+    // how much of the available width it was using, so can restore it
+    // where the user expects.
+    //
+    // NOTE: not set or used while right widget is visible.
+    int right_W;
 
-	/* FLTK method */
-	void resize(int, int, int, int);
+  public:
+#ifdef _FLTK_DISABLED
+    UI_Tile(int X, int Y, int W, int H, const char *what, Fl_Widget *_left, Fl_Widget *_right);
+#endif
 
-public:
-	void ShowRight();
-	void HideRight();
+    virtual ~UI_Tile();
 
-	void MinimiseRight();
-	void MaximiseRight();
+    /* FLTK method */
+    void resize(int, int, int, int);
 
-	bool ParseUser(const char ** tokens, int num_tok);
-	void WriteUser(FILE *fp);
+  public:
+    void ShowRight();
+    void HideRight();
 
-private:
-	void ResizeBoth();
+    void MinimiseRight();
+    void MaximiseRight();
+
+    bool ParseUser(const char **tokens, int num_tok);
+    void WriteUser(FILE *fp);
+
+  private:
+    void ResizeBoth();
 };
 
-
-#endif  /* __EUREKA_UI_TILE_H__ */
+#endif /* __EUREKA_UI_TILE_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -23,173 +23,156 @@
 #include "smc_ui_window.h"
 #include "smc_ui_about.h"
 
-
-#define ABOUT_W  (440)   // matches logo image
-#define ABOUT_H  (230 + 290)
-
+#define ABOUT_W (440) // matches logo image
+#define ABOUT_H (230 + 290)
 
 class UI_About : public UI_Escapable_Window
 {
-private:
-	static UI_About * _instance;
+  private:
+    static UI_About *_instance;
 
 #ifdef _FLTK_DISABLED
-	static Fl_RGB_Image *about_img;
-#endif	
-
-	UI_About(int W, int H, const char *label = NULL);
-
-	virtual ~UI_About()
-	{
-		// nothing needed
-	}
-
-	static void LoadImage()
-	{
-		static char filename[SMC_PATH_MAX];
-
-		// FIXME : use this location for all platforms
-#ifdef WIN32
-		snprintf(filename, sizeof(filename), "%s/common/about_logo.png", install_dir);
-#else
-		snprintf(filename, sizeof(filename), "%s/about_logo.png", install_dir);
+    static Fl_RGB_Image *about_img;
 #endif
-		filename[SMC_PATH_MAX-1] = 0;
 
-		if (FileExists(filename))
-		{
+    UI_About(int W, int H, const char *label = NULL);
+
+    virtual ~UI_About()
+    {
+        // nothing needed
+    }
+
+    static void LoadImage()
+    {
+        static char filename[SMC_PATH_MAX];
+
+        // FIXME : use this location for all platforms
+#ifdef WIN32
+        snprintf(filename, sizeof(filename), "%s/common/about_logo.png", install_dir);
+#else
+        snprintf(filename, sizeof(filename), "%s/about_logo.png", install_dir);
+#endif
+        filename[SMC_PATH_MAX - 1] = 0;
+
+        if (FileExists(filename))
+        {
 #ifdef _FLTK_DISABLED
-			about_img = new Fl_PNG_Image(filename);
-#endif			
-			
-		}
-	}
+            about_img = new Fl_PNG_Image(filename);
+#endif
+        }
+    }
 
-public:
-	static void Open()
-	{
-		if (_instance)  // already up?
-			return;
-
-#ifdef _FLTK_DISABLED
-		if (! about_img)
-			LoadImage();
-#endif			
-
-		_instance = new UI_About(ABOUT_W, ABOUT_H, "About Eureka v" EUREKA_VERSION);
-		
-#ifdef _FLTK_DISABLED
-		_instance->show();
-#endif		
-	}
-
-private:
+  public:
+    static void Open()
+    {
+        if (_instance) // already up?
+            return;
 
 #ifdef _FLTK_DISABLED
-	static void close_callback(Fl_Widget *w, void *data)
-	{
-		if (_instance)
-		{
-			_instance->default_callback(_instance, data);
-			_instance = NULL;
-		}
-	}
-#endif	
+        if (!about_img)
+            LoadImage();
+#endif
 
-	static const char *Text1;
-	static const char *Text2;
-	static const char *URL;
+        _instance = new UI_About(ABOUT_W, ABOUT_H, "About Eureka v" EUREKA_VERSION);
+
+#ifdef _FLTK_DISABLED
+        _instance->show();
+#endif
+    }
+
+  private:
+#ifdef _FLTK_DISABLED
+    static void close_callback(Fl_Widget *w, void *data)
+    {
+        if (_instance)
+        {
+            _instance->default_callback(_instance, data);
+            _instance = NULL;
+        }
+    }
+#endif
+
+    static const char *Text1;
+    static const char *Text2;
+    static const char *URL;
 };
 
-
-UI_About * UI_About::_instance;
+UI_About *UI_About::_instance;
 
 #ifdef _FLTK_DISABLED
-Fl_RGB_Image * UI_About::about_img;
+Fl_RGB_Image *UI_About::about_img;
 #endif
 
+const char *UI_About::Text1 = "EUREKA is a map editor for classic DOOM\n"
+                              "It uses code from the Yadex editor";
 
-const char *UI_About::Text1 =
-	"EUREKA is a map editor for classic DOOM\n"
-	"It uses code from the Yadex editor";
-
-
-const char *UI_About::Text2 =
-	"Copyright (C) 2001-2020 Andrew Apted, et al\n"
-	"Copyright (C) 2014-2017 Ioan Chera                \n"
-	"Copyright (C) 1997-2003 André Majorel, et al\n"
-	"\n"
-	"This program is free software, and may be\n"
-	"distributed and modified under the terms of\n"
-	"the GNU General Public License\n"
-	"\n"
-	"There is ABSOLUTELY NO WARRANTY\n"
-	"Use at your OWN RISK";
-
+const char *UI_About::Text2 = "Copyright (C) 2001-2020 Andrew Apted, et al\n"
+                              "Copyright (C) 2014-2017 Ioan Chera                \n"
+                              "Copyright (C) 1997-2003 André Majorel, et al\n"
+                              "\n"
+                              "This program is free software, and may be\n"
+                              "distributed and modified under the terms of\n"
+                              "the GNU General Public License\n"
+                              "\n"
+                              "There is ABSOLUTELY NO WARRANTY\n"
+                              "Use at your OWN RISK";
 
 const char *UI_About::URL = "http://awwports.sf.net/eureka";
-
 
 //
 // Constructor
 //
-UI_About::UI_About(int W, int H, const char *label) :
-    UI_Escapable_Window(W, H, label)
+UI_About::UI_About(int W, int H, const char *label) : UI_Escapable_Window(W, H, label)
 {
-#ifdef _FLTK_DISABLED	
-	// non-resizable
-	size_range(W, H, W, H);
+#ifdef _FLTK_DISABLED
+    // non-resizable
+    size_range(W, H, W, H);
 
-	callback(close_callback, this);
+    callback(close_callback, this);
 
+    // nice big logo image
 
-	// nice big logo image
+    Fl_Box *box = new Fl_Box(FL_NO_BOX, 0, 0, W, 230, NULL);
+    box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
+    box->color(FL_BLACK, FL_BLACK);
 
-	Fl_Box *box = new Fl_Box(FL_NO_BOX, 0, 0, W, 230, NULL);
-	box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
-	box->color(FL_BLACK, FL_BLACK);
+    if (about_img)
+    {
+        box->image(about_img);
 
-	if (about_img)
-	{
-		box->image(about_img);
+        // overlay a small version number in bottom right corner
+        Fl_Box *v_box = new Fl_Box(FL_NO_BOX, 0, 0, W - 2, 230, "");
 
-		// overlay a small version number in bottom right corner
-		Fl_Box *v_box = new Fl_Box(FL_NO_BOX, 0, 0, W - 2, 230, "");
+        v_box->label("v" EUREKA_VERSION);
+        v_box->labelsize(20);
+        v_box->labelcolor(fl_rgb_color(160, 255, 128));
+        v_box->align(FL_ALIGN_INSIDE | FL_ALIGN_RIGHT | FL_ALIGN_BOTTOM);
+    }
+    else
+    {
+        box->box(FL_FLAT_BOX);
+        box->label("EUREKA\nDoom Editor\nv" EUREKA_VERSION);
+        box->labelsize(40);
+        box->labelcolor(fl_rgb_color(255, 200, 100));
+    }
 
-		v_box->label("v" EUREKA_VERSION);
-		v_box->labelsize(20);
-		v_box->labelcolor(fl_rgb_color(160, 255, 128));
-		v_box->align(FL_ALIGN_INSIDE | FL_ALIGN_RIGHT | FL_ALIGN_BOTTOM);
-	}
-	else
-	{
-		box->box(FL_FLAT_BOX);
-		box->label("EUREKA\nDoom Editor\nv" EUREKA_VERSION);
-		box->labelsize(40);
-		box->labelcolor(fl_rgb_color(255, 200, 100));
-	}
+    int cy = 240;
 
+    // the very informative text
 
-	int cy = 240;
+    int pad = 26;
 
+    box = new Fl_Box(FL_NO_BOX, pad, cy, W - pad - pad, 44, Text1);
+    box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
+    box->labelfont(FL_HELVETICA_BOLD);
 
-	// the very informative text
+    cy += box->h();
 
-	int pad = 26;
+    box = new Fl_Box(FL_NO_BOX, pad, cy, W - pad - pad, 186, Text2);
+    box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
+    box->labelfont(FL_HELVETICA);
 
-	box = new Fl_Box(FL_NO_BOX, pad, cy, W-pad-pad, 44, Text1);
-	box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
-	box->labelfont(FL_HELVETICA_BOLD);
-
-	cy += box->h();
-
-
-	box = new Fl_Box(FL_NO_BOX, pad, cy, W-pad-pad, 186, Text2);
-	box->align(FL_ALIGN_INSIDE | FL_ALIGN_CENTER);
-	box->labelfont(FL_HELVETICA);
-
-	cy += box->h();
-
+    cy += box->h();
 
 #if 0
 	// website address
@@ -201,44 +184,39 @@ UI_About::UI_About(int W, int H, const char *label) :
 	cy += link->h() + 16;
 #endif
 
+    // finally add an "OK" button
 
-	// finally add an "OK" button
+    int bw = 70;
+    int bh = 33;
 
-	int bw = 70;
-	int bh = 33;
+    cy += (H - cy - bh) / 2 - 6;
 
-	cy += (H - cy - bh) / 2 - 6;
+    Fl_Color but_color = fl_rgb_color(128, 208, 255);
 
-	Fl_Color but_color = fl_rgb_color(128, 208, 255);
+    Fl_Button *button = new Fl_Button((W - 10 - bw) / 2, cy, bw, bh, "OK!");
+    button->color(but_color, but_color);
+    button->callback(close_callback, this);
 
-	Fl_Button *button = new Fl_Button((W-10-bw)/2, cy, bw, bh, "OK!");
-	button->color(but_color, but_color);
-	button->callback(close_callback, this);
-
-
-	end();
-#endif	
+    end();
+#endif
 }
-
 
 void DLG_AboutText(void)
 {
-	UI_About::Open();
+    UI_About::Open();
 }
-
 
 #ifdef __APPLE__
 static void about_callback_macosx(Fl_Widget *, void *)
 {
-	UI_About::Open();
+    UI_About::Open();
 }
 #endif
-
 
 void InitAboutDialog()
 {
 #ifdef __APPLE__
-	fl_mac_set_about(about_callback_macosx, NULL);
+    fl_mac_set_about(about_callback_macosx, NULL);
 #endif
 }
 

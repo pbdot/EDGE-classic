@@ -24,76 +24,75 @@
 // _FLTK_DISABLED
 class UI_DefaultProps /*: public Fl_Group */
 {
-private:
-	UI_Pic      *w_pic;
-	UI_DynInput *w_tex;
+  private:
+    UI_Pic      *w_pic;
+    UI_DynInput *w_tex;
 
 #ifdef _FLTK_DISABLED
-	Fl_Int_Input *ceil_h;
-	Fl_Int_Input *light;
-	Fl_Int_Input *floor_h;
+    Fl_Int_Input *ceil_h;
+    Fl_Int_Input *light;
+    Fl_Int_Input *floor_h;
 
-	Fl_Button *ce_down, *ce_up;
-	Fl_Button *fl_down, *fl_up;
-#endif	
-
-	UI_Pic      *c_pic;
-	UI_DynInput *c_tex;
-
-	UI_Pic      *f_pic;
-	UI_DynInput *f_tex;
-
-	UI_DynInput  *thing;
-#ifdef _FLTK_DISABLED	
-	Fl_Output    *th_desc;
+    Fl_Button *ce_down, *ce_up;
+    Fl_Button *fl_down, *fl_up;
 #endif
-	UI_Pic		 *th_sprite;
 
-public:
-	UI_DefaultProps(int X, int Y, int W, int H);
-	virtual ~UI_DefaultProps();
+    UI_Pic      *c_pic;
+    UI_DynInput *c_tex;
 
-	// see ui_window.h for description of these two methods
-	bool ClipboardOp(char op);
-	void BrowsedItem(char kind, int number, const char *name, int e_state);
+    UI_Pic      *f_pic;
+    UI_DynInput *f_tex;
 
-	void UnselectPics();
-
-	void LoadValues();
-
-private:
+    UI_DynInput *thing;
 #ifdef _FLTK_DISABLED
-	void SetIntVal(Fl_Int_Input *w, int value);
-#endif	
-	void UpdateThingDesc();
-	void SetThing(int number);
+    Fl_Output *th_desc;
+#endif
+    UI_Pic *th_sprite;
 
-	void CB_Copy  (int sel_pics);
-	void CB_Paste (int sel_pics);
-	void CB_Delete(int sel_pics);
+  public:
+    UI_DefaultProps(int X, int Y, int W, int H);
+    virtual ~UI_DefaultProps();
 
-	static const char * Normalize_and_Dup(UI_DynInput *w);
+    // see ui_window.h for description of these two methods
+    bool ClipboardOp(char op);
+    void BrowsedItem(char kind, int number, const char *name, int e_state);
 
-private:
+    void UnselectPics();
+
+    void LoadValues();
+
+  private:
 #ifdef _FLTK_DISABLED
-	static void   hide_callback(Fl_Widget *w, void *data);
-	static void    tex_callback(Fl_Widget *w, void *data);
-	static void dyntex_callback(Fl_Widget *w, void *data);
-	static void   flat_callback(Fl_Widget *w, void *data);
-	static void button_callback(Fl_Widget *w, void *data);
-	static void height_callback(Fl_Widget *w, void *data);
+    void SetIntVal(Fl_Int_Input *w, int value);
+#endif
+    void UpdateThingDesc();
+    void SetThing(int number);
 
-	static void    thing_callback(Fl_Widget *w, void *data);
-	static void dynthing_callback(Fl_Widget *w, void *data);
-#endif	
+    void CB_Copy(int sel_pics);
+    void CB_Paste(int sel_pics);
+    void CB_Delete(int sel_pics);
+
+    static const char *Normalize_and_Dup(UI_DynInput *w);
+
+  private:
+#ifdef _FLTK_DISABLED
+    static void hide_callback(Fl_Widget *w, void *data);
+    static void tex_callback(Fl_Widget *w, void *data);
+    static void dyntex_callback(Fl_Widget *w, void *data);
+    static void flat_callback(Fl_Widget *w, void *data);
+    static void button_callback(Fl_Widget *w, void *data);
+    static void height_callback(Fl_Widget *w, void *data);
+
+    static void thing_callback(Fl_Widget *w, void *data);
+    static void dynthing_callback(Fl_Widget *w, void *data);
+#endif
 };
 
-
-bool Props_ParseUser(const char ** tokens, int num_tok);
+bool Props_ParseUser(const char **tokens, int num_tok);
 void Props_WriteUser(FILE *fp);
 void Props_LoadValues();
 
-#endif  /* __EUREKA_UI_DEFAULT_H__ */
+#endif /* __EUREKA_UI_DEFAULT_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

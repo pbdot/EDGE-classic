@@ -22,21 +22,21 @@
 #define __LIB_FILE_H__
 
 #ifdef WIN32
-#define DIR_SEP_CH   '\\'
-#define DIR_SEP_STR  "\\"
+#define DIR_SEP_CH  '\\'
+#define DIR_SEP_STR "\\"
 #else
-#define DIR_SEP_CH   '/'
-#define DIR_SEP_STR  "/"
+#define DIR_SEP_CH  '/'
+#define DIR_SEP_STR "/"
 #endif
 
 // filename functions
-bool HasExtension(const char *filename);
-bool MatchExtension(const char *filename, const char *ext);
-char *ReplaceExtension(const char *filename, const char *ext);
+bool        HasExtension(const char *filename);
+bool        MatchExtension(const char *filename, const char *ext);
+char       *ReplaceExtension(const char *filename, const char *ext);
 const char *FindBaseName(const char *filename);
-bool FilenameIsBare(const char *filename);
+bool        FilenameIsBare(const char *filename);
 const char *FilenameReposition(const char *filename, const char *othername);
-void FilenameGetPath(char *dest, size_t maxsize, const char *filename);
+void        FilenameGetPath(char *dest, size_t maxsize, const char *filename);
 
 // file utilities
 bool FileExists(const char *filename);
@@ -47,9 +47,9 @@ bool FileChangeDir(const char *dir_name);
 bool FileMakeDir(const char *dir_name);
 
 u8_t *FileLoad(const char *filename, int *length);
-void FileFree(u8_t *mem);
+void  FileFree(u8_t *mem);
 
-const char * FileFindInPath(const char *paths, const char *base_name);
+const char *FileFindInPath(const char *paths, const char *base_name);
 
 // miscellanous
 const char *GetExecutablePath(const char *argv0);
@@ -61,22 +61,20 @@ bool PathIsDirectory(const char *path);
 
 typedef enum
 {
-	SCAN_F_IsDir    = (1 << 0),
-	SCAN_F_Hidden   = (1 << 1),
-	SCAN_F_ReadOnly = (1 << 2),
-}
-scan_flags_e;
+    SCAN_F_IsDir    = (1 << 0),
+    SCAN_F_Hidden   = (1 << 1),
+    SCAN_F_ReadOnly = (1 << 2),
+} scan_flags_e;
 
 typedef enum
 {
-	SCAN_ERROR = -1,  // general catch-all
+    SCAN_ERROR = -1,       // general catch-all
 
-	SCAN_ERR_NoExist  = -2,  // could not find given path
-	SCAN_ERR_NotDir   = -3,  // path was not a directory
-}
-scan_error_e;
+    SCAN_ERR_NoExist = -2, // could not find given path
+    SCAN_ERR_NotDir  = -3, // path was not a directory
+} scan_error_e;
 
-typedef void (* directory_iter_f)(const char *name, int flags, void *priv_dat);
+typedef void (*directory_iter_f)(const char *name, int flags, void *priv_dat);
 
 int ScanDirectory(const char *path, directory_iter_f func, void *priv_dat);
 // scan the directory with the given path and call the given

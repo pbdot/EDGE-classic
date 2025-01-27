@@ -34,7 +34,7 @@ void W_LoadTextures();
 // accepts "-", "#xxxx" or an existing texture name
 bool W_TextureIsKnown(const char *name);
 
-Img_c * W_GetTexture(const char *name, bool try_uppercase = false);
+Img_c *W_GetTexture(const char *name, bool try_uppercase = false);
 
 int  W_GetTextureHeight(const char *name);
 bool W_TextureCausesMedusa(const char *name);
@@ -43,7 +43,6 @@ bool W_TextureCausesMedusa(const char *name);
 // [ result is a static buffer, copy if necessary! ]
 const char *NormalizeTex(const char *name);
 
-
 /* ---- FLATS ---- */
 
 void W_LoadFlats();
@@ -51,22 +50,19 @@ void W_LoadFlats();
 // checks if the flat exists
 bool W_FlatIsKnown(const char *name);
 
-Img_c * W_GetFlat(const char *name, bool try_uppercase = false);
-
+Img_c *W_GetFlat(const char *name, bool try_uppercase = false);
 
 /* ---- SPRITES ---- */
 
 void W_ClearSprites();
 
-Img_c * W_GetSprite(int type);
-
+Img_c *W_GetSprite(int type);
 
 /* ---- ALL ---- */
 
 void W_UnloadAllTextures();
 
-
-#endif  /* __EUREKA_W_TEXTURE_H__ */
+#endif /* __EUREKA_W_TEXTURE_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -24,7 +24,7 @@
 void CMD_EditLump();
 void CMD_AddBehaviorLump();
 
-#endif  /* __EUREKA_M_EDITLUMP_H__ */
+#endif /* __EUREKA_M_EDITLUMP_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

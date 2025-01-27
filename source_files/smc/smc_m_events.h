@@ -27,20 +27,18 @@
 #ifndef __EUREKA_M_EVENTS_H__
 #define __EUREKA_M_EVENTS_H__
 
-
 typedef enum
 {
-	ACT_NOTHING = 0,
+    ACT_NOTHING = 0,
 
-	ACT_CLICK,			// user has clicked on something
-	ACT_SELBOX,			// user is outlining a selection box
-	ACT_DRAG,			// user is dragging some objects
-	ACT_TRANSFORM,		// user is scaling/rotating some objects
-	ACT_ADJUST_OFS,		// user is adjusting the offsets on a sidedef
-	ACT_DRAW_LINE,		// user is drawing a new line
+    ACT_CLICK,      // user has clicked on something
+    ACT_SELBOX,     // user is outlining a selection box
+    ACT_DRAG,       // user is dragging some objects
+    ACT_TRANSFORM,  // user is scaling/rotating some objects
+    ACT_ADJUST_OFS, // user is adjusting the offsets on a sidedef
+    ACT_DRAW_LINE,  // user is drawing a new line
 
 } editor_action_e;
-
 
 void Editor_ClearAction();
 void Editor_SetAction(editor_action_e new_action);
@@ -52,7 +50,7 @@ void Editor_ScrollMap(int mode, int dx = 0, int dy = 0, keycode_t mod = 0);
 
 /* raw input handling */
 
-int EV_HandleEvent(int event);
+int  EV_HandleEvent(int event);
 void EV_EscapeKey();
 
 void ClearStickyMod();
@@ -65,7 +63,7 @@ keycode_t M_ReadLaxModifiers();
 extern int wheel_dx;
 extern int wheel_dy;
 
-typedef void (* nav_release_func_t)(void);
+typedef void (*nav_release_func_t)(void);
 
 void Nav_Clear();
 void Nav_Navigate();
@@ -77,11 +75,9 @@ unsigned int Nav_TimeDiff(); /* milliseconds */
 
 void Editor_ClearNav();
 
-
 void M_LoadOperationMenus();
 
 void CMD_OperationMenu();
-
 
 #endif /* __EUREKA_M_EVENTS_H__ */
 

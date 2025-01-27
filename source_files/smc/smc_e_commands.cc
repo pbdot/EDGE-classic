@@ -48,1852 +48,1592 @@
 #include "smc_ui_misc.h"
 #include "smc_ui_prefs.h"
 
-
 // config items
 int minimum_drag_pixels = 5;
 
-
 void CMD_Nothing()
-{
-	/* hey jude, don't make it bad */
+{ /* hey jude, don't make it bad */
 }
-
 
 void CMD_MetaKey()
 {
-	if (edit.sticky_mod)
-	{
-		ClearStickyMod();
-		return;
-	}
+    if (edit.sticky_mod)
+    {
+        ClearStickyMod();
+        return;
+    }
 
-	Status_Set("META...");
+    Status_Set("META...");
 
 #ifdef _FLTK_DISABLED
-	edit.sticky_mod = MOD_META;
+    edit.sticky_mod = MOD_META;
 #else
-	edit.sticky_mod = false;
+    edit.sticky_mod = false;
 #endif
 }
-
 
 void CMD_EditMode()
 {
-	char mode = tolower(EXEC_Param[0][0]);
+    char mode = tolower(EXEC_Param[0][0]);
 
-	if (! mode || ! strchr("lstvr", mode))
-	{
-		Beep("Bad parameter for EditMode: '%s'", EXEC_Param[0]);
-		return;
-	}
+    if (!mode || !strchr("lstvr", mode))
+    {
+        Beep("Bad parameter for EditMode: '%s'", EXEC_Param[0]);
+        return;
+    }
 
-	Editor_ChangeMode(mode);
+    Editor_ChangeMode(mode);
 }
-
 
 void CMD_Select()
 {
-	if (edit.render3d)
-		return;
+    if (edit.render3d)
+        return;
 
-	// FIXME : action in effect?
+    // FIXME : action in effect?
 
-	// FIXME : split_line in effect?
+    // FIXME : split_line in effect?
 
-	if (edit.highlight.is_nil())
-	{
-		Beep("Nothing under cursor");
-		return;
-	}
+    if (edit.highlight.is_nil())
+    {
+        Beep("Nothing under cursor");
+        return;
+    }
 
-	Selection_Toggle(edit.highlight);
-	RedrawMap();
+    Selection_Toggle(edit.highlight);
+    RedrawMap();
 }
-
 
 void CMD_SelectAll()
 {
-	Editor_ClearErrorMode();
+    Editor_ClearErrorMode();
 
-	int total = NumObjects(edit.mode);
+    int total = NumObjects(edit.mode);
 
-	Selection_Push();
+    Selection_Push();
 
-	edit.Selected->change_type(edit.mode);
-	edit.Selected->frob_range(0, total-1, BOP_ADD);
+    edit.Selected->change_type(edit.mode);
+    edit.Selected->frob_range(0, total - 1, BOP_ADD);
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_UnselectAll()
 {
-	Editor_ClearErrorMode();
+    Editor_ClearErrorMode();
 
-	if (edit.action == ACT_DRAW_LINE ||
-		edit.action == ACT_TRANSFORM)
-	{
-		Editor_ClearAction();
-	}
+    if (edit.action == ACT_DRAW_LINE || edit.action == ACT_TRANSFORM)
+    {
+        Editor_ClearAction();
+    }
 
-	Selection_Clear();
+    Selection_Clear();
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_InvertSelection()
 {
-	// do not clear selection when in error mode
-	edit.error_mode = false;
+    // do not clear selection when in error mode
+    edit.error_mode = false;
 
-	int total = NumObjects(edit.mode);
+    int total = NumObjects(edit.mode);
 
-	if (edit.Selected->what_type() != edit.mode)
-	{
-		// convert the selection
-		selection_c *prev_sel = edit.Selected;
-		edit.Selected = new selection_c(edit.mode, true /* extended */);
+    if (edit.Selected->what_type() != edit.mode)
+    {
+        // convert the selection
+        selection_c *prev_sel = edit.Selected;
+        edit.Selected         = new selection_c(edit.mode, true /* extended */);
 
-		ConvertSelection(prev_sel, edit.Selected);
-		delete prev_sel;
-	}
+        ConvertSelection(prev_sel, edit.Selected);
+        delete prev_sel;
+    }
 
-	edit.Selected->frob_range(0, total-1, BOP_TOGGLE);
+    edit.Selected->frob_range(0, total - 1, BOP_TOGGLE);
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_Quit()
 {
-	Main_Quit();
+    Main_Quit();
 }
-
 
 void CMD_Undo()
 {
-	if (! BA_Undo())
-	{
-		Beep("No operation to undo");
-		return;
-	}
+    if (!BA_Undo())
+    {
+        Beep("No operation to undo");
+        return;
+    }
 
-	RedrawMap();
-	main_win->UpdatePanelObj();
+    RedrawMap();
+    main_win->UpdatePanelObj();
 }
-
 
 void CMD_Redo()
 {
-	if (! BA_Redo())
-	{
-		Beep("No operation to redo");
-		return;
-	}
+    if (!BA_Redo())
+    {
+        Beep("No operation to redo");
+        return;
+    }
 
-	RedrawMap();
-	main_win->UpdatePanelObj();
+    RedrawMap();
+    main_win->UpdatePanelObj();
 }
-
 
 static void SetGamma(int new_val)
 {
-	usegamma = CLAMP(0, new_val, 4);
+    usegamma = CLAMP(0, new_val, 4);
 
-	W_UpdateGamma();
+    W_UpdateGamma();
 
-	// for OpenGL, need to reload all images
-	if (main_win && main_win->canvas)
-		main_win->canvas->DeleteContext();
+    // for OpenGL, need to reload all images
+    if (main_win && main_win->canvas)
+        main_win->canvas->DeleteContext();
 
-	Status_Set("gamma level %d", usegamma);
+    Status_Set("gamma level %d", usegamma);
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_SetVar()
 {
-	const char *var_name = EXEC_Param[0];
-	const char *value    = EXEC_Param[1];
+    const char *var_name = EXEC_Param[0];
+    const char *value    = EXEC_Param[1];
 
-	if (! var_name[0])
-	{
-		Beep("Set: missing var name");
-		return;
-	}
+    if (!var_name[0])
+    {
+        Beep("Set: missing var name");
+        return;
+    }
 
-	if (! value[0])
-	{
-		Beep("Set: missing value");
-		return;
-	}
+    if (!value[0])
+    {
+        Beep("Set: missing value");
+        return;
+    }
 
-	 int  int_val = atoi(value);
-	bool bool_val = (int_val > 0);
+    int  int_val  = atoi(value);
+    bool bool_val = (int_val > 0);
 
+    if (y_stricmp(var_name, "3d") == 0)
+    {
+        Render3D_Enable(bool_val);
+    }
+    else if (y_stricmp(var_name, "browser") == 0)
+    {
+        Editor_ClearAction();
 
-	if (y_stricmp(var_name, "3d") == 0)
-	{
-		Render3D_Enable(bool_val);
-	}
-	else if (y_stricmp(var_name, "browser") == 0)
-	{
-		Editor_ClearAction();
-
-		int want_vis   = bool_val ? 1 : 0;
+        int want_vis = bool_val ? 1 : 0;
 #ifdef _FLTK_DISABLED
-		int is_visible = main_win->browser->visible() ? 1 : 0;
+        int is_visible = main_win->browser->visible() ? 1 : 0;
 #else
-		int is_visible = 0;
+        int is_visible = 0;
 #endif
 
-		if (want_vis != is_visible)
-			main_win->BrowserMode('/');
-	}
-	else if (y_stricmp(var_name, "grid") == 0)
-	{
-		grid.SetShown(bool_val);
-	}
-	else if (y_stricmp(var_name, "snap") == 0)
-	{
-		grid.SetSnap(bool_val);
-	}
-	else if (y_stricmp(var_name, "sprites") == 0)
-	{
-		edit.thing_render_mode = int_val;
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "obj_nums") == 0)
-	{
-		edit.show_object_numbers = bool_val;
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "gamma") == 0)
-	{
-		SetGamma(int_val);
-	}
-	else if (y_stricmp(var_name, "ratio") == 0)
-	{
-		grid.ratio = CLAMP(0, int_val, 7);
-		main_win->info_bar->UpdateRatio();
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "sec_render") == 0)
-	{
-		int_val = CLAMP(0, int_val, (int)SREND_SoundProp);
-		edit.sector_render_mode = (sector_rendering_mode_e) int_val;
+        if (want_vis != is_visible)
+            main_win->BrowserMode('/');
+    }
+    else if (y_stricmp(var_name, "grid") == 0)
+    {
+        grid.SetShown(bool_val);
+    }
+    else if (y_stricmp(var_name, "snap") == 0)
+    {
+        grid.SetSnap(bool_val);
+    }
+    else if (y_stricmp(var_name, "sprites") == 0)
+    {
+        edit.thing_render_mode = int_val;
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "obj_nums") == 0)
+    {
+        edit.show_object_numbers = bool_val;
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "gamma") == 0)
+    {
+        SetGamma(int_val);
+    }
+    else if (y_stricmp(var_name, "ratio") == 0)
+    {
+        grid.ratio = CLAMP(0, int_val, 7);
+        main_win->info_bar->UpdateRatio();
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "sec_render") == 0)
+    {
+        int_val                 = CLAMP(0, int_val, (int)SREND_SoundProp);
+        edit.sector_render_mode = (sector_rendering_mode_e)int_val;
 
-		if (edit.render3d)
-			Render3D_Enable(false);
+        if (edit.render3d)
+            Render3D_Enable(false);
 
-		// need sectors mode for sound propagation display
-		if (edit.sector_render_mode == SREND_SoundProp && edit.mode != OBJ_SECTORS)
-			Editor_ChangeMode('s');
+        // need sectors mode for sound propagation display
+        if (edit.sector_render_mode == SREND_SoundProp && edit.mode != OBJ_SECTORS)
+            Editor_ChangeMode('s');
 
-		RedrawMap();
-	}
-	else
-	{
-		Beep("Set: unknown var: %s", var_name);
-	}
+        RedrawMap();
+    }
+    else
+    {
+        Beep("Set: unknown var: %s", var_name);
+    }
 }
-
 
 void CMD_ToggleVar()
 {
-	const char *var_name = EXEC_Param[0];
+    const char *var_name = EXEC_Param[0];
 
-	if (! var_name[0])
-	{
-		Beep("Toggle: missing var name");
-		return;
-	}
+    if (!var_name[0])
+    {
+        Beep("Toggle: missing var name");
+        return;
+    }
 
-	if (y_stricmp(var_name, "3d") == 0)
-	{
-		Render3D_Enable(! edit.render3d);
-	}
-	else if (y_stricmp(var_name, "browser") == 0)
-	{
-		Editor_ClearAction();
+    if (y_stricmp(var_name, "3d") == 0)
+    {
+        Render3D_Enable(!edit.render3d);
+    }
+    else if (y_stricmp(var_name, "browser") == 0)
+    {
+        Editor_ClearAction();
 
-		main_win->BrowserMode('/');
-	}
-	else if (y_stricmp(var_name, "recent") == 0)
-	{
-		main_win->browser->ToggleRecent();
-	}
-	else if (y_stricmp(var_name, "grid") == 0)
-	{
-		grid.ToggleShown();
-	}
-	else if (y_stricmp(var_name, "snap") == 0)
-	{
-		grid.ToggleSnap();
-	}
-	else if (y_stricmp(var_name, "sprites") == 0)
-	{
-		edit.thing_render_mode = ! edit.thing_render_mode;
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "obj_nums") == 0)
-	{
-		edit.show_object_numbers = ! edit.show_object_numbers;
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "gamma") == 0)
-	{
-		SetGamma((usegamma >= 4) ? 0 : usegamma + 1);
-	}
-	else if (y_stricmp(var_name, "ratio") == 0)
-	{
-		if (grid.ratio >= 7)
-			grid.ratio = 0;
-		else
-			grid.ratio++;
+        main_win->BrowserMode('/');
+    }
+    else if (y_stricmp(var_name, "recent") == 0)
+    {
+        main_win->browser->ToggleRecent();
+    }
+    else if (y_stricmp(var_name, "grid") == 0)
+    {
+        grid.ToggleShown();
+    }
+    else if (y_stricmp(var_name, "snap") == 0)
+    {
+        grid.ToggleSnap();
+    }
+    else if (y_stricmp(var_name, "sprites") == 0)
+    {
+        edit.thing_render_mode = !edit.thing_render_mode;
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "obj_nums") == 0)
+    {
+        edit.show_object_numbers = !edit.show_object_numbers;
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "gamma") == 0)
+    {
+        SetGamma((usegamma >= 4) ? 0 : usegamma + 1);
+    }
+    else if (y_stricmp(var_name, "ratio") == 0)
+    {
+        if (grid.ratio >= 7)
+            grid.ratio = 0;
+        else
+            grid.ratio++;
 
-		main_win->info_bar->UpdateRatio();
-		RedrawMap();
-	}
-	else if (y_stricmp(var_name, "sec_render") == 0)
-	{
-		if (edit.sector_render_mode >= SREND_SoundProp)
-			edit.sector_render_mode = SREND_Nothing;
-		else
-			edit.sector_render_mode = (sector_rendering_mode_e)(1 + (int)edit.sector_render_mode);
-		RedrawMap();
-	}
-	else
-	{
-		Beep("Toggle: unknown var: %s", var_name);
-	}
+        main_win->info_bar->UpdateRatio();
+        RedrawMap();
+    }
+    else if (y_stricmp(var_name, "sec_render") == 0)
+    {
+        if (edit.sector_render_mode >= SREND_SoundProp)
+            edit.sector_render_mode = SREND_Nothing;
+        else
+            edit.sector_render_mode = (sector_rendering_mode_e)(1 + (int)edit.sector_render_mode);
+        RedrawMap();
+    }
+    else
+    {
+        Beep("Toggle: unknown var: %s", var_name);
+    }
 }
-
 
 void CMD_BrowserMode()
 {
-	if (! EXEC_Param[0][0])
-	{
-		Beep("BrowserMode: missing mode");
-		return;
-	}
+    if (!EXEC_Param[0][0])
+    {
+        Beep("BrowserMode: missing mode");
+        return;
+    }
 
-	char mode = toupper(EXEC_Param[0][0]);
+    char mode = toupper(EXEC_Param[0][0]);
 
-	if (! (mode == 'L' || mode == 'S' || mode == 'O' ||
-	       mode == 'T' || mode == 'F' || mode == 'G'))
-	{
-		Beep("Unknown browser mode: %s", EXEC_Param[0]);
-		return;
-	}
+    if (!(mode == 'L' || mode == 'S' || mode == 'O' || mode == 'T' || mode == 'F' || mode == 'G'))
+    {
+        Beep("Unknown browser mode: %s", EXEC_Param[0]);
+        return;
+    }
 
 #ifdef _FLTK_DISABLED
-	// if that browser is already open, close it now
-	if (main_win->browser->visible() &&
-		main_win->browser->GetMode() == mode &&
-		! Exec_HasFlag("/force") &&
-		! Exec_HasFlag("/recent"))
-	{
-		main_win->BrowserMode(0);
-		return;
-	}
+    // if that browser is already open, close it now
+    if (main_win->browser->visible() && main_win->browser->GetMode() == mode && !Exec_HasFlag("/force") &&
+        !Exec_HasFlag("/recent"))
+    {
+        main_win->BrowserMode(0);
+        return;
+    }
 #endif
 
-	main_win->BrowserMode(mode);
+    main_win->BrowserMode(mode);
 
-	if (Exec_HasFlag("/recent"))
-	{
-		main_win->browser->ToggleRecent(true /* force */);
-	}
+    if (Exec_HasFlag("/recent"))
+    {
+        main_win->browser->ToggleRecent(true /* force */);
+    }
 }
-
 
 void CMD_Scroll()
 {
-	// these are percentages
-	float delta_x = atof(EXEC_Param[0]);
-	float delta_y = atof(EXEC_Param[1]);
+    // these are percentages
+    float delta_x = atof(EXEC_Param[0]);
+    float delta_y = atof(EXEC_Param[1]);
 
-	if (delta_x == 0 && delta_y == 0)
-	{
-		Beep("Bad parameter to Scroll: '%s' %s'", EXEC_Param[0], EXEC_Param[1]);
-		return;
-	}
+    if (delta_x == 0 && delta_y == 0)
+    {
+        Beep("Bad parameter to Scroll: '%s' %s'", EXEC_Param[0], EXEC_Param[1]);
+        return;
+    }
 
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
 
-	delta_x = delta_x * base_size / 100.0 / grid.Scale;
-	delta_y = delta_y * base_size / 100.0 / grid.Scale;
+    delta_x = delta_x * base_size / 100.0 / grid.Scale;
+    delta_y = delta_y * base_size / 100.0 / grid.Scale;
 
-	grid.Scroll(delta_x, delta_y);
+    grid.Scroll(delta_x, delta_y);
 }
-
 
 static void NAV_Scroll_Left_release(void)
 {
-	edit.nav_left = 0;
+    edit.nav_left = 0;
 }
 
 void CMD_NAV_Scroll_Left()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (! edit.is_navigating)
-		Editor_ClearNav();
+    if (!edit.is_navigating)
+        Editor_ClearNav();
 
-	float perc = atof(EXEC_Param[0]);
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-	edit.nav_left = perc * base_size / 100.0 / grid.Scale;
+    float perc      = atof(EXEC_Param[0]);
+    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    edit.nav_left   = perc * base_size / 100.0 / grid.Scale;
 
-	Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Left_release);
+    Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Left_release);
 }
-
 
 static void NAV_Scroll_Right_release(void)
 {
-	edit.nav_right = 0;
+    edit.nav_right = 0;
 }
 
 void CMD_NAV_Scroll_Right()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (! edit.is_navigating)
-		Editor_ClearNav();
+    if (!edit.is_navigating)
+        Editor_ClearNav();
 
-	float perc = atof(EXEC_Param[0]);
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-	edit.nav_right = perc * base_size / 100.0 / grid.Scale;
+    float perc      = atof(EXEC_Param[0]);
+    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    edit.nav_right  = perc * base_size / 100.0 / grid.Scale;
 
-	Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Right_release);
+    Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Right_release);
 }
-
 
 static void NAV_Scroll_Up_release(void)
 {
-	edit.nav_up = 0;
+    edit.nav_up = 0;
 }
 
 void CMD_NAV_Scroll_Up()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (! edit.is_navigating)
-		Editor_ClearNav();
+    if (!edit.is_navigating)
+        Editor_ClearNav();
 
-	float perc = atof(EXEC_Param[0]);
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-	edit.nav_up = perc * base_size / 100.0 / grid.Scale;
+    float perc      = atof(EXEC_Param[0]);
+    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    edit.nav_up     = perc * base_size / 100.0 / grid.Scale;
 
-	Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Up_release);
+    Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Up_release);
 }
-
 
 static void NAV_Scroll_Down_release(void)
 {
-	edit.nav_down = 0;
+    edit.nav_down = 0;
 }
 
 void CMD_NAV_Scroll_Down()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (! edit.is_navigating)
-		Editor_ClearNav();
+    if (!edit.is_navigating)
+        Editor_ClearNav();
 
-	float perc = atof(EXEC_Param[0]);
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-	edit.nav_down = perc * base_size / 100.0 / grid.Scale;
+    float perc      = atof(EXEC_Param[0]);
+    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    edit.nav_down   = perc * base_size / 100.0 / grid.Scale;
 
-	Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Down_release);
+    Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Down_release);
 }
-
 
 static void NAV_MouseScroll_release(void)
 {
-	Editor_ScrollMap(+1);
+    Editor_ScrollMap(+1);
 }
 
 void CMD_NAV_MouseScroll()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	edit.panning_speed = atof(EXEC_Param[0]);
-	edit.panning_lax = Exec_HasFlag("/LAX");
+    edit.panning_speed = atof(EXEC_Param[0]);
+    edit.panning_lax   = Exec_HasFlag("/LAX");
 
-	if (! edit.is_navigating)
-		Editor_ClearNav();
+    if (!edit.is_navigating)
+        Editor_ClearNav();
 
-	if (Nav_SetKey(EXEC_CurKey, &NAV_MouseScroll_release))
-	{
-		// begin
-		Editor_ScrollMap(-1);
-	}
+    if (Nav_SetKey(EXEC_CurKey, &NAV_MouseScroll_release))
+    {
+        // begin
+        Editor_ScrollMap(-1);
+    }
 }
-
 
 static void DoBeginDrag();
 
-
 void CheckBeginDrag()
 {
-	if (! edit.clicked.valid())
-		return;
+    if (!edit.clicked.valid())
+        return;
 
-	if (! edit.click_check_drag)
-		return;
+    if (!edit.click_check_drag)
+        return;
 
-	// can drag things and sector planes in 3D mode
-	if (edit.render3d && !(edit.mode == OBJ_THINGS || edit.mode == OBJ_SECTORS))
-		return;
+    // can drag things and sector planes in 3D mode
+    if (edit.render3d && !(edit.mode == OBJ_THINGS || edit.mode == OBJ_SECTORS))
+        return;
 
 #ifdef _FLTK_DISABLED
-	int pixel_dx = Fl::event_x() - edit.click_screen_x;
-	int pixel_dy = Fl::event_y() - edit.click_screen_y;
+    int pixel_dx = Fl::event_x() - edit.click_screen_x;
+    int pixel_dy = Fl::event_y() - edit.click_screen_y;
 #else
-	int pixel_dx = 0;
-	int pixel_dy = 0;
+    int pixel_dx = 0;
+    int pixel_dy = 0;
 #endif
 
-	if (MAX(abs(pixel_dx), abs(pixel_dy)) < minimum_drag_pixels)
-		return;
+    if (MAX(abs(pixel_dx), abs(pixel_dy)) < minimum_drag_pixels)
+        return;
 
-	// if highlighted object is in selection, we drag the selection,
-	// otherwise we drag just this one object.
+    // if highlighted object is in selection, we drag the selection,
+    // otherwise we drag just this one object.
 
-	if (edit.click_force_single || !edit.Selected->get(edit.clicked.num))
-		edit.dragged = edit.clicked;
-	else
-		edit.dragged.clear();
+    if (edit.click_force_single || !edit.Selected->get(edit.clicked.num))
+        edit.dragged = edit.clicked;
+    else
+        edit.dragged.clear();
 
-	DoBeginDrag();
+    DoBeginDrag();
 }
 
 static void DoBeginDrag()
 {
-	edit.drag_start_x = edit.drag_cur_x = edit.click_map_x;
-	edit.drag_start_y = edit.drag_cur_y = edit.click_map_y;
-	edit.drag_start_z = edit.drag_cur_z = edit.click_map_z;
+    edit.drag_start_x = edit.drag_cur_x = edit.click_map_x;
+    edit.drag_start_y = edit.drag_cur_y = edit.click_map_y;
+    edit.drag_start_z = edit.drag_cur_z = edit.click_map_z;
 
-	edit.drag_screen_dx  = edit.drag_screen_dy = 0;
-	edit.drag_thing_num  = -1;
-	edit.drag_other_vert = -1;
+    edit.drag_screen_dx = edit.drag_screen_dy = 0;
+    edit.drag_thing_num                       = -1;
+    edit.drag_other_vert                      = -1;
 
-	// the focus is only used when grid snapping is on
-	GetDragFocus(&edit.drag_focus_x, &edit.drag_focus_y, edit.click_map_x, edit.click_map_y);
+    // the focus is only used when grid snapping is on
+    GetDragFocus(&edit.drag_focus_x, &edit.drag_focus_y, edit.click_map_x, edit.click_map_y);
 
-	if (edit.render3d)
-	{
-		if (edit.mode == OBJ_SECTORS)
-			edit.drag_sector_dz = 0;
+    if (edit.render3d)
+    {
+        if (edit.mode == OBJ_SECTORS)
+            edit.drag_sector_dz = 0;
 
-		if (edit.mode == OBJ_THINGS)
-		{
-			edit.drag_thing_num = edit.clicked.num;
-			edit.drag_thing_floorh = edit.drag_start_z;
-			edit.drag_thing_up_down = (Level_format != MAPF_Doom && !grid.snap);
+        if (edit.mode == OBJ_THINGS)
+        {
+            edit.drag_thing_num     = edit.clicked.num;
+            edit.drag_thing_floorh  = edit.drag_start_z;
+            edit.drag_thing_up_down = (Level_format != MAPF_Doom && !grid.snap);
 
-			// get thing's floor
-			if (edit.drag_thing_num >= 0)
-			{
-				const Thing *T = Things[edit.drag_thing_num];
+            // get thing's floor
+            if (edit.drag_thing_num >= 0)
+            {
+                const Thing *T = Things[edit.drag_thing_num];
 
-				Objid sec;
-				GetNearObject(sec, OBJ_SECTORS, T->x(), T->y());
+                Objid sec;
+                GetNearObject(sec, OBJ_SECTORS, T->x(), T->y());
 
-				if (sec.valid())
-					edit.drag_thing_floorh = Sectors[sec.num]->floorh;
-			}
-		}
-	}
+                if (sec.valid())
+                    edit.drag_thing_floorh = Sectors[sec.num]->floorh;
+            }
+        }
+    }
 
-	// in vertex mode, show all the connected lines too
-	if (edit.drag_lines)
-	{
-		delete edit.drag_lines;
-		edit.drag_lines = NULL;
-	}
+    // in vertex mode, show all the connected lines too
+    if (edit.drag_lines)
+    {
+        delete edit.drag_lines;
+        edit.drag_lines = NULL;
+    }
 
-	if (edit.mode == OBJ_VERTICES)
-	{
-		edit.drag_lines = new selection_c(OBJ_LINEDEFS);
-		ConvertSelection(edit.Selected, edit.drag_lines);
+    if (edit.mode == OBJ_VERTICES)
+    {
+        edit.drag_lines = new selection_c(OBJ_LINEDEFS);
+        ConvertSelection(edit.Selected, edit.drag_lines);
 
-		// find opposite end-point when dragging a single vertex
-		if (edit.dragged.valid())
-			edit.drag_other_vert = Vertex_FindDragOther(edit.dragged.num);
-	}
+        // find opposite end-point when dragging a single vertex
+        if (edit.dragged.valid())
+            edit.drag_other_vert = Vertex_FindDragOther(edit.dragged.num);
+    }
 
-	edit.clicked.clear();
+    edit.clicked.clear();
 
-	Editor_SetAction(ACT_DRAG);
+    Editor_SetAction(ACT_DRAG);
 
 #ifdef _FLTK_DISABLED
-	main_win->canvas->redraw();
+    main_win->canvas->redraw();
 #endif
 }
 
-
 static void ACT_SelectBox_release(void)
 {
-	// check if cancelled or overridden
-	if (edit.action != ACT_SELBOX)
-		return;
+    // check if cancelled or overridden
+    if (edit.action != ACT_SELBOX)
+        return;
 
-	Editor_ClearAction();
-	Editor_ClearErrorMode();
+    Editor_ClearAction();
+    Editor_ClearErrorMode();
 
-	// a mere click and release will unselect everything
-	double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-	if (! main_win->canvas->SelboxGet(x1, y1, x2, y2))
-	{
-		ExecuteCommand("UnselectAll");
-		return;
-	}
+    // a mere click and release will unselect everything
+    double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+    if (!main_win->canvas->SelboxGet(x1, y1, x2, y2))
+    {
+        ExecuteCommand("UnselectAll");
+        return;
+    }
 
-	SelectObjectsInBox(edit.Selected, edit.mode, x1, y1, x2, y2);
-	RedrawMap();
+    SelectObjectsInBox(edit.Selected, edit.mode, x1, y1, x2, y2);
+    RedrawMap();
 }
-
 
 static void ACT_Drag_release(void)
 {
-	// check if cancelled or overridden
-	if (edit.action != ACT_DRAG)
-	{
-		edit.dragged.clear();
-		return;
-	}
+    // check if cancelled or overridden
+    if (edit.action != ACT_DRAG)
+    {
+        edit.dragged.clear();
+        return;
+    }
 
-	if (edit.render3d)
-	{
-		if (edit.mode == OBJ_THINGS)
-			Render3D_DragThings();
+    if (edit.render3d)
+    {
+        if (edit.mode == OBJ_THINGS)
+            Render3D_DragThings();
 
-		if (edit.mode == OBJ_SECTORS)
-			Render3D_DragSectors();
-	}
+        if (edit.mode == OBJ_SECTORS)
+            Render3D_DragSectors();
+    }
 
-	// note: DragDelta needs edit.dragged
-	double dx, dy;
-	main_win->canvas->DragDelta(&dx, &dy);
+    // note: DragDelta needs edit.dragged
+    double dx, dy;
+    main_win->canvas->DragDelta(&dx, &dy);
 
-	Objid dragged(edit.dragged);
-	edit.dragged.clear();
+    Objid dragged(edit.dragged);
+    edit.dragged.clear();
 
-	if (edit.drag_lines)
-		edit.drag_lines->clear_all();
+    if (edit.drag_lines)
+        edit.drag_lines->clear_all();
 
-	if (! edit.render3d && (dx || dy))
-	{
-		if (dragged.valid())
-			DragSingleObject(dragged, dx, dy);
-		else
-			MoveObjects(edit.Selected, dx, dy);
-	}
+    if (!edit.render3d && (dx || dy))
+    {
+        if (dragged.valid())
+            DragSingleObject(dragged, dx, dy);
+        else
+            MoveObjects(edit.Selected, dx, dy);
+    }
 
-	Editor_ClearAction();
+    Editor_ClearAction();
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 static void ACT_Click_release(void)
 {
-	Objid click_obj(edit.clicked);
-	edit.clicked.clear();
+    Objid click_obj(edit.clicked);
+    edit.clicked.clear();
 
-	edit.click_check_drag = false;
+    edit.click_check_drag = false;
 
+    if (edit.action == ACT_SELBOX)
+    {
+        ACT_SelectBox_release();
+        return;
+    }
+    else if (edit.action == ACT_DRAG)
+    {
+        ACT_Drag_release();
+        return;
+    }
 
-	if (edit.action == ACT_SELBOX)
-	{
-		ACT_SelectBox_release();
-		return;
-	}
-	else if (edit.action == ACT_DRAG)
-	{
-		ACT_Drag_release();
-		return;
-	}
+    // check if cancelled or overridden
+    if (edit.action != ACT_CLICK)
+        return;
 
-	// check if cancelled or overridden
-	if (edit.action != ACT_CLICK)
-		return;
+    if (edit.click_check_select && click_obj.valid())
+    {
+        // only toggle selection if it's the same object as before
+        Objid near_obj;
+        if (edit.render3d)
+            near_obj = edit.highlight;
+        else
+            GetNearObject(near_obj, edit.mode, edit.map_x, edit.map_y);
 
-	if (edit.click_check_select && click_obj.valid())
-	{
-		// only toggle selection if it's the same object as before
-		Objid near_obj;
-		if (edit.render3d)
-			near_obj = edit.highlight;
-		else
-			GetNearObject(near_obj, edit.mode, edit.map_x, edit.map_y);
+        if (near_obj.num == click_obj.num)
+            Selection_Toggle(click_obj);
+    }
 
-		if (near_obj.num == click_obj.num)
-			Selection_Toggle(click_obj);
-	}
+    Editor_ClearAction();
+    Editor_ClearErrorMode();
 
-	Editor_ClearAction();
-	Editor_ClearErrorMode();
-
-	RedrawMap();
+    RedrawMap();
 }
 
 void CMD_ACT_Click()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	// require a highlighted object in 3D mode
-	if (edit.render3d && edit.highlight.is_nil())
-		return;
+    // require a highlighted object in 3D mode
+    if (edit.render3d && edit.highlight.is_nil())
+        return;
 
-	if (! Nav_ActionKey(EXEC_CurKey, &ACT_Click_release))
-		return;
+    if (!Nav_ActionKey(EXEC_CurKey, &ACT_Click_release))
+        return;
 
-	edit.click_check_select = ! Exec_HasFlag("/noselect");
-	edit.click_check_drag   = ! Exec_HasFlag("/nodrag");
-	edit.click_force_single = false;
+    edit.click_check_select = !Exec_HasFlag("/noselect");
+    edit.click_check_drag   = !Exec_HasFlag("/nodrag");
+    edit.click_force_single = false;
 
 #ifdef _FLTK_DISABLED
-	// remember some state (for drag detection)
-	edit.click_screen_x = Fl::event_x();
-	edit.click_screen_y = Fl::event_y();
+    // remember some state (for drag detection)
+    edit.click_screen_x = Fl::event_x();
+    edit.click_screen_y = Fl::event_y();
 #else
-	edit.click_screen_x = 0;
-	edit.click_screen_y = 0;
+    edit.click_screen_x = 0;
+    edit.click_screen_y = 0;
 #endif
 
-	edit.click_map_x = edit.map_x;
-	edit.click_map_y = edit.map_y;
-	edit.click_map_z = edit.map_z;
+    edit.click_map_x = edit.map_x;
+    edit.click_map_y = edit.map_y;
+    edit.click_map_z = edit.map_z;
 
-	// handle 3D mode, skip stuff below which only makes sense in 2D
-	if (edit.render3d)
-	{
-		if (edit.highlight.type == OBJ_THINGS)
-		{
-			const Thing *T = Things[edit.highlight.num];
-			edit.drag_point_dist = r_view.DistToViewPlane(T->x(), T->y());
-		}
-		else
-		{
-			edit.drag_point_dist = r_view.DistToViewPlane(edit.map_x, edit.map_y);
-		}
+    // handle 3D mode, skip stuff below which only makes sense in 2D
+    if (edit.render3d)
+    {
+        if (edit.highlight.type == OBJ_THINGS)
+        {
+            const Thing *T       = Things[edit.highlight.num];
+            edit.drag_point_dist = r_view.DistToViewPlane(T->x(), T->y());
+        }
+        else
+        {
+            edit.drag_point_dist = r_view.DistToViewPlane(edit.map_x, edit.map_y);
+        }
 
-		edit.clicked = edit.highlight;
-		Editor_SetAction(ACT_CLICK);
-		return;
-	}
+        edit.clicked = edit.highlight;
+        Editor_SetAction(ACT_CLICK);
+        return;
+    }
 
-	// check for splitting a line, and ensure we can drag the vertex
-	if (! Exec_HasFlag("/nosplit") &&
-		edit.mode == OBJ_VERTICES &&
-		edit.split_line.valid() &&
-		edit.action != ACT_DRAW_LINE)
-	{
-		int split_ld = edit.split_line.num;
+    // check for splitting a line, and ensure we can drag the vertex
+    if (!Exec_HasFlag("/nosplit") && edit.mode == OBJ_VERTICES && edit.split_line.valid() &&
+        edit.action != ACT_DRAW_LINE)
+    {
+        int split_ld = edit.split_line.num;
 
-		edit.click_force_single = true;   // if drag vertex, force single-obj mode
-		edit.click_check_select = false;  // do NOT select the new vertex
+        edit.click_force_single = true;  // if drag vertex, force single-obj mode
+        edit.click_check_select = false; // do NOT select the new vertex
 
-		// check if both ends are in selection, if so (and only then)
-		// shall we select the new vertex
-		const LineDef *L = LineDefs[split_ld];
+        // check if both ends are in selection, if so (and only then)
+        // shall we select the new vertex
+        const LineDef *L = LineDefs[split_ld];
 
-		bool want_select = edit.Selected->get(L->start) && edit.Selected->get(L->end);
+        bool want_select = edit.Selected->get(L->start) && edit.Selected->get(L->end);
 
-		BA_Begin();
-		BA_Message("split linedef #%d", split_ld);
+        BA_Begin();
+        BA_Message("split linedef #%d", split_ld);
 
-		int new_vert = BA_New(OBJ_VERTICES);
+        int new_vert = BA_New(OBJ_VERTICES);
 
-		Vertex *V = Vertices[new_vert];
+        Vertex *V = Vertices[new_vert];
 
-		V->SetRawXY(edit.split_x, edit.split_y);
+        V->SetRawXY(edit.split_x, edit.split_y);
 
-		SplitLineDefAtVertex(split_ld, new_vert);
+        SplitLineDefAtVertex(split_ld, new_vert);
 
-		BA_End();
+        BA_End();
 
-		if (want_select)
-			edit.Selected->set(new_vert);
+        if (want_select)
+            edit.Selected->set(new_vert);
 
-		edit.clicked = Objid(OBJ_VERTICES, new_vert);
-		Editor_SetAction(ACT_CLICK);
+        edit.clicked = Objid(OBJ_VERTICES, new_vert);
+        Editor_SetAction(ACT_CLICK);
 
-		RedrawMap();
-		return;
-	}
+        RedrawMap();
+        return;
+    }
 
-	// find the object under the pointer.
-	GetNearObject(edit.clicked, edit.mode, edit.map_x, edit.map_y);
+    // find the object under the pointer.
+    GetNearObject(edit.clicked, edit.mode, edit.map_x, edit.map_y);
 
-	// clicking on an empty space starts a new selection box
-	if (edit.click_check_select && edit.clicked.is_nil())
-	{
-		edit.selbox_x1 = edit.selbox_x2 = edit.map_x;
-		edit.selbox_y1 = edit.selbox_y2 = edit.map_y;
+    // clicking on an empty space starts a new selection box
+    if (edit.click_check_select && edit.clicked.is_nil())
+    {
+        edit.selbox_x1 = edit.selbox_x2 = edit.map_x;
+        edit.selbox_y1 = edit.selbox_y2 = edit.map_y;
 
-		Editor_SetAction(ACT_SELBOX);
-		return;
-	}
+        Editor_SetAction(ACT_SELBOX);
+        return;
+    }
 
-	Editor_SetAction(ACT_CLICK);
+    Editor_SetAction(ACT_CLICK);
 }
-
 
 void CMD_ACT_SelectBox()
 {
-	if (edit.render3d)
-		return;
+    if (edit.render3d)
+        return;
 
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (! Nav_ActionKey(EXEC_CurKey, &ACT_SelectBox_release))
-		return;
+    if (!Nav_ActionKey(EXEC_CurKey, &ACT_SelectBox_release))
+        return;
 
-	edit.selbox_x1 = edit.selbox_x2 = edit.map_x;
-	edit.selbox_y1 = edit.selbox_y2 = edit.map_y;
+    edit.selbox_x1 = edit.selbox_x2 = edit.map_x;
+    edit.selbox_y1 = edit.selbox_y2 = edit.map_y;
 
-	Editor_SetAction(ACT_SELBOX);
+    Editor_SetAction(ACT_SELBOX);
 }
-
 
 void CMD_ACT_Drag()
 {
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (edit.Selected->empty())
-	{
-		Beep("Nothing to drag");
-		return;
-	}
+    if (edit.Selected->empty())
+    {
+        Beep("Nothing to drag");
+        return;
+    }
 
-	if (! Nav_ActionKey(EXEC_CurKey, &ACT_Drag_release))
-		return;
+    if (!Nav_ActionKey(EXEC_CurKey, &ACT_Drag_release))
+        return;
 
-	// we only drag the selection, never a single object
-	edit.dragged.clear();
+    // we only drag the selection, never a single object
+    edit.dragged.clear();
 
-	DoBeginDrag();
+    DoBeginDrag();
 }
-
 
 void Transform_Update()
 {
-	double dx1 = edit.map_x - edit.trans_param.mid_x;
-	double dy1 = edit.map_y - edit.trans_param.mid_y;
+    double dx1 = edit.map_x - edit.trans_param.mid_x;
+    double dy1 = edit.map_y - edit.trans_param.mid_y;
 
-	double dx0 = edit.trans_start_x - edit.trans_param.mid_x;
-	double dy0 = edit.trans_start_y - edit.trans_param.mid_y;
+    double dx0 = edit.trans_start_x - edit.trans_param.mid_x;
+    double dy0 = edit.trans_start_y - edit.trans_param.mid_y;
 
-	edit.trans_param.scale_x = edit.trans_param.scale_y = 1;
-	edit.trans_param.skew_x  = edit.trans_param.skew_y  = 0;
-	edit.trans_param.rotate  = 0;
+    edit.trans_param.scale_x = edit.trans_param.scale_y = 1;
+    edit.trans_param.skew_x = edit.trans_param.skew_y = 0;
+    edit.trans_param.rotate                           = 0;
 
-	if (edit.trans_mode == TRANS_K_Rotate || edit.trans_mode == TRANS_K_RotScale)
-	{
-		int angle1 = (int)ComputeAngle(dx1, dy1);
-		int angle0 = (int)ComputeAngle(dx0, dy0);
+    if (edit.trans_mode == TRANS_K_Rotate || edit.trans_mode == TRANS_K_RotScale)
+    {
+        int angle1 = (int)ComputeAngle(dx1, dy1);
+        int angle0 = (int)ComputeAngle(dx0, dy0);
 
-		edit.trans_param.rotate = angle1 - angle0;
+        edit.trans_param.rotate = angle1 - angle0;
 
-//		fprintf(stderr, "angle diff : %1.2f\n", edit.trans_rotate * 360.0 / 65536.0);
-	}
+        //		fprintf(stderr, "angle diff : %1.2f\n", edit.trans_rotate *
+        // 360.0 / 65536.0);
+    }
 
-	switch (edit.trans_mode)
-	{
-		case TRANS_K_Scale:
-		case TRANS_K_RotScale:
-			dx1 = MAX(abs(dx1), abs(dy1));
-			dx0 = MAX(abs(dx0), abs(dy0));
+    switch (edit.trans_mode)
+    {
+    case TRANS_K_Scale:
+    case TRANS_K_RotScale:
+        dx1 = MAX(abs(dx1), abs(dy1));
+        dx0 = MAX(abs(dx0), abs(dy0));
 
-			if (dx0)
-			{
-				edit.trans_param.scale_x = dx1 / (float)dx0;
-				edit.trans_param.scale_y = edit.trans_param.scale_x;
-			}
-			break;
+        if (dx0)
+        {
+            edit.trans_param.scale_x = dx1 / (float)dx0;
+            edit.trans_param.scale_y = edit.trans_param.scale_x;
+        }
+        break;
 
-		case TRANS_K_Stretch:
-			if (dx0) edit.trans_param.scale_x = dx1 / (float)dx0;
-			if (dy0) edit.trans_param.scale_y = dy1 / (float)dy0;
-			break;
+    case TRANS_K_Stretch:
+        if (dx0)
+            edit.trans_param.scale_x = dx1 / (float)dx0;
+        if (dy0)
+            edit.trans_param.scale_y = dy1 / (float)dy0;
+        break;
 
-		case TRANS_K_Rotate:
-			// already done
-			break;
+    case TRANS_K_Rotate:
+        // already done
+        break;
 
-		case TRANS_K_Skew:
-			if (abs(dx0) >= abs(dy0))
-			{
-				if (dx0) edit.trans_param.skew_y = (dy1 - dy0) / (float)dx0;
-			}
-			else
-			{
-				if (dy0) edit.trans_param.skew_x = (dx1 - dx0) / (float)dy0;
-			}
-			break;
-	}
+    case TRANS_K_Skew:
+        if (abs(dx0) >= abs(dy0))
+        {
+            if (dx0)
+                edit.trans_param.skew_y = (dy1 - dy0) / (float)dx0;
+        }
+        else
+        {
+            if (dy0)
+                edit.trans_param.skew_x = (dx1 - dx0) / (float)dy0;
+        }
+        break;
+    }
 
 #ifdef _FLTK_DISABLED
-	main_win->canvas->redraw();
+    main_win->canvas->redraw();
 #endif
 }
 
-
 static void ACT_Transform_release(void)
 {
-	// check if cancelled or overridden
-	if (edit.action != ACT_TRANSFORM)
-		return;
+    // check if cancelled or overridden
+    if (edit.action != ACT_TRANSFORM)
+        return;
 
-	if (edit.trans_lines)
-		edit.trans_lines->clear_all();
+    if (edit.trans_lines)
+        edit.trans_lines->clear_all();
 
-	TransformObjects(edit.trans_param);
+    TransformObjects(edit.trans_param);
 
-	Editor_ClearAction();
+    Editor_ClearAction();
 
-	RedrawMap();
+    RedrawMap();
 }
 
 void CMD_ACT_Transform()
 {
-	if (edit.render3d)
-		return;
+    if (edit.render3d)
+        return;
 
-	if (! EXEC_CurKey)
-		return;
+    if (!EXEC_CurKey)
+        return;
 
-	if (edit.Selected->empty())
-	{
-		Beep("Nothing to scale");
-		return;
-	}
+    if (edit.Selected->empty())
+    {
+        Beep("Nothing to scale");
+        return;
+    }
 
-	const char *keyword = EXEC_Param[0];
-	transform_keyword_e  mode;
+    const char         *keyword = EXEC_Param[0];
+    transform_keyword_e mode;
 
-	if (! keyword[0])
-	{
-		Beep("ACT_Transform: missing keyword");
-		return;
-	}
-	else if (y_stricmp(keyword, "scale") == 0)
-	{
-		mode = TRANS_K_Scale;
-	}
-	else if (y_stricmp(keyword, "stretch") == 0)
-	{
-		mode = TRANS_K_Stretch;
-	}
-	else if (y_stricmp(keyword, "rotate") == 0)
-	{
-		mode = TRANS_K_Rotate;
-	}
-	else if (y_stricmp(keyword, "rotscale") == 0)
-	{
-		mode = TRANS_K_RotScale;
-	}
-	else if (y_stricmp(keyword, "skew") == 0)
-	{
-		mode = TRANS_K_Skew;
-	}
-	else
-	{
-		Beep("ACT_Transform: unknown keyword: %s", keyword);
-		return;
-	}
+    if (!keyword[0])
+    {
+        Beep("ACT_Transform: missing keyword");
+        return;
+    }
+    else if (y_stricmp(keyword, "scale") == 0)
+    {
+        mode = TRANS_K_Scale;
+    }
+    else if (y_stricmp(keyword, "stretch") == 0)
+    {
+        mode = TRANS_K_Stretch;
+    }
+    else if (y_stricmp(keyword, "rotate") == 0)
+    {
+        mode = TRANS_K_Rotate;
+    }
+    else if (y_stricmp(keyword, "rotscale") == 0)
+    {
+        mode = TRANS_K_RotScale;
+    }
+    else if (y_stricmp(keyword, "skew") == 0)
+    {
+        mode = TRANS_K_Skew;
+    }
+    else
+    {
+        Beep("ACT_Transform: unknown keyword: %s", keyword);
+        return;
+    }
 
+    if (!Nav_ActionKey(EXEC_CurKey, &ACT_Transform_release))
+        return;
 
-	if (! Nav_ActionKey(EXEC_CurKey, &ACT_Transform_release))
-		return;
+    double middle_x, middle_y;
+    Objs_CalcMiddle(edit.Selected, &middle_x, &middle_y);
 
+    edit.trans_mode    = mode;
+    edit.trans_start_x = edit.map_x;
+    edit.trans_start_y = edit.map_y;
 
-	double middle_x, middle_y;
-	Objs_CalcMiddle(edit.Selected, &middle_x, &middle_y);
+    edit.trans_param.Clear();
+    edit.trans_param.mid_x = middle_x;
+    edit.trans_param.mid_y = middle_y;
 
-	edit.trans_mode = mode;
-	edit.trans_start_x = edit.map_x;
-	edit.trans_start_y = edit.map_y;
+    if (edit.trans_lines)
+    {
+        delete edit.trans_lines;
+        edit.trans_lines = NULL;
+    }
 
-	edit.trans_param.Clear();
-	edit.trans_param.mid_x = middle_x;
-	edit.trans_param.mid_y = middle_y;
+    if (edit.mode == OBJ_VERTICES)
+    {
+        edit.trans_lines = new selection_c(OBJ_LINEDEFS);
+        ConvertSelection(edit.Selected, edit.trans_lines);
+    }
 
-	if (edit.trans_lines)
-	{
-		delete edit.trans_lines;
-		edit.trans_lines = NULL;
-	}
-
-	if (edit.mode == OBJ_VERTICES)
-	{
-		edit.trans_lines = new selection_c(OBJ_LINEDEFS);
-		ConvertSelection(edit.Selected, edit.trans_lines);
-	}
-
-	Editor_SetAction(ACT_TRANSFORM);
+    Editor_SetAction(ACT_TRANSFORM);
 }
-
 
 void CMD_WHEEL_Scroll()
 {
-	float speed = atof(EXEC_Param[0]);
+    float speed = atof(EXEC_Param[0]);
 
 #ifdef _FLTK_DISABLED
-	if (Exec_HasFlag("/LAX"))
-	{
-		keycode_t mod = Fl::event_state() & MOD_ALL_MASK;
+    if (Exec_HasFlag("/LAX"))
+    {
+        keycode_t mod = Fl::event_state() & MOD_ALL_MASK;
 
-		if (mod & MOD_SHIFT)
-			speed /= 3.0;
-		else if (mod & MOD_COMMAND)
-			speed *= 3.0;
-	}
+        if (mod & MOD_SHIFT)
+            speed /= 3.0;
+        else if (mod & MOD_COMMAND)
+            speed *= 3.0;
+    }
 #endif
 
-	float delta_x =     wheel_dx;
-	float delta_y = 0 - wheel_dy;
+    float delta_x = wheel_dx;
+    float delta_y = 0 - wheel_dy;
 
-	int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+    int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
 
-	speed = speed * base_size / 100.0 / grid.Scale;
+    speed = speed * base_size / 100.0 / grid.Scale;
 
-	grid.Scroll(delta_x * speed, delta_y * speed);
+    grid.Scroll(delta_x * speed, delta_y * speed);
 }
-
 
 void CMD_Merge()
 {
-	switch (edit.mode)
-	{
-		case OBJ_VERTICES:
-			CMD_VT_Merge();
-			break;
+    switch (edit.mode)
+    {
+    case OBJ_VERTICES:
+        CMD_VT_Merge();
+        break;
 
-		case OBJ_LINEDEFS:
-			CMD_LIN_MergeTwo();
-			break;
+    case OBJ_LINEDEFS:
+        CMD_LIN_MergeTwo();
+        break;
 
-		case OBJ_SECTORS:
-			CMD_SEC_Merge();
-			break;
+    case OBJ_SECTORS:
+        CMD_SEC_Merge();
+        break;
 
-		case OBJ_THINGS:
-			CMD_TH_Merge();
-			break;
+    case OBJ_THINGS:
+        CMD_TH_Merge();
+        break;
 
-		default:
-			Beep("Cannot merge that");
-			break;
-	}
+    default:
+        Beep("Cannot merge that");
+        break;
+    }
 }
-
 
 void CMD_Disconnect()
 {
-	switch (edit.mode)
-	{
-		case OBJ_VERTICES:
-			CMD_VT_Disconnect();
-			break;
+    switch (edit.mode)
+    {
+    case OBJ_VERTICES:
+        CMD_VT_Disconnect();
+        break;
 
-		case OBJ_LINEDEFS:
-			CMD_LIN_Disconnect();
-			break;
+    case OBJ_LINEDEFS:
+        CMD_LIN_Disconnect();
+        break;
 
-		case OBJ_SECTORS:
-			CMD_SEC_Disconnect();
-			break;
+    case OBJ_SECTORS:
+        CMD_SEC_Disconnect();
+        break;
 
-		case OBJ_THINGS:
-			CMD_TH_Disconnect();
-			break;
+    case OBJ_THINGS:
+        CMD_TH_Disconnect();
+        break;
 
-		default:
-			Beep("Cannot disconnect that");
-			break;
-	}
+    default:
+        Beep("Cannot disconnect that");
+        break;
+    }
 }
-
 
 void CMD_Zoom()
 {
-	int delta = atoi(EXEC_Param[0]);
+    int delta = atoi(EXEC_Param[0]);
 
-	if (delta == 0)
-	{
-		Beep("Zoom: bad or missing value");
-		return;
-	}
+    if (delta == 0)
+    {
+        Beep("Zoom: bad or missing value");
+        return;
+    }
 
-	int mid_x = edit.map_x;
-	int mid_y = edit.map_y;
+    int mid_x = edit.map_x;
+    int mid_y = edit.map_y;
 
-	if (Exec_HasFlag("/center"))
-	{
-		mid_x = I_ROUND(grid.orig_x);
-		mid_y = I_ROUND(grid.orig_y);
-	}
+    if (Exec_HasFlag("/center"))
+    {
+        mid_x = I_ROUND(grid.orig_x);
+        mid_y = I_ROUND(grid.orig_y);
+    }
 
-	Editor_Zoom(delta, mid_x, mid_y);
+    Editor_Zoom(delta, mid_x, mid_y);
 }
-
 
 void CMD_ZoomWholeMap()
 {
-	if (edit.render3d)
-		Render3D_Enable(false);
+    if (edit.render3d)
+        Render3D_Enable(false);
 
-	ZoomWholeMap();
+    ZoomWholeMap();
 }
-
 
 void CMD_ZoomSelection()
 {
-	if (edit.Selected->empty())
-	{
-		Beep("No selection to zoom");
-		return;
-	}
+    if (edit.Selected->empty())
+    {
+        Beep("No selection to zoom");
+        return;
+    }
 
-	GoToSelection();
+    GoToSelection();
 }
-
 
 void CMD_GoToCamera()
 {
-	if (edit.render3d)
-		Render3D_Enable(false);
+    if (edit.render3d)
+        Render3D_Enable(false);
 
-	double x, y; float angle;
-	Render3D_GetCameraPos(&x, &y, &angle);
+    double x, y;
+    float  angle;
+    Render3D_GetCameraPos(&x, &y, &angle);
 
-	grid.MoveTo(x, y);
+    grid.MoveTo(x, y);
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_PlaceCamera()
 {
-	if (edit.render3d)
-	{
-		Beep("Not supported in 3D view");
-		return;
-	}
+    if (edit.render3d)
+    {
+        Beep("Not supported in 3D view");
+        return;
+    }
 
-	if (! edit.pointer_in_window)
-	{
-		// IDEA: turn cursor into cross, wait for click in map window
+    if (!edit.pointer_in_window)
+    {
+        // IDEA: turn cursor into cross, wait for click in map window
 
-		Beep("Mouse is not over map");
-		return;
-	}
+        Beep("Mouse is not over map");
+        return;
+    }
 
-	double x = edit.map_x;
-	double y = edit.map_y;
+    double x = edit.map_x;
+    double y = edit.map_y;
 
-	Render3D_SetCameraPos(x, y);
+    Render3D_SetCameraPos(x, y);
 
-	if (Exec_HasFlag("/open3d"))
-	{
-		Render3D_Enable(true);
-	}
+    if (Exec_HasFlag("/open3d"))
+    {
+        Render3D_Enable(true);
+    }
 
-	RedrawMap();
+    RedrawMap();
 }
-
 
 void CMD_MoveObjects_Dialog()
 {
-	soh_type_e unselect = Selection_Or_Highlight();
-	if (unselect == SOH_Empty)
-	{
-		Beep("Nothing to move");
-		return;
-	}
+    soh_type_e unselect = Selection_Or_Highlight();
+    if (unselect == SOH_Empty)
+    {
+        Beep("Nothing to move");
+        return;
+    }
 
-	bool want_dz = (edit.mode == OBJ_SECTORS);
-	// can move things vertically in Hexen/UDMF formats
-	if (edit.mode == OBJ_THINGS && Level_format != MAPF_Doom)
-		want_dz = true;
+    bool want_dz = (edit.mode == OBJ_SECTORS);
+    // can move things vertically in Hexen/UDMF formats
+    if (edit.mode == OBJ_THINGS && Level_format != MAPF_Doom)
+        want_dz = true;
 
-	UI_MoveDialog * dialog = new UI_MoveDialog(want_dz);
+    UI_MoveDialog *dialog = new UI_MoveDialog(want_dz);
 
-	dialog->Run();
+    dialog->Run();
 
-	delete dialog;
+    delete dialog;
 
-	if (unselect == SOH_Unselect)
-		Selection_Clear(true /* nosave */);
+    if (unselect == SOH_Unselect)
+        Selection_Clear(true /* nosave */);
 }
-
 
 void CMD_ScaleObjects_Dialog()
 {
-	soh_type_e unselect = Selection_Or_Highlight();
-	if (unselect == SOH_Empty)
-	{
-		Beep("Nothing to scale");
-		return;
-	}
+    soh_type_e unselect = Selection_Or_Highlight();
+    if (unselect == SOH_Empty)
+    {
+        Beep("Nothing to scale");
+        return;
+    }
 
-	UI_ScaleDialog * dialog = new UI_ScaleDialog();
+    UI_ScaleDialog *dialog = new UI_ScaleDialog();
 
-	dialog->Run();
+    dialog->Run();
 
-	delete dialog;
+    delete dialog;
 
-	if (unselect == SOH_Unselect)
-		Selection_Clear(true /* nosave */);
+    if (unselect == SOH_Unselect)
+        Selection_Clear(true /* nosave */);
 }
-
 
 void CMD_RotateObjects_Dialog()
 {
-	soh_type_e unselect = Selection_Or_Highlight();
-	if (unselect == SOH_Empty)
-	{
-		Beep("Nothing to rotate");
-		return;
-	}
+    soh_type_e unselect = Selection_Or_Highlight();
+    if (unselect == SOH_Empty)
+    {
+        Beep("Nothing to rotate");
+        return;
+    }
 
-	UI_RotateDialog * dialog = new UI_RotateDialog();
+    UI_RotateDialog *dialog = new UI_RotateDialog();
 
-	dialog->Run();
+    dialog->Run();
 
-	delete dialog;
+    delete dialog;
 
-	if (unselect == SOH_Unselect)
-		Selection_Clear(true /* nosave */);
+    if (unselect == SOH_Unselect)
+        Selection_Clear(true /* nosave */);
 }
-
 
 void CMD_GRID_Bump()
 {
-	int delta = atoi(EXEC_Param[0]);
+    int delta = atoi(EXEC_Param[0]);
 
-	delta = (delta >= 0) ? +1 : -1;
+    delta = (delta >= 0) ? +1 : -1;
 
-	grid.AdjustStep(delta);
+    grid.AdjustStep(delta);
 }
-
 
 void CMD_GRID_Set()
 {
-	int step = atoi(EXEC_Param[0]);
+    int step = atoi(EXEC_Param[0]);
 
-	if (step < 2 || step > 4096)
-	{
-		Beep("Bad grid step");
-		return;
-	}
+    if (step < 2 || step > 4096)
+    {
+        Beep("Bad grid step");
+        return;
+    }
 
-	grid.ForceStep(step);
+    grid.ForceStep(step);
 }
-
 
 void CMD_GRID_Zoom()
 {
-	// target scale is positive for NN:1 and negative for 1:NN
+    // target scale is positive for NN:1 and negative for 1:NN
 
-	double scale = atof(EXEC_Param[0]);
+    double scale = atof(EXEC_Param[0]);
 
-	if (scale == 0)
-	{
-		Beep("Bad scale");
-		return;
-	}
+    if (scale == 0)
+    {
+        Beep("Bad scale");
+        return;
+    }
 
-	if (scale < 0)
-		scale = -1.0 / scale;
+    if (scale < 0)
+        scale = -1.0 / scale;
 
-	float S1 = grid.Scale;
+    float S1 = grid.Scale;
 
-	grid.NearestScale(scale);
+    grid.NearestScale(scale);
 
-	grid.RefocusZoom(edit.map_x, edit.map_y, S1);
+    grid.RefocusZoom(edit.map_x, edit.map_y, S1);
 }
-
 
 void CMD_BR_CycleCategory()
 {
-#ifdef _FLTK_DISABLED	
-	if (! main_win->browser->visible())
-	{
-		Beep("Browser not open");
-		return;
-	}
+#ifdef _FLTK_DISABLED
+    if (!main_win->browser->visible())
+    {
+        Beep("Browser not open");
+        return;
+    }
 
-	int dir = (atoi(EXEC_Param[0]) >= 0) ? +1 : -1;
+    int dir = (atoi(EXEC_Param[0]) >= 0) ? +1 : -1;
 
-	main_win->browser->CycleCategory(dir);
+    main_win->browser->CycleCategory(dir);
 #endif
 }
-
 
 void CMD_BR_ClearSearch()
 {
-#ifdef _FLTK_DISABLED	
-	if (! main_win->browser->visible())
-	{
-		Beep("Browser not open");
-		return;
-	}
+#ifdef _FLTK_DISABLED
+    if (!main_win->browser->visible())
+    {
+        Beep("Browser not open");
+        return;
+    }
 
-	main_win->browser->ClearSearchBox();
+    main_win->browser->ClearSearchBox();
 #endif
 }
-
 
 void CMD_BR_Scroll()
 {
-#ifdef _FLTK_DISABLED	
-	if (! main_win->browser->visible())
-	{
-		Beep("Browser not open");
-		return;
-	}
+#ifdef _FLTK_DISABLED
+    if (!main_win->browser->visible())
+    {
+        Beep("Browser not open");
+        return;
+    }
 
-	if (! EXEC_Param[0][0])
-	{
-		Beep("BR_Scroll: missing value");
-		return;
-	}
+    if (!EXEC_Param[0][0])
+    {
+        Beep("BR_Scroll: missing value");
+        return;
+    }
 
-	int delta = atoi(EXEC_Param[0]);
+    int delta = atoi(EXEC_Param[0]);
 
-	main_win->browser->Scroll(delta);
+    main_win->browser->Scroll(delta);
 #endif
 }
-
 
 void CMD_DefaultProps()
 {
-	main_win->ShowDefaultProps();
+    main_win->ShowDefaultProps();
 }
-
 
 void CMD_FindDialog()
 {
-	main_win->ShowFindAndReplace();
+    main_win->ShowFindAndReplace();
 }
-
 
 void CMD_FindNext()
 {
-	main_win->find_box->FindNext();
+    main_win->find_box->FindNext();
 }
-
 
 void CMD_RecalcSectors()
 {
-	Subdiv_InvalidateAll();
-	RedrawMap();
+    Subdiv_InvalidateAll();
+    RedrawMap();
 }
-
 
 void CMD_LogViewer()
 {
-	LogViewer_Open();
+    LogViewer_Open();
 }
-
 
 void CMD_OnlineDocs()
 {
-#ifdef _FLTK_DISABLED	
-	int rv = fl_open_uri("http://eureka-editor.sourceforge.net/?n=Docs.Index");
-	if (rv == 1)
-		Status_Set("Opened web browser");
-	else
-		Beep("Failed to open web browser");
+#ifdef _FLTK_DISABLED
+    int rv = fl_open_uri("http://eureka-editor.sourceforge.net/?n=Docs.Index");
+    if (rv == 1)
+        Status_Set("Opened web browser");
+    else
+        Beep("Failed to open web browser");
 #endif
 }
 
-
 void CMD_AboutDialog()
 {
-	DLG_AboutText();
+    DLG_AboutText();
 }
-
 
 //------------------------------------------------------------------------
 
+static editor_command_t command_table[] = {
+    /* ---- miscellaneous / UI stuff ---- */
 
-static editor_command_t  command_table[] =
-{
-	/* ---- miscellaneous / UI stuff ---- */
+    {"Nothing", "Misc", &CMD_Nothing},
 
-	{	"Nothing", "Misc",
-		&CMD_Nothing
-	},
+    {"Set", "Misc", &CMD_SetVar,
+     /* flags */ NULL,
+     /* keywords */
+     "3d browser gamma grid obj_nums ratio sec_render snap sprites"},
 
-	{	"Set", "Misc",
-		&CMD_SetVar,
-		/* flags */ NULL,
-		/* keywords */ "3d browser gamma grid obj_nums ratio sec_render snap sprites"
-	},
-
-	{	"Toggle", "Misc",
-		&CMD_ToggleVar,
-		/* flags */ NULL,
-		/* keywords */ "3d browser gamma grid obj_nums ratio sec_render snap recent sprites"
-	},
+    {"Toggle", "Misc", &CMD_ToggleVar,
+     /* flags */ NULL,
+     /* keywords */
+     "3d browser gamma grid obj_nums ratio sec_render snap recent sprites"},
 
-	{	"MetaKey", "Misc",
-		&CMD_MetaKey
-	},
+    {"MetaKey", "Misc", &CMD_MetaKey},
 
-	{	"EditMode", "Misc",
-		&CMD_EditMode,
-		/* flags */ NULL,
-		/* keywords */ "thing line sector vertex"
-	},
-
-	{	"OpMenu",  "Misc",
-		&CMD_OperationMenu
-	},
-
-	{	"MapCheck", "Misc",
-		&CMD_MapCheck,
-		/* flags */ NULL,
-		/* keywords */ "all major vertices sectors linedefs things textures tags current"
-	},
+    {"EditMode", "Misc", &CMD_EditMode,
+     /* flags */ NULL,
+     /* keywords */ "thing line sector vertex"},
 
-
-	/* ----- 2D canvas ----- */
+    {"OpMenu", "Misc", &CMD_OperationMenu},
 
-	{	"Scroll",  "2D View",
-		&CMD_Scroll
-	},
+    {"MapCheck", "Misc", &CMD_MapCheck,
+     /* flags */ NULL,
+     /* keywords */
+     "all major vertices sectors linedefs things textures tags current"},
 
-	{	"GRID_Bump",  "2D View",
-		&CMD_GRID_Bump
-	},
+    /* ----- 2D canvas ----- */
 
-	{	"GRID_Set",  "2D View",
-		&CMD_GRID_Set
-	},
+    {"Scroll", "2D View", &CMD_Scroll},
 
-	{	"GRID_Zoom",  "2D View",
-		&CMD_GRID_Zoom
-	},
+    {"GRID_Bump", "2D View", &CMD_GRID_Bump},
 
-	{	"ACT_SelectBox", "2D View",
-		&CMD_ACT_SelectBox
-	},
+    {"GRID_Set", "2D View", &CMD_GRID_Set},
 
-	{	"WHEEL_Scroll",  "2D View",
-		&CMD_WHEEL_Scroll
-	},
+    {"GRID_Zoom", "2D View", &CMD_GRID_Zoom},
 
-	{	"NAV_Scroll_Left",  "2D View",
-		&CMD_NAV_Scroll_Left
-	},
+    {"ACT_SelectBox", "2D View", &CMD_ACT_SelectBox},
 
-	{	"NAV_Scroll_Right",  "2D View",
-		&CMD_NAV_Scroll_Right
-	},
+    {"WHEEL_Scroll", "2D View", &CMD_WHEEL_Scroll},
 
-	{	"NAV_Scroll_Up",  "2D View",
-		&CMD_NAV_Scroll_Up
-	},
+    {"NAV_Scroll_Left", "2D View", &CMD_NAV_Scroll_Left},
 
-	{	"NAV_Scroll_Down",  "2D View",
-		&CMD_NAV_Scroll_Down
-	},
+    {"NAV_Scroll_Right", "2D View", &CMD_NAV_Scroll_Right},
 
-	{	"NAV_MouseScroll", "2D View",
-		&CMD_NAV_MouseScroll
-	},
+    {"NAV_Scroll_Up", "2D View", &CMD_NAV_Scroll_Up},
 
+    {"NAV_Scroll_Down", "2D View", &CMD_NAV_Scroll_Down},
 
-	/* ----- FILE menu ----- */
+    {"NAV_MouseScroll", "2D View", &CMD_NAV_MouseScroll},
 
-	{	"NewProject",  "File",
-		&CMD_NewProject
-	},
+    /* ----- FILE menu ----- */
 
-	{	"ManageProject",  "File",
-		&CMD_ManageProject
-	},
+    {"NewProject", "File", &CMD_NewProject},
 
-	{	"OpenMap",  "File",
-		&CMD_OpenMap
-	},
-
-	{	"GivenFile",  "File",
-		&CMD_GivenFile,
-		/* flags */ NULL,
-		/* keywords */ "next prev first last current"
-	},
-
-	{	"FlipMap",  "File",
-		&CMD_FlipMap,
-		/* flags */ NULL,
-		/* keywords */ "next prev first last"
-	},
-
-	{	"SaveMap",  "File",
-		&CMD_SaveMap
-	},
-
-	{	"ExportMap",  "File",
-		&CMD_ExportMap
-	},
+    {"ManageProject", "File", &CMD_ManageProject},
 
-	{	"FreshMap",  "File",
-		&CMD_FreshMap
-	},
+    {"OpenMap", "File", &CMD_OpenMap},
 
-	{	"CopyMap",  "File",
-		&CMD_CopyMap
-	},
+    {"GivenFile", "File", &CMD_GivenFile,
+     /* flags */ NULL,
+     /* keywords */ "next prev first last current"},
 
-	{	"RenameMap",  "File",
-		&CMD_RenameMap
-	},
+    {"FlipMap", "File", &CMD_FlipMap,
+     /* flags */ NULL,
+     /* keywords */ "next prev first last"},
 
-	{	"DeleteMap",  "File",
-		&CMD_DeleteMap
-	},
+    {"SaveMap", "File", &CMD_SaveMap},
 
-	{	"Quit",  "File",
-		&CMD_Quit
-	},
+    {"ExportMap", "File", &CMD_ExportMap},
 
+    {"FreshMap", "File", &CMD_FreshMap},
 
-	/* ----- EDIT menu ----- */
+    {"CopyMap", "File", &CMD_CopyMap},
 
-	{	"Undo",   "Edit",
-		&CMD_Undo
-	},
+    {"RenameMap", "File", &CMD_RenameMap},
 
-	{	"Redo",   "Edit",
-		&CMD_Redo
-	},
+    {"DeleteMap", "File", &CMD_DeleteMap},
 
-	{	"Insert",	"Edit",
-		&CMD_Insert,
-		/* flags */ "/continue /nofill"
-	},
+    {"Quit", "File", &CMD_Quit},
 
-	{	"Delete",	"Edit",
-		&CMD_Delete,
-		/* flags */ "/keep"
-	},
+    /* ----- EDIT menu ----- */
 
-	{	"Clipboard_Cut",   "Edit",
-		&CMD_Clipboard_Cut
-	},
+    {"Undo", "Edit", &CMD_Undo},
 
-	{	"Clipboard_Copy",   "Edit",
-		&CMD_Clipboard_Copy
-	},
+    {"Redo", "Edit", &CMD_Redo},
 
-	{	"Clipboard_Paste",   "Edit",
-		&CMD_Clipboard_Paste
-	},
+    {"Insert", "Edit", &CMD_Insert,
+     /* flags */ "/continue /nofill"},
 
-	{	"Select",	"Edit",
-		&CMD_Select
-	},
+    {"Delete", "Edit", &CMD_Delete,
+     /* flags */ "/keep"},
 
-	{	"SelectAll",	"Edit",
-		&CMD_SelectAll
-	},
+    {"Clipboard_Cut", "Edit", &CMD_Clipboard_Cut},
 
-	{	"UnselectAll",	"Edit",
-		&CMD_UnselectAll
-	},
+    {"Clipboard_Copy", "Edit", &CMD_Clipboard_Copy},
 
-	{	"InvertSelection",	"Edit",
-		&CMD_InvertSelection
-	},
+    {"Clipboard_Paste", "Edit", &CMD_Clipboard_Paste},
 
-	{	"LastSelection",	"Edit",
-		&CMD_LastSelection
-	},
+    {"Select", "Edit", &CMD_Select},
 
-	{	"CopyAndPaste",   "Edit",
-		&CMD_CopyAndPaste
-	},
+    {"SelectAll", "Edit", &CMD_SelectAll},
 
-	{	"CopyProperties",   "Edit",
-		&CMD_CopyProperties,
-		/* flags */ "/reverse"
-	},
+    {"UnselectAll", "Edit", &CMD_UnselectAll},
 
-	{	"PruneUnused",   "Edit",
-		&CMD_PruneUnused
-	},
+    {"InvertSelection", "Edit", &CMD_InvertSelection},
 
-	{	"MoveObjectsDialog",   "Edit",
-		&CMD_MoveObjects_Dialog
-	},
+    {"LastSelection", "Edit", &CMD_LastSelection},
 
-	{	"ScaleObjectsDialog",   "Edit",
-		&CMD_ScaleObjects_Dialog
-	},
+    {"CopyAndPaste", "Edit", &CMD_CopyAndPaste},
 
-	{	"RotateObjectsDialog",   "Edit",
-		&CMD_RotateObjects_Dialog
-	},
+    {"CopyProperties", "Edit", &CMD_CopyProperties,
+     /* flags */ "/reverse"},
 
+    {"PruneUnused", "Edit", &CMD_PruneUnused},
 
-	/* ----- VIEW menu ----- */
+    {"MoveObjectsDialog", "Edit", &CMD_MoveObjects_Dialog},
 
-	{	"Zoom",  "View",
-		&CMD_Zoom,
-		/* flags */ "/center"
-	},
+    {"ScaleObjectsDialog", "Edit", &CMD_ScaleObjects_Dialog},
 
-	{	"ZoomWholeMap",  "View",
-		&CMD_ZoomWholeMap
-	},
+    {"RotateObjectsDialog", "Edit", &CMD_RotateObjects_Dialog},
 
-	{	"ZoomSelection",  "View",
-		&CMD_ZoomSelection
-	},
+    /* ----- VIEW menu ----- */
 
-	{	"DefaultProps",  "View",
-		&CMD_DefaultProps
-	},
+    {"Zoom", "View", &CMD_Zoom,
+     /* flags */ "/center"},
 
-	{	"FindDialog",  "View",
-		&CMD_FindDialog
-	},
+    {"ZoomWholeMap", "View", &CMD_ZoomWholeMap},
 
-	{	"FindNext",  "View",
-		&CMD_FindNext
-	},
+    {"ZoomSelection", "View", &CMD_ZoomSelection},
 
-	{	"GoToCamera",  "View",
-		&CMD_GoToCamera
-	},
+    {"DefaultProps", "View", &CMD_DefaultProps},
 
-	{	"PlaceCamera",  "View",
-		&CMD_PlaceCamera,
-		/* flags */ "/open3d"
-	},
+    {"FindDialog", "View", &CMD_FindDialog},
 
-	{	"JumpToObject",  "View",
-		&CMD_JumpToObject
-	},
+    {"FindNext", "View", &CMD_FindNext},
 
+    {"GoToCamera", "View", &CMD_GoToCamera},
 
-	/* ------ TOOLS menu ------ */
+    {"PlaceCamera", "View", &CMD_PlaceCamera,
+     /* flags */ "/open3d"},
 
-	{	"PreferenceDialog",  "Tools",
-		&CMD_Preferences
-	},
+    {"JumpToObject", "View", &CMD_JumpToObject},
 
-	{	"TestMap",  "Tools",
-		&CMD_TestMap
-	},
+    /* ------ TOOLS menu ------ */
 
-	{	"RecalcSectors",  "Tools",
-		&CMD_RecalcSectors
-	},
+    {"PreferenceDialog", "Tools", &CMD_Preferences},
 
-	{	"BuildAllNodes",  "Tools",
-		&CMD_BuildAllNodes
-	},
+    {"TestMap", "Tools", &CMD_TestMap},
 
-	{	"EditLump",  "Tools",
-		&CMD_EditLump,
-		/* flags */ "/header /scripts"
-	},
+    {"RecalcSectors", "Tools", &CMD_RecalcSectors},
 
-	{	"AddBehavior",  "Tools",
-		&CMD_AddBehaviorLump
-	},
+    {"BuildAllNodes", "Tools", &CMD_BuildAllNodes},
 
-	{	"LogViewer",  "Tools",
-		&CMD_LogViewer
-	},
+    {"EditLump", "Tools", &CMD_EditLump,
+     /* flags */ "/header /scripts"},
 
+    {"AddBehavior", "Tools", &CMD_AddBehaviorLump},
 
-	/* ------ HELP menu ------ */
+    {"LogViewer", "Tools", &CMD_LogViewer},
 
-	{	"OnlineDocs",  "Help",
-		&CMD_OnlineDocs
-	},
+    /* ------ HELP menu ------ */
 
-	{	"AboutDialog",  "Help",
-		&CMD_AboutDialog
-	},
+    {"OnlineDocs", "Help", &CMD_OnlineDocs},
 
+    {"AboutDialog", "Help", &CMD_AboutDialog},
 
-	/* ----- general operations ----- */
+    /* ----- general operations ----- */
 
-	{	"Merge",	"General",
-		&CMD_Merge,
-		/* flags */ "/keep"
-	},
+    {"Merge", "General", &CMD_Merge,
+     /* flags */ "/keep"},
 
-	{	"Disconnect",	"General",
-		&CMD_Disconnect
-	},
+    {"Disconnect", "General", &CMD_Disconnect},
 
-	{	"Mirror",	"General",
-		&CMD_Mirror,
-		/* flags */ NULL,
-		/* keywords */ "horiz vert"
-	},
+    {"Mirror", "General", &CMD_Mirror,
+     /* flags */ NULL,
+     /* keywords */ "horiz vert"},
 
-	{	"Rotate90",	"General",
-		&CMD_Rotate90,
-		/* flags */ NULL,
-		/* keywords */ "cw acw"
-	},
+    {"Rotate90", "General", &CMD_Rotate90,
+     /* flags */ NULL,
+     /* keywords */ "cw acw"},
 
-	{	"Enlarge",	"General",
-		&CMD_Enlarge
-	},
+    {"Enlarge", "General", &CMD_Enlarge},
 
-	{	"Shrink",	"General",
-		&CMD_Shrink
-	},
+    {"Shrink", "General", &CMD_Shrink},
 
-	{	"Quantize",	"General",
-		&CMD_Quantize
-	},
+    {"Quantize", "General", &CMD_Quantize},
 
-	{	"ApplyTag",	"General",
-		&CMD_ApplyTag,
-		/* flags */ NULL,
-		/* keywords */ "fresh last"
-	},
+    {"ApplyTag", "General", &CMD_ApplyTag,
+     /* flags */ NULL,
+     /* keywords */ "fresh last"},
 
-	{	"ACT_Click", "General",
-		&CMD_ACT_Click,
-		/* flags */ "/noselect /nodrag /nosplit"
-	},
+    {"ACT_Click", "General", &CMD_ACT_Click,
+     /* flags */ "/noselect /nodrag /nosplit"},
 
-	{	"ACT_Drag", "General",
-		&CMD_ACT_Drag
-	},
+    {"ACT_Drag", "General", &CMD_ACT_Drag},
 
-	{	"ACT_Transform", "General",
-		&CMD_ACT_Transform,
-		/* flags */ NULL,
-		/* keywords */ "scale stretch rotate rotscale skew"
-	},
+    {"ACT_Transform", "General", &CMD_ACT_Transform,
+     /* flags */ NULL,
+     /* keywords */ "scale stretch rotate rotscale skew"},
 
+    /* ------ LineDef mode ------ */
 
-	/* ------ LineDef mode ------ */
+    {"LIN_Align", NULL, &CMD_LIN_Align,
+     /* flags */ "/x /y /right /clear"},
 
-	{	"LIN_Align", NULL,
-		&CMD_LIN_Align,
-		/* flags */ "/x /y /right /clear"
-	},
+    {"LIN_Flip", NULL, &CMD_LIN_Flip,
+     /* flags */ "/force"},
 
-	{	"LIN_Flip", NULL,
-		&CMD_LIN_Flip,
-		/* flags */ "/force"
-	},
+    {"LIN_SwapSides", NULL, &CMD_LIN_SwapSides},
 
-	{	"LIN_SwapSides", NULL,
-		&CMD_LIN_SwapSides
-	},
+    {"LIN_SplitHalf", NULL, &CMD_LIN_SplitHalf},
 
-	{	"LIN_SplitHalf", NULL,
-		&CMD_LIN_SplitHalf
-	},
+    {"LIN_SelectPath", NULL, &CMD_LIN_SelectPath,
+     /* flags */ "/fresh /onesided /sametex"},
 
-	{	"LIN_SelectPath", NULL,
-		&CMD_LIN_SelectPath,
-		/* flags */ "/fresh /onesided /sametex"
-	},
+    /* ------ Sector mode ------ */
 
+    {"SEC_Floor", NULL, &CMD_SEC_Floor},
 
-	/* ------ Sector mode ------ */
+    {"SEC_Ceil", NULL, &CMD_SEC_Ceil},
 
-	{	"SEC_Floor", NULL,
-		&CMD_SEC_Floor
-	},
+    {"SEC_Light", NULL, &CMD_SEC_Light},
 
-	{	"SEC_Ceil", NULL,
-		&CMD_SEC_Ceil
-	},
+    {"SEC_SelectGroup", NULL, &CMD_SEC_SelectGroup,
+     /* flags */
+     "/fresh /can_walk /doors /floor_h /floor_tex /ceil_h /ceil_tex /light "
+     "/tag /special"},
 
-	{	"SEC_Light", NULL,
-		&CMD_SEC_Light
-	},
+    {"SEC_SwapFlats", NULL, &CMD_SEC_SwapFlats},
 
-	{	"SEC_SelectGroup", NULL,
-		&CMD_SEC_SelectGroup,
-		/* flags */ "/fresh /can_walk /doors /floor_h /floor_tex /ceil_h /ceil_tex /light /tag /special"
-	},
+    /* ------ Thing mode ------ */
 
-	{	"SEC_SwapFlats", NULL,
-		&CMD_SEC_SwapFlats
-	},
+    {"TH_Spin", NULL, &CMD_TH_SpinThings},
 
+    /* ------ Vertex mode ------ */
 
-	/* ------ Thing mode ------ */
+    {"VT_ShapeLine", NULL, &CMD_VT_ShapeLine},
 
-	{	"TH_Spin", NULL,
-		&CMD_TH_SpinThings
-	},
+    {"VT_ShapeArc", NULL, &CMD_VT_ShapeArc},
 
+    /* -------- Browser -------- */
 
-	/* ------ Vertex mode ------ */
+    {"BrowserMode", "Browser", &CMD_BrowserMode,
+     /* flags */ "/recent",
+     /* keywords */ "obj tex flat line sec genline"},
 
-	{	"VT_ShapeLine", NULL,
-		&CMD_VT_ShapeLine
-	},
+    {"BR_CycleCategory", "Browser", &CMD_BR_CycleCategory},
 
-	{	"VT_ShapeArc", NULL,
-		&CMD_VT_ShapeArc
-	},
+    {"BR_ClearSearch", "Browser", &CMD_BR_ClearSearch},
 
+    {"BR_Scroll", "Browser", &CMD_BR_Scroll},
 
-	/* -------- Browser -------- */
-
-	{	"BrowserMode", "Browser",
-		&CMD_BrowserMode,
-		/* flags */ "/recent",
-		/* keywords */ "obj tex flat line sec genline"
-	},
-
-	{	"BR_CycleCategory", "Browser",
-		&CMD_BR_CycleCategory
-	},
-
-	{	"BR_ClearSearch", "Browser",
-		&CMD_BR_ClearSearch
-	},
-
-	{	"BR_Scroll", "Browser",
-		&CMD_BR_Scroll
-	},
-
-	// end of command list
-	{	NULL, NULL, 0, NULL  }
-};
-
+    // end of command list
+    {NULL, NULL, 0, NULL}};
 
 void Editor_RegisterCommands()
 {
-	M_RegisterCommandList(command_table);
+    M_RegisterCommandList(command_table);
 }
-
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

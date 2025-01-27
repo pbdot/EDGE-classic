@@ -27,23 +27,20 @@
 #ifndef __EUREKA_X_HOVER_H__
 #define __EUREKA_X_HOVER_H__
 
-
 class Objid;
 class bitvec_c;
 
+void GetNearObject(Objid &o, obj_type_e objtype, double x, double y);
 
-void GetNearObject(Objid& o, obj_type_e objtype, double x, double y);
+void FindSplitLine(Objid &out, double &out_x, double &out_y, double ptr_x, double ptr_y, int ignore_vert = -1);
 
-void FindSplitLine(Objid& out, double& out_x, double& out_y,
-				   double ptr_x, double ptr_y, int ignore_vert = -1);
+void FindSplitLineForDangler(Objid &out, int v_num);
 
-void FindSplitLineForDangler(Objid& out, int v_num);
-
-double ApproxDistToLineDef(const LineDef * L, double x, double y);
+double ApproxDistToLineDef(const LineDef *L, double x, double y);
 
 int ClosestLine_CastingHoriz(double x, double y, int *side);
-int ClosestLine_CastingVert (double x, double y, int *side);
-int ClosestLine_CastAtAngle (double x, double y, float radians);
+int ClosestLine_CastingVert(double x, double y, int *side);
+int ClosestLine_CastAtAngle(double x, double y, float radians);
 
 int OppositeLineDef(int ld, int ld_side, int *result_side, bitvec_c *ignore_lines = NULL);
 int OppositeSector(int ld, int ld_side);
@@ -56,58 +53,54 @@ bool PointOutsideOfMap(double x, double y);
 // result: -1 for back, +1 for front, 0 for _exactly_on_ the line
 int PointOnLineSide(double x, double y, double lx1, double ly1, double lx2, double ly2);
 
-
 typedef struct
 {
-	int vert;	// >= 0 when we hit a vertex
-	int ld;     // >= 0 when we hit a linedef instead
+    int vert;    // >= 0 when we hit a vertex
+    int ld;      // >= 0 when we hit a linedef instead
 
-	double x, y;	// coordinate of line split point
-	double dist;
-}
-cross_point_t;
-
+    double x, y; // coordinate of line split point
+    double dist;
+} cross_point_t;
 
 class crossing_state_c
 {
-public:
-	std::vector< cross_point_t > points;
+  public:
+    std::vector<cross_point_t> points;
 
-	// the start/end coordinates of the whole tested line
-	double start_x, start_y;
-	double   end_x,   end_y;
+    // the start/end coordinates of the whole tested line
+    double start_x, start_y;
+    double end_x, end_y;
 
-public:
-	 crossing_state_c();
-	~crossing_state_c();
+  public:
+    crossing_state_c();
+    ~crossing_state_c();
 
-	void clear();
+    void clear();
 
-	void add_vert(int v, double dist);
-	void add_line(int ld, double new_x, double new_y, double dist);
+    void add_vert(int v, double dist);
+    void add_line(int ld, double new_x, double new_y, double dist);
 
-	bool HasVertex(int v) const;
-	bool HasLine(int ld)  const;
+    bool HasVertex(int v) const;
+    bool HasLine(int ld) const;
 
-	void Sort();
+    void Sort();
 
-	void SplitAllLines();
+    void SplitAllLines();
 
-private:
-	struct point_CMP
-	{
-		inline bool operator() (const cross_point_t &A, const cross_point_t& B) const
-		{
-			return A.dist < B.dist;
-		}
-	};
+  private:
+    struct point_CMP
+    {
+        inline bool operator()(const cross_point_t &A, const cross_point_t &B) const
+        {
+            return A.dist < B.dist;
+        }
+    };
 };
 
-void FindCrossingPoints(crossing_state_c& cross,
-						double x1, double y1, int possible_v1,
-						double x2, double y2, int possible_v2);
+void FindCrossingPoints(crossing_state_c &cross, double x1, double y1, int possible_v1, double x2, double y2,
+                        int possible_v2);
 
-#endif  /* __EUREKA_X_HOVER_H__ */
+#endif /* __EUREKA_X_HOVER_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -30,20 +30,16 @@
 #include "smc_im_img.h"
 #include "smc_w_wad.h"
 
+bool LoadPicture(Img_c &dest, Lump_c *lump,     /* Lump containing picture */
+                 const char *pic_name,          /* Picture name, for messages */
+                 int         pic_x_offset,      /* Coordinates of top left corner of picture */
+                 int         pic_y_offset,      /* relative to top left corner of buffer. */
+                 int        *pic_width  = NULL, /* To return the size of the picture */
+                 int        *pic_height = NULL);       /* (can be NULL) */
 
-bool LoadPicture(Img_c& dest,
-	Lump_c *lump,           /* Lump containing picture */
-	const char *pic_name,   /* Picture name, for messages */
-	int pic_x_offset,    /* Coordinates of top left corner of picture */
-	int pic_y_offset,    /* relative to top left corner of buffer. */
-	int *pic_width = NULL,    /* To return the size of the picture */
-	int *pic_height = NULL);  /* (can be NULL) */
-
-
-Img_c * LoadImage_PNG(Lump_c *lump, const char *name);
-Img_c * LoadImage_JPEG(Lump_c *lump, const char *name);
-Img_c * LoadImage_TGA(Lump_c *lump, const char *name);
-
+Img_c *LoadImage_PNG(Lump_c *lump, const char *name);
+Img_c *LoadImage_JPEG(Lump_c *lump, const char *name);
+Img_c *LoadImage_TGA(Lump_c *lump, const char *name);
 
 // Determine the image format of the given wad lump.
 //
@@ -60,8 +56,7 @@ Img_c * LoadImage_TGA(Lump_c *lump, const char *name);
 //
 char W_DetectImageFormat(Lump_c *lump);
 
-
-#endif  /* __EUREKA_W_LOADPIC_H__ */
+#endif /* __EUREKA_W_LOADPIC_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

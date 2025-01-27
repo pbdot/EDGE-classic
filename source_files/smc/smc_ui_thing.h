@@ -22,122 +22,124 @@
 #ifndef __EUREKA_UI_THING_H__
 #define __EUREKA_UI_THING_H__
 
-
 class Sticker;
 
 // _FLTK_DISABLED
 class UI_ThingBox /*: public Fl_Group*/
 {
-private:
-	int obj;
-	int count;
+  private:
+    int obj;
+    int count;
 
-	UI_Nombre *which;
+    UI_Nombre *which;
 
-	UI_DynInput  *type;
-#ifdef _FLTK_DISABLED	
-	Fl_Output    *desc;
-	Fl_Button    *choose;
+    UI_DynInput *type;
+#ifdef _FLTK_DISABLED
+    Fl_Output *desc;
+    Fl_Button *choose;
 
-	Fl_Int_Input *angle;
-	Fl_Button    *ang_buts[8];
+    Fl_Int_Input *angle;
+    Fl_Button    *ang_buts[8];
 
-	Fl_Int_Input *tid;
+    Fl_Int_Input *tid;
 
-	Fl_Int_Input *exfloor;
-	Fl_Button    *efl_down;
-	Fl_Button    *efl_up;
+    Fl_Int_Input *exfloor;
+    Fl_Button    *efl_down;
+    Fl_Button    *efl_up;
 
-	Fl_Int_Input *pos_x;
-	Fl_Int_Input *pos_y;
-	Fl_Int_Input *pos_z;
+    Fl_Int_Input *pos_x;
+    Fl_Int_Input *pos_y;
+    Fl_Int_Input *pos_z;
 
-	// Options
-	Fl_Check_Button *o_easy;
-	Fl_Check_Button *o_medium;
-	Fl_Check_Button *o_hard;
+    // Options
+    Fl_Check_Button *o_easy;
+    Fl_Check_Button *o_medium;
+    Fl_Check_Button *o_hard;
 
-	Fl_Check_Button *o_sp;
-	Fl_Check_Button *o_coop;
-	Fl_Check_Button *o_dm;
-	Fl_Check_Button *o_vanilla_dm;
+    Fl_Check_Button *o_sp;
+    Fl_Check_Button *o_coop;
+    Fl_Check_Button *o_dm;
+    Fl_Check_Button *o_vanilla_dm;
 
-	Fl_Check_Button *o_fight;   //
-	Fl_Check_Button *o_cleric;  // Hexen
-	Fl_Check_Button *o_mage;    //
+    Fl_Check_Button *o_fight;     //
+    Fl_Check_Button *o_cleric;    // Hexen
+    Fl_Check_Button *o_mage;      //
 
-	Fl_Check_Button *o_ambush;
-	Fl_Check_Button *o_friend;   // Boom / MBF / Strife
-	Fl_Check_Button *o_dormant;  // Hexen
+    Fl_Check_Button *o_ambush;
+    Fl_Check_Button *o_friend;    // Boom / MBF / Strife
+    Fl_Check_Button *o_dormant;   // Hexen
 
-	Fl_Check_Button *o_sf_shadow;  //
-	Fl_Check_Button *o_sf_altvis;  //
-	Fl_Check_Button *o_sf_stand;   // Strife
-	Fl_Check_Button *o_sf_ambush;  //
-	Fl_Check_Button *o_sf_friend;  //
+    Fl_Check_Button *o_sf_shadow; //
+    Fl_Check_Button *o_sf_altvis; //
+    Fl_Check_Button *o_sf_stand;  // Strife
+    Fl_Check_Button *o_sf_ambush; //
+    Fl_Check_Button *o_sf_friend; //
 #endif
 
-	UI_Pic *sprite;
+    UI_Pic *sprite;
 
-	// more Hexen stuff
-	UI_DynInput  *spec_type;
-#ifdef _FLTK_DISABLED	
-	Fl_Button    *spec_choose;
-	Fl_Output    *spec_desc;
-	Fl_Int_Input *args[5];
-#endif	
-
-public:
-	UI_ThingBox(int X, int Y, int W, int H, const char *label = NULL);
-	virtual ~UI_ThingBox();
-
-public:
-	void SetObj(int _index, int _count);
-
-	int GetObj() const { return obj; }
-
-	// call this if the thing was externally changed.
-	// -1 means "all fields"
-	void UpdateField(int field = -1);
-
-	void UpdateTotal();
-
-	// see ui_window.h for description of these two methods
-	bool ClipboardOp(char op);
-	void BrowsedItem(char kind, int number, const char *name, int e_state);
-
-	void UpdateGameInfo();
-	void UnselectPics();
-
-private:
-	void SetThingType(int new_type);
-	void SetSpecialType(int new_type);
-
-	void AdjustExtraFloor(int dir);
-
-	int  CalcOptions() const;
-	void OptionsFromInt(int options);
-
-private:
+    // more Hexen stuff
+    UI_DynInput *spec_type;
 #ifdef _FLTK_DISABLED
-	static void       x_callback(Fl_Widget *w, void *data);
-	static void       y_callback(Fl_Widget *w, void *data);
-	static void       z_callback(Fl_Widget *w, void *data);
-	static void    type_callback(Fl_Widget *w, void *data);
-	static void dyntype_callback(Fl_Widget *, void *);
+    Fl_Button    *spec_choose;
+    Fl_Output    *spec_desc;
+    Fl_Int_Input *args[5];
+#endif
 
-	static void  angle_callback(Fl_Widget *w, void *data);
-	static void    tid_callback(Fl_Widget *w, void *data);
-	static void option_callback(Fl_Widget *w, void *data);
-	static void button_callback(Fl_Widget *w, void *data);
+  public:
+    UI_ThingBox(int X, int Y, int W, int H, const char *label = NULL);
+    virtual ~UI_ThingBox();
 
-	static void    spec_callback(Fl_Widget *w, void *data);
-	static void dynspec_callback(Fl_Widget *w, void *data);
-	static void    args_callback(Fl_Widget *w, void *data);
+  public:
+    void SetObj(int _index, int _count);
+
+    int GetObj() const
+    {
+        return obj;
+    }
+
+    // call this if the thing was externally changed.
+    // -1 means "all fields"
+    void UpdateField(int field = -1);
+
+    void UpdateTotal();
+
+    // see ui_window.h for description of these two methods
+    bool ClipboardOp(char op);
+    void BrowsedItem(char kind, int number, const char *name, int e_state);
+
+    void UpdateGameInfo();
+    void UnselectPics();
+
+  private:
+    void SetThingType(int new_type);
+    void SetSpecialType(int new_type);
+
+    void AdjustExtraFloor(int dir);
+
+    int  CalcOptions() const;
+    void OptionsFromInt(int options);
+
+  private:
+#ifdef _FLTK_DISABLED
+    static void x_callback(Fl_Widget *w, void *data);
+    static void y_callback(Fl_Widget *w, void *data);
+    static void z_callback(Fl_Widget *w, void *data);
+    static void type_callback(Fl_Widget *w, void *data);
+    static void dyntype_callback(Fl_Widget *, void *);
+
+    static void angle_callback(Fl_Widget *w, void *data);
+    static void tid_callback(Fl_Widget *w, void *data);
+    static void option_callback(Fl_Widget *w, void *data);
+    static void button_callback(Fl_Widget *w, void *data);
+
+    static void spec_callback(Fl_Widget *w, void *data);
+    static void dynspec_callback(Fl_Widget *w, void *data);
+    static void args_callback(Fl_Widget *w, void *data);
 #endif
 };
 
-#endif  /* __EUREKA_UI_THING_H__ */
+#endif /* __EUREKA_UI_THING_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

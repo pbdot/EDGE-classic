@@ -29,61 +29,58 @@
 
 #include "smc_im_img.h"
 
-
 struct Render_View_t
 {
-public:
-	// player type and position.
-	int p_type;
-	double px, py;
+  public:
+    // player type and position.
+    int    p_type;
+    double px, py;
 
-	// view position.
-	double x, y, z;
+    // view position.
+    double x, y, z;
 
-	// view direction.  angle is in radians
-	double angle;
-	double Sin, Cos;
+    // view direction.  angle is in radians
+    double angle;
+    double Sin, Cos;
 
-	// screen buffer.
-	int screen_w, screen_h;
-	img_pixel_t *screen;
+    // screen buffer.
+    int          screen_w, screen_h;
+    img_pixel_t *screen;
 
-	float aspect_sh;
-	float aspect_sw;  // screen_w * aspect_ratio
+    float aspect_sh;
+    float aspect_sw; // screen_w * aspect_ratio
 
-	bool texturing;
-	bool sprites;
-	bool lighting;
+    bool texturing;
+    bool sprites;
+    bool lighting;
 
-	bool gravity;  // when true, walk on ground
+    bool gravity; // when true, walk on ground
 
-	std::vector<int> thing_sectors;
+    std::vector<int> thing_sectors;
 
-	// current mouse coords (in window), invalid if -1
-	int mouse_x, mouse_y;
+    // current mouse coords (in window), invalid if -1
+    int mouse_x, mouse_y;
 
-public:
-	Render_View_t();
-	~Render_View_t();
+  public:
+    Render_View_t();
+    ~Render_View_t();
 
-	void SetAngle(float new_ang);
-	void FindGroundZ();
-	void CalcAspect();
+    void SetAngle(float new_ang);
+    void FindGroundZ();
+    void CalcAspect();
 
-	void UpdateScreen(int ow, int oh);
-	void PrepareToRender(int ow, int oh);
+    void UpdateScreen(int ow, int oh);
+    void PrepareToRender(int ow, int oh);
 
-	double DistToViewPlane(double map_x, double map_y);
+    double DistToViewPlane(double map_x, double map_y);
 
-	/* r_editing_info_t stuff */
+    /* r_editing_info_t stuff */
 
-	void AddAdjustSide(const Objid& obj);
-	float AdjustDistFactor(float view_x, float view_y);
+    void  AddAdjustSide(const Objid &obj);
+    float AdjustDistFactor(float view_x, float view_y);
 };
 
-
 extern Render_View_t r_view;
-
 
 void Render3D_Setup();
 void Render3D_RegisterCommands();
@@ -96,7 +93,7 @@ void Render3D_Draw(int ox, int oy, int ow, int oh);
 // perform a query to see what the mouse pointer is over.
 // returns true if something was hit, false otherwise.
 // [ see the struct definition for more details... ]
-bool Render3D_Query(Objid& hl, int sx, int sy, int ox, int oy, int ow, int oh);
+bool Render3D_Query(Objid &hl, int sx, int sy, int ox, int oy, int ow, int oh);
 
 void Render3D_MouseMotion(int x, int y, keycode_t mod, int dx, int dy);
 void Render3D_ScrollMap(int dx = 0, int dy = 0, keycode_t mod = 0);
@@ -114,7 +111,7 @@ void Render3D_CB_Paste();
 void Render3D_SetCameraPos(double new_x, double new_y);
 void Render3D_GetCameraPos(double *x, double *y, float *angle);
 
-bool Render3D_ParseUser(const char ** tokens, int num_tok);
+bool Render3D_ParseUser(const char **tokens, int num_tok);
 void Render3D_WriteUser(FILE *fp);
 
 void Render3D_NotifyBegin();
@@ -123,15 +120,14 @@ void Render3D_NotifyDelete(obj_type_e type, int objnum);
 void Render3D_NotifyChange(obj_type_e type, int objnum, int field);
 void Render3D_NotifyEnd();
 
-
 /* API for rendering a scene (etc) */
 
 void SW_RenderWorld(int ox, int oy, int ow, int oh);
-bool SW_QueryPoint(Objid& hl, int qx, int qy);
+bool SW_QueryPoint(Objid &hl, int qx, int qy);
 
 void RGL_RenderWorld(int ox, int oy, int ow, int oh);
 
-#endif  /* __EUREKA_R_RENDER__ */
+#endif /* __EUREKA_R_RENDER__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

@@ -23,130 +23,126 @@
 
 class UI_MoveDialog : public UI_Escapable_Window
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Int_Input *delta_x;
-	Fl_Int_Input *delta_y;
-	Fl_Int_Input *delta_z;
+    Fl_Int_Input *delta_x;
+    Fl_Int_Input *delta_y;
+    Fl_Int_Input *delta_z;
 
-	Fl_Button *ok_but;
-	Fl_Button *cancel_but;
+    Fl_Button *ok_but;
+    Fl_Button *cancel_but;
 #endif
 
-	bool want_close;
+    bool want_close;
 
-public:
-	UI_MoveDialog(bool want_dz);
-	virtual ~UI_MoveDialog();
+  public:
+    UI_MoveDialog(bool want_dz);
+    virtual ~UI_MoveDialog();
 
-	void Run();
+    void Run();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	static void    ok_callback(Fl_Widget *, void *);
-	static void close_callback(Fl_Widget *, void *);
+    static void ok_callback(Fl_Widget *, void *);
+    static void close_callback(Fl_Widget *, void *);
 #endif
 };
-
 
 //------------------------------------------------------------------------
 
 class UI_ScaleDialog : public UI_Escapable_Window
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Input *scale_x;
-	Fl_Input *scale_y;
-	Fl_Input *scale_z;
+    Fl_Input *scale_x;
+    Fl_Input *scale_y;
+    Fl_Input *scale_z;
 
-	Fl_Choice *origin_x;
-	Fl_Choice *origin_y;
-	Fl_Choice *origin_z;
+    Fl_Choice *origin_x;
+    Fl_Choice *origin_y;
+    Fl_Choice *origin_z;
 
-	Fl_Button *ok_but;
-	Fl_Button *cancel_but;
+    Fl_Button *ok_but;
+    Fl_Button *cancel_but;
 #endif
 
-	bool want_close;
+    bool want_close;
 
-public:
-	UI_ScaleDialog();
-	virtual ~UI_ScaleDialog();
+  public:
+    UI_ScaleDialog();
+    virtual ~UI_ScaleDialog();
 
-	void Run();
+    void Run();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	static void    ok_callback(Fl_Widget *, void *);
-	static void close_callback(Fl_Widget *, void *);
+    static void ok_callback(Fl_Widget *, void *);
+    static void close_callback(Fl_Widget *, void *);
 #endif
 };
-
 
 //------------------------------------------------------------------------
 
 class UI_RotateDialog : public UI_Escapable_Window
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Float_Input *angle;
+    Fl_Float_Input *angle;
 
-	Fl_Choice *dir;
-	Fl_Choice *origin;
+    Fl_Choice *dir;
+    Fl_Choice *origin;
 
-	Fl_Button *ok_but;
-	Fl_Button *cancel_but;
+    Fl_Button *ok_but;
+    Fl_Button *cancel_but;
 #endif
-	bool want_close;
+    bool want_close;
 
-public:
-	UI_RotateDialog();
-	virtual ~UI_RotateDialog();
+  public:
+    UI_RotateDialog();
+    virtual ~UI_RotateDialog();
 
-	void Run();
+    void Run();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	static void    ok_callback(Fl_Widget *, void *);
-	static void close_callback(Fl_Widget *, void *);
+    static void ok_callback(Fl_Widget *, void *);
+    static void close_callback(Fl_Widget *, void *);
 #endif
 };
-
 
 //------------------------------------------------------------------------
 
 class UI_JumpToDialog : public UI_Escapable_Window
 {
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	Fl_Int_Input *input;
+    Fl_Int_Input *input;
 
-	Fl_Button *ok_but;
-	Fl_Button *cancel_but;
+    Fl_Button *ok_but;
+    Fl_Button *cancel_but;
 #endif
 
-	bool want_close;
+    bool want_close;
 
-	int limit;
-	int result;
+    int limit;
+    int result;
 
-public:
-	UI_JumpToDialog(const char *_objname, int _limit);
-	virtual ~UI_JumpToDialog();
+  public:
+    UI_JumpToDialog(const char *_objname, int _limit);
+    virtual ~UI_JumpToDialog();
 
-	// returns the typed number, or -1 if cancelled
-	int Run();
+    // returns the typed number, or -1 if cancelled
+    int Run();
 
-private:
+  private:
 #ifdef _FLTK_DISABLED
-	static void    ok_callback(Fl_Widget *, void *);
-	static void close_callback(Fl_Widget *, void *);
-	static void input_callback(Fl_Widget *, void *);
+    static void ok_callback(Fl_Widget *, void *);
+    static void close_callback(Fl_Widget *, void *);
+    static void input_callback(Fl_Widget *, void *);
 #endif
 };
 
-
-#endif  /* __EUREKA_UI_MISC_H__ */
+#endif /* __EUREKA_UI_MISC_H__ */
 
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab
