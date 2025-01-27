@@ -142,6 +142,11 @@ else()
   list (APPEND EDGE_SOURCE_FILES ${EDGE_SOKOL_SOURCE_FILES})
 endif()
 
+if (EDGE_SNAPMAP)
+  list (APPEND EDGE_SOURCE_FILES smc_host.cc)
+endif()
+
+
 if (EDGE_CLASSIC)
   list (APPEND 
     EDGE_SOURCE_FILES
@@ -208,6 +213,10 @@ set (EDGE_LINK_LIBRARIES
   stb
   xxhash
 )
+
+if(EDGE_SNAPMAP)
+  list (APPEND EDGE_LINK_LIBRARIES smc)
+endif()
 
 if (NOT EMSCRIPTEN)
   list (APPEND EDGE_LINK_LIBRARIES thread)
