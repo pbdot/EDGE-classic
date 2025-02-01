@@ -2209,6 +2209,10 @@ void EdgeShutdown(void)
         SleepForMilliseconds(50);
     }
 
+#ifdef EDGE_SNAPMAP
+    edge::SMC_Host_Shutdown();
+#endif
+
     LevelShutdown();
     ShutdownSound();
     RendererShutdown();

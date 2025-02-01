@@ -1100,7 +1100,10 @@ int SMC_Main()
 
     // determine which IWAD to use
     if (!DetermineIWAD())
-        goto quit;
+    {
+        return -1;
+    }
+        
 
     DeterminePort();
 
@@ -1119,20 +1122,20 @@ int SMC_Main()
     // can depend on the map format and UDMF namespace.
     Main_LoadResources();
 
-    Main_Loop();
+    // Main_Loop();
 
-quit:
-    /* that's all folks! */
+    return 0;
+}
 
-    LogPrintf("Quit\n");
+void SMC_Shutdown()
+{
+    LogPrintf("SMC Shutdown\n");
 
     init_progress = 0;
     app_has_focus = false;
 
     MasterDir_CloseAll();
     LogClose();
-
-    return 0;
 }
 
 } // namespace smc
