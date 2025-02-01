@@ -47,6 +47,8 @@ endif()
 # Optional Features
 option(EDGE_CLASSIC "Enable default features for EDGE-Classic" ON)
 
+option(EDGE_SNAPMAP "Enable SnapMap-Classic Editor" ON)
+
 # Development 
 option(EDGE_SANITIZE "Enable code sanitizing" OFF)
 option(EDGE_PROFILING "Enable Profiling" OFF)
@@ -214,6 +216,10 @@ if (EDGE_MEMORY_MIMALLOC)
       add_compile_definitions(EDGE_MEMORY_CHECK_FATAL)
     endif()
   endif()
+endif()
+
+if (EDGE_SNAPMAP)
+  add_compile_definitions(EDGE_SNAPMAP)
 endif()
 
 add_subdirectory(libraries)

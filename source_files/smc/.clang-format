@@ -1,0 +1,4 @@
+#override for smc as sorting includes currently breaks too much stuff
+
+BasedOnStyle: InheritParentConfig 
+SortIncludes: Never
