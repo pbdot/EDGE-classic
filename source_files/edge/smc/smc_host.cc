@@ -21,6 +21,9 @@ void SMC_Host_Initialize()
 
     smc_host_initialized = true;
 
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
     if (smc::SMC_Main())
     {
         FatalError("SMC_Host_Initialize: Failed to initialize\n");
@@ -39,6 +42,11 @@ bool SMC_Host_Activated()
 
 void SMC_Host_Activate(bool activated)
 {
+    if (!SMC_Host_Initialized())    
+    {
+        SMC_Host_Initialize();
+    }
+
     smc_host_active = activated;
 }
 
@@ -508,6 +516,8 @@ void SMC_Host_StartFrame()
     {
         return;
     }
+
+    smc::SMC_ImGui_StartFrame();
 }
 
 void SMC_Host_FinishFrame()
@@ -517,8 +527,8 @@ void SMC_Host_FinishFrame()
         return;
     }
 
-    // Could this end up drawing on a frame where host was activated after beginning of frame?
-    ImGui::ShowDemoWindow();
+    smc::SMC_ImGui_FinishFrame();
+
 }
 
 
