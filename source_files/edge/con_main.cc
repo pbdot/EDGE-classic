@@ -566,13 +566,12 @@ static int ConsoleCommandMemory(char **argv, int argc)
 #ifdef EDGE_SNAPMAP
 static int ConsoleCommandSnapMap(char **argv, int argc)
 {
-    static bool initialized = false;
-
-    if (!initialized)
+    if (!edge::SMC_Host_Initialized())
     {
-        initialized = true;
         edge::SMC_Host_Initialize();
     }
+
+    edge::SMC_Host_Activate(!edge::SMC_Host_Activated());
 
     return 0;
 }

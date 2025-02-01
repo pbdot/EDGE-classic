@@ -29,6 +29,10 @@
 #include "m_argv.h"
 #include "r_modes.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc/smc_host.h"
+#endif
+
 // FIXME: Combine all these SDL bool vars into an int/enum'd flags structure
 
 // Work around for alt-tabbing
@@ -222,6 +226,15 @@ void HandleKeyEvent(SDL_Event *ev)
 
     InputEvent event;
     event.value.key.sym = TranslateSDLKey(sym);
+
+#ifdef EDGE_SNAPMAP
+    // TODO: Make this configurable
+    if (ev->type == SDL_KEYUP && event.value.key.sym == kKeypad0)
+    {   
+        edge::SMC_Host_Activate(true);
+        return;
+    }
+#endif
 
     // handle certain keys which don't behave normally
     if (sym == SDL_SCANCODE_CAPSLOCK || sym == SDL_SCANCODE_NUMLOCKCLEAR)
@@ -767,6 +780,12 @@ void ControlGetEvents(void)
 
     while (SDL_PollEvent(&sdl_ev))
     {
+#ifdef EDGE_SNAPMAP
+        if (edge::SMC_Host_HandleEvent(&sdl_ev))
+        {
+            continue;
+        }
+#endif
         if (app_state & kApplicationActive)
             ActiveEventProcess(&sdl_ev);
         else

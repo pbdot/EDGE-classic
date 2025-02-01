@@ -13,6 +13,10 @@
 #include "epi.h"
 #include "i_video.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc/smc_host.h"
+#endif
+
 // clang-format on
 
 extern ConsoleVariable vsync;
@@ -124,6 +128,20 @@ class SokolRenderBackend : public RenderBackend
         SetRenderLayer(kRenderLayerHUD);
 
         sg_begin_pass(&pass_);
+
+        sg_imgui_.caps_window.open        = false;
+        sg_imgui_.buffer_window.open      = false;
+        sg_imgui_.pipeline_window.open    = false;
+        sg_imgui_.attachments_window.open = false;
+        sg_imgui_.frame_stats_window.open = false;
+
+        simgui_new_frame(&imgui_frame_desc_);
+        sgimgui_draw(&sg_imgui_);
+
+#ifdef EDGE_SNAPMAP
+        edge::SMC_Host_StartFrame();
+#endif
+
     }
 
     void SwapBuffers()
@@ -157,14 +175,9 @@ class SokolRenderBackend : public RenderBackend
         // default layer
         sgl_context_draw_layer(context_, 0);
 
-        sg_imgui_.caps_window.open        = false;
-        sg_imgui_.buffer_window.open      = false;
-        sg_imgui_.pipeline_window.open    = false;
-        sg_imgui_.attachments_window.open = false;
-        sg_imgui_.frame_stats_window.open = false;
-
-        simgui_new_frame(&imgui_frame_desc_);
-        sgimgui_draw(&sg_imgui_);
+#ifdef EDGE_SNAPMAP
+        edge::SMC_Host_FinishFrame();
+#endif
 
         simgui_render();
 

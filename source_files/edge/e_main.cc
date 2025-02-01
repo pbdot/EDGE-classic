@@ -100,7 +100,6 @@
 #include <mimalloc.h>
 #endif
 
-// temporarily here, should be able to run a console command from the command line
 #ifdef EDGE_SNAPMAP
 #include "smc/smc_host.h"
 #endif
@@ -2351,9 +2350,6 @@ static void EdgeStartup(void)
     LuaLoadScripts();
 #endif
 
-#ifdef EDGE_SNAPMAP
-    edge::SMC_Host_Initialize();
-#endif
 }
 
 static void InitialState(void)

@@ -34,6 +34,10 @@
 #include "r_state.h"
 #include "version.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc/smc_host.h"
+#endif
+
 SDL_Window *program_window;
 
 int graphics_shutdown = 0;
@@ -67,7 +71,7 @@ EDGE_DEFINE_CONSOLE_VARIABLE(framerate_limit, "0", kConsoleVariableFlagReadOnly)
 EDGE_DEFINE_CONSOLE_VARIABLE(framerate_limit, "500", kConsoleVariableFlagArchive)
 #endif
 
-static bool grab_state;
+static bool grab_state = false;
 
 extern ConsoleVariable renderer_far_clip;
 extern ConsoleVariable draw_culling;
@@ -85,6 +89,8 @@ void GrabCursor(bool enable)
     if (!program_window || graphics_shutdown)
         return;
 
+    bool update = grab_state != enable;
+
     grab_state = enable;
 
     if (grab_state)
@@ -92,11 +98,11 @@ void GrabCursor(bool enable)
     else
         need_mouse_recapture = true;
 
-    if (grab_state && grab_mouse.d_)
+    if (update && grab_state && grab_mouse.d_)
     {
         SDL_SetRelativeMouseMode(SDL_TRUE);
     }
-    else
+    else if (update)
     {
         SDL_SetRelativeMouseMode(SDL_FALSE);
     }
@@ -425,7 +431,13 @@ void FinishFrame(void)
 
     EDGE_FrameMark;
 
-    if (ConsoleIsVisible())
+    bool showCursor = ConsoleIsVisible();
+
+#ifdef EDGE_SNAPMAP
+    showCursor = showCursor || edge::SMC_Host_Activated();
+#endif    
+
+    if (showCursor)
         GrabCursor(false);
     else
     {
