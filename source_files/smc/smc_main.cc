@@ -979,7 +979,7 @@ static void ShowTime()
 //
 //  the program starts here
 //
-int main(int argc, char *argv[])
+int SMC_Main(int argc, char *argv[])
 {
     init_progress = 0;
 

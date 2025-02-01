@@ -218,14 +218,13 @@ void FilenameStripBase(char *buffer)
         strcpy(buffer, ".");
 }
 
-#ifdef _FLTK_DISABLED
-
 //
 // takes the basename in 'filename' and prepends the path from 'othername'.
 // returns a newly allocated string.
 //
 const char *FilenameReposition(const char *filename, const char *othername)
 {
+#ifdef _FLTK_DISABLED    
     filename = fl_filename_name(filename);
 
     const char *op = fl_filename_name(othername);
@@ -244,8 +243,11 @@ const char *FilenameReposition(const char *filename, const char *othername)
     strcat(result, filename);
 
     return result;
-}
+#else
+    return StringDup("FIXME");
 #endif
+}
+
 
 void FilenameGetPath(char *dest, size_t maxsize, const char *filename)
 {

@@ -447,9 +447,12 @@ Lump_c *CreateLevelLump(const char *name, int max_size = -1);
 Lump_c *FindLevelLump(const char *name);
 
 // Zlib compression support
+
+#ifdef _FLTK_DISABLED
 void ZLibBeginLump(Lump_c *lump);
 void ZLibAppendLump(const void *data, int length);
 void ZLibFinishLump(void);
+#endif
 
 /* limit flags, to show what went wrong */
 #define LIMIT_VERTEXES 0x000001

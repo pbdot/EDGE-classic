@@ -210,12 +210,14 @@ bool is_mouse_button(keycode_t key)
 
     return (FL_Button < key && key <= FL_Button + 8);
 }
+#endif
 
 //
 // returns zero (an invalid key) if parsing fails
 //
 keycode_t M_ParseKeyString(const char *str)
 {
+#ifdef _FLTK_DISABLED    
     int key = 0;
 
     // for MOD_COMMAND, accept both CMD and CTRL prefixes
@@ -274,9 +276,12 @@ keycode_t M_ParseKeyString(const char *str)
 
     if (str[0] == '0' && str[1] == 'x')
         return key | (int)strtol(str, NULL, 0);
-
+#else
     return 0;
+#endif
 }
+
+#ifdef _FLTK_DISABLED
 
 static const char *BareKeyName(keycode_t key)
 {
@@ -362,9 +367,11 @@ static const char *ModName_Space(keycode_t mod)
 
     return "";
 }
+#endif
 
 const char *M_KeyToString(keycode_t key)
 {
+#ifdef _FLTK_DISABLED
     static char buffer[200];
 
     // convert SHIFT + letter --> uppercase letter
@@ -377,10 +384,15 @@ const char *M_KeyToString(keycode_t key)
     snprintf(buffer, sizeof(buffer), "%s%s", ModName_Dash(key), BareKeyName(key & FL_KEY_MASK));
 
     return buffer;
+#else
+    return "";
 }
+#endif
+
 
 int M_KeyCmp(keycode_t A, keycode_t B)
 {
+#ifdef _FLTK_DISABLED    
     keycode_t A_mod = A & MOD_ALL_MASK;
     keycode_t B_mod = B & MOD_ALL_MASK;
 
@@ -403,9 +415,10 @@ int M_KeyCmp(keycode_t A, keycode_t B)
     // modifiers are the least important
 
     return (int)A_mod - (int)B_mod;
+#else
+    return 0;
+#endif    
 }
-
-#endif
 
 //------------------------------------------------------------------------
 

@@ -233,13 +233,17 @@ bool LoadPicture(Img_c      &dest,         // image to load picture into
         // use the code below to load/compose the DOOM format
         break;
 
+#ifdef _FLTK_DISABLED
     case 'p':
         sub = LoadImage_PNG(lump, pic_name);
         return ComposePicture(dest, sub, pic_x_offset, pic_y_offset, pic_width, pic_height);
+#endif        
 
+#ifdef _FLTK_DISABLED
     case 'j':
         sub = LoadImage_JPEG(lump, pic_name);
         return ComposePicture(dest, sub, pic_x_offset, pic_y_offset, pic_width, pic_height);
+#endif
 
     case 't':
         sub = LoadImage_TGA(lump, pic_name);

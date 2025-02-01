@@ -322,17 +322,21 @@ void W_LoadTextures_TX_START(Wad_file *wf)
             }
             break;
 
+#ifdef _FLTK_DISABLED
         case 'p': /* PNG */
             img = LoadImage_PNG(lump, name);
             break;
+#endif
 
         case 't': /* TGA */
             img = LoadImage_TGA(lump, name);
             break;
 
+#ifdef _FLTK_DISABLED
         case 'j': /* JPEG */
             img = LoadImage_JPEG(lump, name);
             break;
+#endif            
 
         case 0:
             LogPrintf("Unknown texture format in '%s' lump\n", name);

@@ -161,6 +161,13 @@ else()
   )
 endif()
 
+if (EDGE_SNAPMAP)
+  list (APPEND
+    EDGE_SOURCE_FILES 
+    smc/smc_host.cc  
+  )
+endif()
+
 if (EMSCRIPTEN)
   list (APPEND EDGE_SOURCE_FILES i_web.cc)
 else()
@@ -220,6 +227,13 @@ if (EDGE_CLASSIC)
     dehacked
     m4p
     opalmidi
+  )
+endif()
+
+if (EDGE_SNAPMAP)
+  list (APPEND
+    EDGE_LINK_LIBRARIES
+    smc
   )
 endif()
 

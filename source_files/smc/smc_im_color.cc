@@ -51,9 +51,9 @@ byte rgb555_medium[32];
 
 byte bright_map[256];
 
-#ifdef _FLTK_DISABLED
 void W_UpdateGamma()
 {
+#ifdef _FLTK_DISABLED    
     for (int c = 0; c < 256; c++)
     {
         byte r = raw_palette[c][0];
@@ -80,8 +80,9 @@ void W_UpdateGamma()
         rgb555_gamma[d]  = gammatable[usegamma][i];
         rgb555_medium[d] = gammatable[panel_gamma][i];
     }
+#endif    
 }
-#endif
+
 
 void W_LoadPalette()
 {

@@ -42,6 +42,10 @@
 #include "w_files.h"
 #include "w_wad.h"
 
+#ifdef EDGE_SNAPMAP
+#include "smc/smc_host.h"
+#endif
+
 static constexpr uint8_t kMaximumConsoleArguments = 64;
 
 static std::string readme_names[4] = {"readme.txt", "readme.1st", "read.me", "readme.md"};
@@ -539,7 +543,7 @@ int ConsoleCommandClear(char **argv, int argc)
     return 0;
 }
 
-#ifdef EDGE_MIMALLOC    
+#ifdef EDGE_MIMALLOC
 static void MemoryPrint(const char *msg, void *arg)
 {
     EPI_UNUSED(arg);
@@ -553,11 +557,26 @@ static int ConsoleCommandMemory(char **argv, int argc)
     EPI_UNUSED(argc);
 
     LogPrint("---- mimalloc memory stats ---\n\n");
-#ifdef EDGE_MIMALLOC    
+#ifdef EDGE_MIMALLOC
     mi_stats_print_out(MemoryPrint, nullptr);
 #endif
     return 0;
 }
+
+#ifdef EDGE_SNAPMAP
+static int ConsoleCommandSnapMap(char **argv, int argc)
+{
+    static bool initialized = false;
+
+    if (!initialized)
+    {
+        initialized = true;
+        edge::SMC_Host_Initialize(argc, argv);
+    }
+
+    return 0;
+}
+#endif
 
 //----------------------------------------------------------------------------
 
@@ -655,6 +674,9 @@ const ConsoleCommand builtin_commands[] = {{"cat", ConsoleCommandType},
                                            {"quit", ConsoleCommandQuitEDGE},
                                            {"exit", ConsoleCommandQuitEDGE},
                                            {"memory", ConsoleCommandMemory},
+#ifdef EDGE_SNAPMAP
+                                           {"snapmap", ConsoleCommandSnapMap},
+#endif
                                            // end of list
                                            {nullptr, nullptr}};
 

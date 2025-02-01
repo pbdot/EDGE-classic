@@ -39,8 +39,10 @@ bool LoadPicture(Img_c &dest, Lump_c *lump,     /* Lump containing picture */
                  int        *pic_width  = NULL, /* To return the size of the picture */
                  int        *pic_height = NULL);       /* (can be NULL) */
 
+#ifdef _FLTK_DISABLED
 Img_c *LoadImage_PNG(Lump_c *lump, const char *name);
 Img_c *LoadImage_JPEG(Lump_c *lump, const char *name);
+#endif
 Img_c *LoadImage_TGA(Lump_c *lump, const char *name);
 
 // Determine the image format of the given wad lump.

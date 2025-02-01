@@ -1420,7 +1420,7 @@ void SortSegs()
 }
 
 /* ----- ZDoom format writing --------------------------- */
-
+#ifdef _FLTK_DISABLED
 static const u8_t *lev_XNOD_magic = (u8_t *)"XNOD";
 static const u8_t *lev_XGL3_magic = (u8_t *)"XGL3";
 static const u8_t *lev_ZNOD_magic = (u8_t *)"ZNOD";
@@ -1726,6 +1726,7 @@ void SaveXGL3Format(node_t *root_node)
     ZLibFinishLump();
 }
 
+#endif
 /* ----- whole-level routines --------------------------- */
 
 void LoadLevel()
@@ -1939,8 +1940,9 @@ build_result_e SaveLevel(node_t *root_node)
     if (force_xnod && num_real_lines > 0)
     {
         SortSegs();
-
+#ifdef _FLTK_DISABLED
         SaveZDFormat(root_node);
+#endif        
     }
     else
     {
@@ -1992,8 +1994,9 @@ build_result_e SaveUDMF(node_t *root_node)
     if (num_real_lines >= 0)
     {
         SortSegs();
-
+#ifdef _FLTK_DISABLED
         SaveXGL3Format(root_node);
+#endif        
     }
 
     edit_wad->EndWrite();
