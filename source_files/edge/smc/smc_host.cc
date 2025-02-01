@@ -3,9 +3,9 @@
 
 namespace edge
 {
-void SMC_Host_Initialize(int argc, char *argv[])
+void SMC_Host_Initialize()
 {
-    smc::SMC_Main(argc, argv);
+    smc::SMC_Main();
 }
 
 } // namespace edge

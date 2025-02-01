@@ -308,10 +308,12 @@ void UI_MainWindow::ShowFindAndReplace()
 
 void UI_MainWindow::UpdateTotals()
 {
+#ifdef _FLTK_DISABLED
     thing_box->UpdateTotal();
     line_box->UpdateTotal();
     sec_box->UpdateTotal();
     vert_box->UpdateTotal();
+#endif    
 }
 
 int UI_MainWindow::GetPanelObjNum() const
@@ -564,9 +566,11 @@ void UI_MainWindow::Delay(int steps)
 
 void UI_MainWindow::UpdateGameInfo()
 {
+#ifdef _FLTK_DISABLED    
     thing_box->UpdateGameInfo();
     line_box->UpdateGameInfo();
     sec_box->UpdateGameInfo();
+#endif    
 }
 
 // draw() and handle() are overridden here merely to prevent fatal

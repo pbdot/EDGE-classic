@@ -24,6 +24,8 @@
 //
 //------------------------------------------------------------------------
 
+#include "epi_filesystem.h"
+
 #include "smc_main.h"
 
 #include <time.h>
@@ -231,6 +233,10 @@ static void CreateHomeDirs()
 
 static void Determine_HomeDir(const char *argv0)
 {
+    // fixme
+    home_dir = "C:/Dev/smc";
+    log_file = "C:/Dev/smc/log.txt";
+    cache_dir  = "C:/Dev/smc/cache";;
 #ifdef _FLTK_DISABLED
     // already set by cmd-line option?
     if (!home_dir)
@@ -301,6 +307,8 @@ static void Determine_HomeDir(const char *argv0)
 
 static void Determine_InstallPath(const char *argv0)
 {
+    install_dir = "C:/Dev/smc";
+
     // already set by cmd-line option?
     if (!install_dir)
     {
@@ -348,6 +356,8 @@ static void Determine_InstallPath(const char *argv0)
 const char *GameNameFromIWAD(const char *iwad_name)
 {
     static char game_name[SMC_PATH_MAX];
+
+    strcpy(game_name, epi::GetStem(iwad_name).c_str());
 
 #ifdef _FLTK_DISABLED
     strcpy(game_name, fl_filename_name(iwad_name));
@@ -765,7 +775,9 @@ void Main_Loop()
         // TODO: handle these in a better way
         main_win->UpdateTitle(MadeChanges ? '*' : 0);
 
+#ifdef _FLTK_DISABLED
         main_win->scroll->UpdateBounds();
+#endif        
 
         if (edit.Selected->empty())
             edit.error_mode = false;
@@ -979,13 +991,13 @@ static void ShowTime()
 //
 //  the program starts here
 //
-int SMC_Main(int argc, char *argv[])
+int SMC_Main()
 {
     init_progress = 0;
 
     // a quick pass through the command line arguments
     // to handle special options, like --help, --install, --config
-    M_ParseCommandLine(argc - 1, argv + 1, 1);
+    // M_ParseCommandLine(argc - 1, argv + 1, 1);
 
     if (show_help)
     {
@@ -1009,8 +1021,10 @@ int SMC_Main(int argc, char *argv[])
 
     ShowTime();
 
-    Determine_InstallPath(argv[0]);
-    Determine_HomeDir(argv[0]);
+    const char* fixme = "C:/Dev/smc/edge-classic.exe";
+
+    Determine_InstallPath(fixme);
+    Determine_HomeDir(fixme);
 
     LogOpenFile(log_file);
 
@@ -1021,7 +1035,7 @@ int SMC_Main(int argc, char *argv[])
     M_ParseEnvironmentVars();
 
     // and command line arguments will override both
-    M_ParseCommandLine(argc - 1, argv + 1, 2);
+    // M_ParseCommandLine(argc - 1, argv + 1, 2);
 
     Editor_Init();
 

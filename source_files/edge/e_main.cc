@@ -100,6 +100,11 @@
 #include <mimalloc.h>
 #endif
 
+// temporarily here, should be able to run a console command from the command line
+#ifdef EDGE_SNAPMAP
+#include "smc/smc_host.h"
+#endif
+
 extern ImageData *ReadAsEpiBlock(Image *rim);
 
 extern ConsoleVariable busy_wait;
@@ -2340,6 +2345,10 @@ static void EdgeStartup(void)
 #else
     LuaInit();
     LuaLoadScripts();
+#endif
+
+#ifdef EDGE_SNAPMAP
+    edge::SMC_Host_Initialize();
 #endif
 }
 

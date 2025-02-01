@@ -44,7 +44,8 @@ void M_AddKnownIWAD(const char *path)
 
     const char *game = GameNameFromIWAD(path);
 
-    known_iwads[game] = std::string(absolute_name);
+    const char* fixme = "C:/Dev/EDGE-classic-smc/doom2.wad";
+    known_iwads[game] = std::string(fixme/*absolute_name*/);
 }
 
 const char *M_QueryKnownIWAD(const char *game)

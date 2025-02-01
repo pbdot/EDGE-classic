@@ -3,5 +3,5 @@
 
 namespace smc
 {
-int SMC_Main(int argc, char *argv[]);
+int SMC_Main();
 }

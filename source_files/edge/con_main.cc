@@ -571,7 +571,7 @@ static int ConsoleCommandSnapMap(char **argv, int argc)
     if (!initialized)
     {
         initialized = true;
-        edge::SMC_Host_Initialize(argc, argv);
+        edge::SMC_Host_Initialize();
     }
 
     return 0;
