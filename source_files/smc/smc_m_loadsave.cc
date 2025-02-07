@@ -41,9 +41,6 @@
 #include "smc_w_rawdef.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-#include "smc_ui_file.h"
-
 namespace smc
 {
 
@@ -177,6 +174,7 @@ static bool Project_AskFile(char *filename)
 #endif
 }
 
+#ifdef _FLTK_DISABLED
 void Project_ApplyChanges(UI_ProjectSetup *dialog)
 {
     // grab the new information
@@ -212,9 +210,11 @@ void Project_ApplyChanges(UI_ProjectSetup *dialog)
     Fl::wait(0.1);
 #endif
 }
+#endif
 
 void CMD_ManageProject()
 {
+#ifdef _FLTK_DISABLED
     UI_ProjectSetup *dialog = new UI_ProjectSetup(false /* new_project */, false /* is_startup */);
 
     bool ok = dialog->Run();
@@ -225,6 +225,7 @@ void CMD_ManageProject()
     }
 
     delete dialog;
+#endif
 }
 
 void CMD_NewProject()
@@ -239,8 +240,8 @@ void CMD_NewProject()
     if (!Project_AskFile(filename))
         return;
 
-    /* second, query what Game, Port and Resources to use */
-
+/* second, query what Game, Port and Resources to use */
+#ifdef _FLTK_DISABLED
     UI_ProjectSetup *dialog = new UI_ProjectSetup(true /* new_project */, false /* is_startup */);
 
     bool ok = dialog->Run();
@@ -250,7 +251,7 @@ void CMD_NewProject()
         delete dialog;
         return;
     }
-
+#endif
     /* third, delete file if it already exists
        [ the file chooser should have asked for confirmation ]
      */
@@ -263,7 +264,9 @@ void CMD_NewProject()
         {
             DLG_Notify("Unable to delete the existing file.");
 
+#ifdef _FLTK_DISABLED
             delete dialog;
+#endif
             return;
         }
 
@@ -276,10 +279,11 @@ void CMD_NewProject()
     RemoveEditWad();
 
     // this calls Main_LoadResources which resets the master directory
+#ifdef _FLTK_DISABLED
     Project_ApplyChanges(dialog);
 
     delete dialog;
-
+#endif
     // determine map name (same as first level in the IWAD)
     const char *map_name = "MAP01";
 
@@ -314,6 +318,7 @@ void CMD_NewProject()
 
 bool MissingIWAD_Dialog()
 {
+#ifdef _FLTK_DISABLED
     UI_ProjectSetup *dialog = new UI_ProjectSetup(false /* new_project */, true /* is_startup */);
 
     bool ok = dialog->Run();
@@ -330,6 +335,9 @@ bool MissingIWAD_Dialog()
     delete dialog;
 
     return ok;
+#else
+    return true;
+#endif
 }
 
 void CMD_FreshMap()
@@ -349,6 +357,7 @@ void CMD_FreshMap()
     if (!Main_ConfirmQuit("create a fresh map"))
         return;
 
+#ifdef _FLTK_DISABLED
     UI_ChooseMap *dialog = new UI_ChooseMap(Level_name);
 
     dialog->PopulateButtons(toupper(Level_name[0]), edit_wad);
@@ -378,6 +387,7 @@ void CMD_FreshMap()
 
     // save it now : sets Level_name and window title
     SaveLevel(map_name);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -947,12 +957,12 @@ void LoadLevel(Wad_file *wad, const char *level)
     edit.Selected->clear_all();
     edit.highlight.clear();
 
+#ifdef _FLTK_DISABLED
     main_win->UpdateTotals();
     main_win->UpdateGameInfo();
     main_win->InvalidatePanelObj();
-#ifdef _FLTK_DISABLED
+
     main_win->redraw();
-#endif
 
     if (main_win)
     {
@@ -968,6 +978,7 @@ void LoadLevel(Wad_file *wad, const char *level)
             M_DefaultUserState();
         }
     }
+#endif
 
     Level_name = StringUpper(level);
 
@@ -1114,6 +1125,7 @@ void OpenFileMap(const char *filename, const char *map_name)
 
 void CMD_OpenMap()
 {
+#ifdef _FLTK_DISABLED
     if (!Main_ConfirmQuit("open another map"))
         return;
 
@@ -1178,6 +1190,7 @@ void CMD_OpenMap()
         // less importantly, we need to know the Level_format.
         Main_LoadResources();
     }
+#endif
 }
 
 void CMD_GivenFile()
@@ -1635,6 +1648,7 @@ static void SaveLevel(const char *level)
 
     Status_Set("Saved %s", Level_name);
 
+#ifdef _FLTK_DISABLED
     if (main_win)
     {
         main_win->SetTitle(edit_wad->PathName(), Level_name, false);
@@ -1642,6 +1656,7 @@ static void SaveLevel(const char *level)
         // save the user state associated with this map
         M_SaveUserState();
     }
+#endif
 
     MadeChanges = 0;
 }
@@ -1838,6 +1853,7 @@ void CMD_CopyMap()
 
     // ask user for map name
 
+#ifdef _FLTK_DISABLED
     UI_ChooseMap *dialog = new UI_ChooseMap(Level_name, edit_wad);
 
     dialog->PopulateButtons(toupper(Level_name[0]), edit_wad);
@@ -1864,10 +1880,12 @@ void CMD_CopyMap()
     SaveLevel(new_name);
 
     Status_Set("Copied to %s", Level_name);
+#endif
 }
 
 void CMD_RenameMap()
 {
+#ifdef _FLTK_DISABLED    
     if (!edit_wad)
     {
         DLG_Notify("Cannot rename a map unless editing a PWAD.");
@@ -1933,6 +1951,7 @@ void CMD_RenameMap()
     main_win->SetTitle(edit_wad->PathName(), Level_name, false);
 
     Status_Set("Renamed to %s", Level_name);
+#endif
 }
 
 void CMD_DeleteMap()

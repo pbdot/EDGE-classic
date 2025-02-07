@@ -38,7 +38,6 @@
 #include "smc_e_objects.h"
 #include "smc_w_rawdef.h"
 #include "smc_w_texture.h"
-#include "smc_ui_window.h"
 
 namespace smc
 {
@@ -65,7 +64,7 @@ void UI_Check_base::close_callback(Fl_Widget *w, void *data)
 #endif
 
 UI_Check_base::UI_Check_base(int W, int H, bool all_mode, const char *L, const char *header_txt)
-    : UI_Escapable_Window(W, H, L), want_close(false), user_action(CKR_OK), worst_severity(0)
+    //: UI_Escapable_Window(W, H, L), want_close(false), user_action(CKR_OK), worst_severity(0)
 {
     cy = 10;
 
@@ -776,7 +775,9 @@ void Sectors_LogUnknown()
 
     LogPrintf("}\n");
 
+#ifdef _FLTK_DISABLED    
     LogViewer_Open();
+#endif
 }
 
 void Sectors_ClearUnknown()
@@ -1321,8 +1322,9 @@ void Things_LogUnknown()
         LogPrintf("  %5d  x %d\n", IT->first, IT->second);
 
     LogPrintf("}\n");
-
+#ifdef _FLTK_DISABLED
     LogViewer_Open();
+#endif    
 }
 
 void Things_RemoveUnknown()
@@ -2272,7 +2274,9 @@ void LineDefs_LogUnknown()
 
     LogPrintf("}\n");
 
+#ifdef _FLTK_DISABLED    
     LogViewer_Open();
+#endif    
 }
 
 void LineDefs_ClearUnknown()
@@ -3575,7 +3579,9 @@ void Textures_LogTransparent()
 
     LogPrintf("}\n");
 
+#ifdef _FLTK_DISABLED    
     LogViewer_Open();
+#endif
 }
 
 static int check_medusa(const char *tex, std::map<std::string, int> &names)
@@ -3671,7 +3677,9 @@ void Textures_LogMedusa()
 
     LogPrintf("}\n");
 
+#ifdef _FLTK_DISABLED
     LogViewer_Open();
+#endif
 }
 
 void Textures_FindUnknownTex(selection_c &lines, std::map<std::string, int> &names)
@@ -3775,7 +3783,9 @@ void Textures_LogUnknown(bool do_flat)
 
     LogPrintf("}\n");
 
+#ifdef _FLTK_DISABLED
     LogViewer_Open();
+#endif
 }
 
 void Textures_FixUnknownTex()

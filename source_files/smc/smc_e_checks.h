@@ -26,8 +26,6 @@
 
 #pragma once
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -54,7 +52,7 @@ typedef enum
 
 } check_result_e;
 
-class UI_Check_base : public UI_Escapable_Window
+class UI_Check_base /* : public UI_Escapable_Window */
 {
   protected:
     bool want_close;

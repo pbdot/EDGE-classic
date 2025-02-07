@@ -35,8 +35,6 @@
 #include "smc_r_render.h"
 #include "smc_w_rawdef.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -821,8 +819,10 @@ void CMD_CopyAndPaste()
 
 void CMD_Clipboard_Cut()
 {
+#ifdef _FLTK_DISABLED    
     if (main_win->ClipboardOp('x'))
         return;
+#endif
 
     if (edit.render3d && edit.mode != OBJ_THINGS)
     {
@@ -841,8 +841,10 @@ void CMD_Clipboard_Cut()
 
 void CMD_Clipboard_Copy()
 {
+    #ifdef _FLTK_DISABLED    
     if (main_win->ClipboardOp('c'))
         return;
+    #endif
 
     if (edit.render3d && edit.mode != OBJ_THINGS)
     {
@@ -859,8 +861,10 @@ void CMD_Clipboard_Copy()
 
 void CMD_Clipboard_Paste()
 {
+    #ifdef _FLTK_DISABLED    
     if (main_win->ClipboardOp('v'))
         return;
+    #endif
 
     if (edit.render3d && edit.mode != OBJ_THINGS)
     {
@@ -1212,8 +1216,10 @@ void DeleteObjects_WithUnused(selection_c *list, bool keep_things, bool keep_ver
 
 void CMD_Delete()
 {
+    #ifdef _FLTK_DISABLED    
     if (main_win->ClipboardOp('d'))
         return;
+    #endif
 
     soh_type_e unselect = Selection_Or_Highlight();
     if (unselect == SOH_Empty)

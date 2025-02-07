@@ -45,10 +45,6 @@
 #include "smc_w_texture.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-#include "smc_ui_about.h"
-#include "smc_ui_file.h"
-
 #ifndef WIN32
 #include <time.h>
 #endif
@@ -234,9 +230,10 @@ static void CreateHomeDirs()
 static void Determine_HomeDir(const char *argv0)
 {
     // fixme
-    home_dir = "C:/Dev/smc";
-    log_file = "C:/Dev/smc/log.txt";
-    cache_dir  = "C:/Dev/smc/cache";;
+    home_dir  = "C:/Dev/smc";
+    log_file  = "C:/Dev/smc/log.txt";
+    cache_dir = "C:/Dev/smc/cache";
+    ;
 #ifdef _FLTK_DISABLED
     // already set by cmd-line option?
     if (!home_dir)
@@ -773,11 +770,13 @@ void Main_Loop()
         }
 
         // TODO: handle these in a better way
+#ifdef _FLTK_DISABLED
         main_win->UpdateTitle(MadeChanges ? '*' : 0);
+#endif
 
 #ifdef _FLTK_DISABLED
         main_win->scroll->UpdateBounds();
-#endif        
+#endif
 
         if (edit.Selected->empty())
             edit.error_mode = false;
@@ -917,6 +916,7 @@ void Main_LoadResources()
     // reset sector info (for slopes and 3D floors)
     Subdiv_InvalidateAll();
 
+#ifdef _FLTK_DISABLED
     if (main_win)
     {
         // kill all loaded OpenGL images
@@ -930,6 +930,7 @@ void Main_LoadResources()
         // TODO: only call this when the IWAD has changed
         Props_LoadValues();
     }
+#endif
 }
 
 /* ----- user information ----------------------------- */
@@ -1021,7 +1022,7 @@ int SMC_Main()
 
     ShowTime();
 
-    const char* fixme = "C:/Dev/smc/edge-classic.exe";
+    const char *fixme = "C:/Dev/smc/edge-classic.exe";
 
     Determine_InstallPath(fixme);
     Determine_HomeDir(fixme);
@@ -1103,7 +1104,6 @@ int SMC_Main()
     {
         return -1;
     }
-        
 
     DeterminePort();
 
@@ -1136,6 +1136,31 @@ void SMC_Shutdown()
 
     MasterDir_CloseAll();
     LogClose();
+}
+
+void DLG_Notify(const char *msg, ...)
+{
+
+}
+
+int  DLG_Confirm(const char *buttons, const char *msg, ...)
+{
+    return 0;
+}
+
+void DLG_ShowError(const char *msg, ...)
+{
+
+}
+
+void Status_Set(const char *fmt, ...)
+{
+
+}
+
+void Status_Clear()
+{
+    
 }
 
 } // namespace smc

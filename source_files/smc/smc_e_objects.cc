@@ -39,8 +39,6 @@
 #include "smc_r_grid.h"
 #include "smc_w_rawdef.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 

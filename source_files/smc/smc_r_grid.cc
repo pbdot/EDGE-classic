@@ -28,7 +28,6 @@
 
 #include "smc_r_grid.h"
 #include "smc_e_main.h"
-#include "smc_ui_window.h"
 
 namespace smc
 {
@@ -74,8 +73,10 @@ void Grid_State_c::Init()
     {
         shown = false;
 
+#ifdef _FLTK_DISABLED
         if (main_win)
             main_win->info_bar->SetGrid(-1);
+#endif
     }
     else
     {
@@ -84,8 +85,10 @@ void Grid_State_c::Init()
 
     snap = grid_default_snap;
 
+#ifdef _FLTK_DISABLED
     if (main_win)
         main_win->info_bar->UpdateSnap();
+#endif
 }
 
 void Grid_State_c::MoveTo(double x, double y)
@@ -97,6 +100,7 @@ void Grid_State_c::MoveTo(double x, double y)
     orig_x = x;
     orig_y = y;
 
+#ifdef _FLTK_DISABLED
     if (main_win)
     {
         main_win->scroll->AdjustPos();
@@ -104,6 +108,7 @@ void Grid_State_c::MoveTo(double x, double y)
 
         RedrawMap();
     }
+#endif
 }
 
 void Grid_State_c::Scroll(double delta_x, double delta_y)
@@ -397,11 +402,13 @@ void Grid_State_c::RefocusZoom(double map_x, double map_y, float before_Scale)
     orig_x += (map_x - orig_x) * dist_factor;
     orig_y += (map_y - orig_y) * dist_factor;
 
+#ifdef _FLTK_DISABLED
     if (main_win)
     {
         main_win->canvas->PointerPos();
         RedrawMap();
     }
+#endif
 }
 
 const double Grid_State_c::scale_values[] = {
@@ -428,13 +435,14 @@ void Grid_State_c::RawSetScale(int i)
 
     Scale = scale_values[i];
 
+#ifdef _FLTK_DISABLED
     if (!main_win)
         return;
 
     main_win->scroll->AdjustPos();
     main_win->canvas->PointerPos();
     main_win->info_bar->SetScale(Scale);
-
+#endif
     RedrawMap();
 }
 
@@ -446,16 +454,20 @@ void Grid_State_c::RawSetStep(int i)
     {
         shown = false;
 
+#ifdef _FLTK_DISABLED
         if (main_win)
             main_win->info_bar->SetGrid(-1);
+#endif
     }
     else
     {
         shown = true;
         step  = grid_values[i];
 
+#ifdef _FLTK_DISABLED        
         if (main_win)
             main_win->info_bar->SetGrid(step);
+#endif            
     }
 
     if (grid_hide_in_free_mode)
@@ -469,8 +481,10 @@ void Grid_State_c::ForceStep(int new_step)
     step  = new_step;
     shown = true;
 
+#ifdef _FLTK_DISABLED    
     if (main_win)
         main_win->info_bar->SetGrid(step);
+#endif
 
     if (grid_hide_in_free_mode)
         SetSnap(shown);
@@ -578,6 +592,7 @@ void Grid_State_c::RawSetShown(bool new_value)
 {
     shown = new_value;
 
+#ifdef _FLTK_DISABLED    
     if (!main_win)
         return;
 
@@ -592,6 +607,7 @@ void Grid_State_c::RawSetShown(bool new_value)
     main_win->info_bar->SetGrid(step);
 
     RedrawMap();
+#endif    
 }
 
 void Grid_State_c::SetShown(bool enable)
@@ -617,8 +633,10 @@ void Grid_State_c::SetSnap(bool enable)
     if (grid_hide_in_free_mode && snap != shown)
         SetShown(snap);
 
+#ifdef _FLTK_DISABLED        
     if (main_win)
         main_win->info_bar->UpdateSnap();
+#endif
 
     RedrawMap();
 }
@@ -679,8 +697,10 @@ bool Grid_ParseUser(const char **tokens, int num_tok)
     {
         grid.snap = atoi(tokens[1]) ? true : false;
 
+#ifdef _FLTK_DISABLED        
         if (main_win)
             main_win->info_bar->UpdateSnap();
+#endif            
 
         return true;
     }

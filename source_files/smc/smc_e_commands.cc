@@ -43,10 +43,6 @@
 #include "smc_m_nodes.h"
 #include "smc_r_render.h"
 #include "smc_r_subdiv.h"
-#include "smc_ui_window.h"
-#include "smc_ui_about.h"
-#include "smc_ui_misc.h"
-#include "smc_ui_prefs.h"
 
 namespace smc
 {
@@ -171,7 +167,9 @@ void CMD_Undo()
     }
 
     RedrawMap();
+#ifdef _FLTK_DISABLED
     main_win->UpdatePanelObj();
+#endif
 }
 
 void CMD_Redo()
@@ -183,7 +181,9 @@ void CMD_Redo()
     }
 
     RedrawMap();
+#ifdef _FLTK_DISABLED
     main_win->UpdatePanelObj();
+#endif
 }
 
 static void SetGamma(int new_val)
@@ -192,9 +192,11 @@ static void SetGamma(int new_val)
 
     W_UpdateGamma();
 
+#ifdef _FLTK_DISABLED
     // for OpenGL, need to reload all images
     if (main_win && main_win->canvas)
         main_win->canvas->DeleteContext();
+#endif
 
     Status_Set("gamma level %d", usegamma);
 
@@ -236,8 +238,10 @@ void CMD_SetVar()
         int is_visible = 0;
 #endif
 
+#ifdef _FLTK_DISABLED
         if (want_vis != is_visible)
             main_win->BrowserMode('/');
+#endif
     }
     else if (y_stricmp(var_name, "grid") == 0)
     {
@@ -264,7 +268,10 @@ void CMD_SetVar()
     else if (y_stricmp(var_name, "ratio") == 0)
     {
         grid.ratio = CLAMP(0, int_val, 7);
+
+#ifdef _FLTK_DISABLED
         main_win->info_bar->UpdateRatio();
+#endif
         RedrawMap();
     }
     else if (y_stricmp(var_name, "sec_render") == 0)
@@ -305,11 +312,15 @@ void CMD_ToggleVar()
     {
         Editor_ClearAction();
 
+#ifdef _FLTK_DISABLED
         main_win->BrowserMode('/');
+#endif
     }
     else if (y_stricmp(var_name, "recent") == 0)
     {
+#ifdef _FLTK_DISABLED
         main_win->browser->ToggleRecent();
+#endif
     }
     else if (y_stricmp(var_name, "grid") == 0)
     {
@@ -340,7 +351,9 @@ void CMD_ToggleVar()
         else
             grid.ratio++;
 
+#ifdef _FLTK_DISABLED
         main_win->info_bar->UpdateRatio();
+#endif
         RedrawMap();
     }
     else if (y_stricmp(var_name, "sec_render") == 0)
@@ -383,12 +396,14 @@ void CMD_BrowserMode()
     }
 #endif
 
+#ifdef _FLTK_DISABLED
     main_win->BrowserMode(mode);
 
     if (Exec_HasFlag("/recent"))
     {
         main_win->browser->ToggleRecent(true /* force */);
     }
+#endif
 }
 
 void CMD_Scroll()
@@ -403,7 +418,11 @@ void CMD_Scroll()
         return;
     }
 
+#ifdef _FLTK_DISABLED
     int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+    int base_size = 0;
+#endif
 
     delta_x = delta_x * base_size / 100.0 / grid.Scale;
     delta_y = delta_y * base_size / 100.0 / grid.Scale;
@@ -424,9 +443,14 @@ void CMD_NAV_Scroll_Left()
     if (!edit.is_navigating)
         Editor_ClearNav();
 
-    float perc      = atof(EXEC_Param[0]);
-    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-    edit.nav_left   = perc * base_size / 100.0 / grid.Scale;
+    float perc = atof(EXEC_Param[0]);
+
+#ifdef _FLTK_DISABLED
+    int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+    int base_size = 0;
+#endif
+    edit.nav_left = perc * base_size / 100.0 / grid.Scale;
 
     Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Left_release);
 }
@@ -444,9 +468,13 @@ void CMD_NAV_Scroll_Right()
     if (!edit.is_navigating)
         Editor_ClearNav();
 
-    float perc      = atof(EXEC_Param[0]);
-    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-    edit.nav_right  = perc * base_size / 100.0 / grid.Scale;
+    float perc = atof(EXEC_Param[0]);
+#ifdef _FLTK_DISABLED
+    int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+    int base_size = 0;
+#endif
+    edit.nav_right = perc * base_size / 100.0 / grid.Scale;
 
     Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Right_release);
 }
@@ -464,9 +492,13 @@ void CMD_NAV_Scroll_Up()
     if (!edit.is_navigating)
         Editor_ClearNav();
 
-    float perc      = atof(EXEC_Param[0]);
-    int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
-    edit.nav_up     = perc * base_size / 100.0 / grid.Scale;
+    float perc = atof(EXEC_Param[0]);
+#ifdef _FLTK_DISABLED
+    int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+    int base_size = 0;
+#endif
+    edit.nav_up = perc * base_size / 100.0 / grid.Scale;
 
     Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Up_release);
 }
@@ -485,7 +517,11 @@ void CMD_NAV_Scroll_Down()
         Editor_ClearNav();
 
     float perc      = atof(EXEC_Param[0]);
+#ifdef _FLTK_DISABLED        
     int   base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+    int base_size = 0;
+#endif
     edit.nav_down   = perc * base_size / 100.0 / grid.Scale;
 
     Nav_SetKey(EXEC_CurKey, &NAV_Scroll_Down_release);
@@ -625,11 +661,14 @@ static void ACT_SelectBox_release(void)
 
     // a mere click and release will unselect everything
     double x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+
+#ifdef _FLTK_DISABLED
     if (!main_win->canvas->SelboxGet(x1, y1, x2, y2))
     {
         ExecuteCommand("UnselectAll");
         return;
     }
+#endif
 
     SelectObjectsInBox(edit.Selected, edit.mode, x1, y1, x2, y2);
     RedrawMap();
@@ -655,7 +694,9 @@ static void ACT_Drag_release(void)
 
     // note: DragDelta needs edit.dragged
     double dx, dy;
+#ifdef _FLTK_DISABLED        
     main_win->canvas->DragDelta(&dx, &dy);
+#endif
 
     Objid dragged(edit.dragged);
     edit.dragged.clear();
@@ -1034,7 +1075,12 @@ void CMD_WHEEL_Scroll()
     float delta_x = wheel_dx;
     float delta_y = 0 - wheel_dy;
 
+#ifdef _FLTK_DISABLED        
     int base_size = (main_win->canvas->w() + main_win->canvas->h()) / 2;
+#else
+int base_size = 0;
+#endif
+
 
     speed = speed * base_size / 100.0 / grid.Scale;
 
@@ -1190,12 +1236,14 @@ void CMD_MoveObjects_Dialog()
     // can move things vertically in Hexen/UDMF formats
     if (edit.mode == OBJ_THINGS && Level_format != MAPF_Doom)
         want_dz = true;
-
+        
+#ifdef _FLTK_DISABLED        
     UI_MoveDialog *dialog = new UI_MoveDialog(want_dz);
 
     dialog->Run();
 
     delete dialog;
+#endif    
 
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);
@@ -1210,12 +1258,13 @@ void CMD_ScaleObjects_Dialog()
         return;
     }
 
+#ifdef _FLTK_DISABLED    
     UI_ScaleDialog *dialog = new UI_ScaleDialog();
 
     dialog->Run();
 
     delete dialog;
-
+#endif
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);
 }
@@ -1229,12 +1278,13 @@ void CMD_RotateObjects_Dialog()
         return;
     }
 
+#ifdef _FLTK_DISABLED    
     UI_RotateDialog *dialog = new UI_RotateDialog();
 
     dialog->Run();
 
     delete dialog;
-
+#endif
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);
 }
@@ -1334,17 +1384,23 @@ void CMD_BR_Scroll()
 
 void CMD_DefaultProps()
 {
+#ifdef _FLTK_DISABLED    
     main_win->ShowDefaultProps();
+#endif
 }
 
 void CMD_FindDialog()
 {
+#ifdef _FLTK_DISABLED    
     main_win->ShowFindAndReplace();
+#endif
 }
 
 void CMD_FindNext()
 {
+#ifdef _FLTK_DISABLED    
     main_win->find_box->FindNext();
+#endif
 }
 
 void CMD_RecalcSectors()
@@ -1355,7 +1411,9 @@ void CMD_RecalcSectors()
 
 void CMD_LogViewer()
 {
+#ifdef _FLTK_DISABLED    
     LogViewer_Open();
+#endif
 }
 
 void CMD_OnlineDocs()
@@ -1371,7 +1429,9 @@ void CMD_OnlineDocs()
 
 void CMD_AboutDialog()
 {
+#ifdef _FLTK_DISABLED    
     DLG_AboutText();
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -1523,7 +1583,9 @@ static editor_command_t command_table[] = {
 
     /* ------ TOOLS menu ------ */
 
+#ifdef _FLTK_DISABLED    
     {"PreferenceDialog", "Tools", &CMD_Preferences},
+#endif
 
     {"TestMap", "Tools", &CMD_TestMap},
 

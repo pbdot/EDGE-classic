@@ -24,8 +24,6 @@
 #include "smc_m_loadsave.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -47,7 +45,7 @@ static const char *QueryName(const char *port = Port_name, const char *game = Ga
     return port;
 }
 
-class UI_PortPathDialog : public UI_Escapable_Window
+class UI_PortPathDialog /*: public UI_Escapable_Window */
 {
   public:
 #ifdef _FLTK_DISABLED
@@ -134,7 +132,7 @@ class UI_PortPathDialog : public UI_Escapable_Window
 
   public:
     UI_PortPathDialog(const char *port_name)
-        : UI_Escapable_Window(560, 250, "Port Settings"), exe_name(NULL), want_close(false)
+        //: UI_Escapable_Window(560, 250, "Port Settings"), exe_name(NULL), want_close(false)
     {
         char message_buf[256];
 

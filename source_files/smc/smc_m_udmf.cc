@@ -26,8 +26,6 @@
 #include "smc_w_texture.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 

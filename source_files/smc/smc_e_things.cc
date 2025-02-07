@@ -32,8 +32,6 @@
 #include "smc_m_bitvec.h"
 #include "smc_w_rawdef.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -76,7 +74,9 @@ void CMD_TH_SpinThings(void)
 
     BA_End();
 
+#ifdef _FLTK_DISABLED    
     main_win->thing_box->UpdateField(Thing::F_ANGLE);
+#endif
 
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);

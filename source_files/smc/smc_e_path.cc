@@ -35,9 +35,6 @@
 #include "smc_r_render.h"
 #include "smc_w_rawdef.h"
 
-#include "smc_ui_window.h"
-#include "smc_ui_misc.h"
-
 namespace smc
 {
 
@@ -376,7 +373,12 @@ void GoToSelection()
     // zoom out until selected objects fit on screen
     for (int loop = 0; loop < 30; loop++)
     {
+
+#ifdef _FLTK_DISABLED
         int eval = main_win->canvas->ApproxBoxSize(x1, y1, x2, y2);
+#else
+        int eval = 0;
+#endif
 
         if (eval <= 0)
             break;
@@ -390,7 +392,11 @@ void GoToSelection()
         if (grid.Scale >= 1.0)
             break;
 
+#ifdef _FLTK_DISABLED            
         int eval = main_win->canvas->ApproxBoxSize(x1, y1, x2, y2);
+#else
+        int eval = 0;
+#endif
 
         if (eval >= 0)
             break;
@@ -430,6 +436,7 @@ void CMD_JumpToObject(void)
         return;
     }
 
+#ifdef _FLTK_DISABLED    
     UI_JumpToDialog *dialog = new UI_JumpToDialog(NameForObjectType(edit.mode), total - 1);
 
     int num = dialog->Run();
@@ -443,6 +450,7 @@ void CMD_JumpToObject(void)
     SYS_ASSERT(num < total);
 
     GoToObject(Objid(edit.mode, num));
+#endif    
 }
 
 void CMD_NextObject()

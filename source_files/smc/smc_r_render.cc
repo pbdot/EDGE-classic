@@ -40,7 +40,6 @@
 #include "smc_m_events.h"
 #include "smc_r_render.h"
 #include "smc_r_subdiv.h"
-#include "smc_ui_window.h"
 
 namespace smc
 {
@@ -641,8 +640,13 @@ void Render3D_Draw(int ox, int oy, int ow, int oh)
 
 bool Render3D_Query(Objid &hl, int sx, int sy)
 {
+#ifdef _FLTK_DISABLED
     int ow = main_win->canvas->w();
     int oh = main_win->canvas->h();
+#else
+    int ow = 800;
+    int oh = 600;
+#endif
 
 #ifdef NO_OPENGL
     // in OpenGL mode, UI_Canvas is a window and that means the
@@ -733,7 +737,6 @@ void Render3D_Enable(bool _enable)
     // give keyboard focus to the appropriate large widget
 #ifdef _FLTK_DISABLED
     Fl::focus(main_win->canvas);
-#endif
 
     main_win->scroll->UpdateRenderMode();
     main_win->info_bar->UpdateSecRend();
@@ -750,6 +753,7 @@ void Render3D_Enable(bool _enable)
         main_win->canvas->PointerPos();
         main_win->info_bar->SetMouse(edit.map_x, edit.map_y);
     }
+#endif
 
     RedrawMap();
 }
@@ -809,13 +813,19 @@ void Render3D_ScrollMap(int dx, int dy, keycode_t mod)
         r_view.gravity = false;
     }
 
+#ifdef _FLTK_DISABLED    
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif    
     RedrawMap();
 }
 
 static void DragSectors_Update()
 {
+#ifdef _FLTK_DISABLED    
     float ow      = main_win->canvas->w();
+#else    
+    float ow = 800;
+#endif
     float x_slope = 100.0 / render_pixel_aspect;
 
     float factor = CLAMP(20, edit.drag_point_dist, 1000) / (ow * x_slope * 0.5);
@@ -866,7 +876,11 @@ void Render3D_DragSectors()
 
 static void DragThings_Update()
 {
+#ifdef _FLTK_DISABLED    
     float ow = main_win->canvas->w();
+#else
+    float ow = 800;
+#endif    
     //	float oh = main_win->canvas->h();
 
     float x_slope = 100.0 / render_pixel_aspect;
@@ -1061,8 +1075,8 @@ void Render3D_UpdateHighlight()
             edit.highlight = current_hl;
     }
 
-    main_win->canvas->UpdateHighlight();
 #ifdef _FLTK_DISABLED
+    main_win->canvas->UpdateHighlight();
     main_win->canvas->redraw();
 
     main_win->status_bar->redraw();
@@ -1121,7 +1135,9 @@ void Render3D_Navigate()
         r_view.SetAngle(r_view.angle + dang);
     }
 
+#ifdef _FLTK_DISABLED    
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif    
     RedrawMap();
 }
 
@@ -1602,7 +1618,9 @@ void R3D_Forward()
     r_view.x += r_view.Cos * dist;
     r_view.y += r_view.Sin * dist;
 
+#ifdef _FLTK_DISABLED        
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif
     RedrawMap();
 }
 
@@ -1613,7 +1631,9 @@ void R3D_Backward()
     r_view.x -= r_view.Cos * dist;
     r_view.y -= r_view.Sin * dist;
 
+#ifdef _FLTK_DISABLED
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif
     RedrawMap();
 }
 
@@ -1624,7 +1644,9 @@ void R3D_Left()
     r_view.x -= r_view.Sin * dist;
     r_view.y += r_view.Cos * dist;
 
+#ifdef _FLTK_DISABLED    
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif
     RedrawMap();
 }
 
@@ -1635,7 +1657,9 @@ void R3D_Right()
     r_view.x += r_view.Sin * dist;
     r_view.y -= r_view.Cos * dist;
 
+#ifdef _FLTK_DISABLED    
     main_win->info_bar->SetMouse(r_view.x, r_view.y);
+#endif
     RedrawMap();
 }
 

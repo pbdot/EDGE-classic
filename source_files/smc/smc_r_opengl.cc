@@ -40,8 +40,6 @@
 #include "smc_r_render.h"
 #include "smc_r_subdiv.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 

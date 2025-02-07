@@ -38,8 +38,6 @@
 #include "smc_e_sector.h"
 #include "smc_e_vertex.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -114,7 +112,9 @@ void CMD_SEC_Floor(void)
 
     BA_End();
 
+#ifdef _FLTK_DISABLED
     main_win->sec_box->UpdateField(Sector::F_FLOORH);
+#endif
 
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);
@@ -151,7 +151,9 @@ void CMD_SEC_Ceil(void)
 
     BA_End();
 
+#ifdef _FLTK_DISABLED    
     main_win->sec_box->UpdateField(Sector::F_CEILH);
+#endif
 
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);
@@ -198,7 +200,9 @@ void SectorsAdjustLight(int delta)
 
     BA_End();
 
+#ifdef _FLTK_DISABLED    
     main_win->sec_box->UpdateField(Sector::F_LIGHT);
+#endif
 }
 
 void CMD_SEC_Light(void)
@@ -249,8 +253,10 @@ void CMD_SEC_SwapFlats()
 
     BA_End();
 
+#ifdef _FLTK_DISABLED    
     main_win->sec_box->UpdateField(Sector::F_FLOOR_TEX);
     main_win->sec_box->UpdateField(Sector::F_CEIL_TEX);
+#endif
 
     if (unselect == SOH_Unselect)
         Selection_Clear(true /* nosave */);

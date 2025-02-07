@@ -34,11 +34,10 @@
 #include "smc_e_path.h"
 #include "smc_e_things.h"
 #include "smc_e_vertex.h"
+#include "smc_r_grid.h"
 #include "smc_r_render.h"
 #include "smc_r_subdiv.h"
 #include "smc_w_rawdef.h"
-
-#include "smc_ui_window.h"
 
 namespace smc
 {
@@ -79,8 +78,13 @@ static void zoom_fit()
     double xzoom = 1;
     double yzoom = 1;
 
+#ifdef _FLTK_DISABLED
     int ScrMaxX = main_win->canvas->w();
     int ScrMaxY = main_win->canvas->h();
+#else
+    int ScrMaxX = 800;
+    int ScrMaxY = 600;
+#endif
 
     if (Map_bound_x1 < Map_bound_x2)
         xzoom = ScrMaxX / (Map_bound_x2 - Map_bound_x1);
@@ -105,15 +109,17 @@ void ZoomWholeMap()
 
 void RedrawMap()
 {
+#ifdef _FLTK_DISABLED
     if (!main_win)
         return;
+#endif
 
     UpdateHighlight();
 
+#ifdef _FLTK_DISABLED
     main_win->scroll->UpdateRenderMode();
     main_win->info_bar->UpdateSecRend();
 
-#ifdef _FLTK_DISABLED
     main_win->status_bar->redraw();
     main_win->canvas->redraw();
 #endif
@@ -154,6 +160,7 @@ static void UpdatePanel()
             obj_idx = edit.Selected->find_first();
     }
 
+#ifdef _FLTK_DISABLED    
     switch (edit.mode)
     {
     case OBJ_THINGS:
@@ -175,6 +182,7 @@ static void UpdatePanel()
     default:
         break;
     }
+#endif    
 }
 
 void UpdateDrawLine()
@@ -247,7 +255,11 @@ static void UpdateSplitLine(double map_x, double map_y)
     }
 
 done:
+#ifdef _FLTK_DISABLED
     main_win->canvas->UpdateHighlight();
+#else
+    return;
+#endif
 }
 
 void UpdateHighlight()
@@ -296,8 +308,10 @@ void UpdateHighlight()
     UpdateSplitLine(edit.map_x, edit.map_y);
     UpdateDrawLine();
 
+#ifdef _FLTK_DISABLED    
     main_win->canvas->UpdateHighlight();
     main_win->canvas->CheckGridSnap();
+#endif
 
     UpdatePanel();
 }
@@ -313,8 +327,14 @@ void Editor_ClearErrorMode()
 void Editor_ChangeMode_Raw(obj_type_e new_mode)
 {
     // keep selection after a "Find All" and user dismisses panel
+#ifdef _FLTK_DISABLED
     if (new_mode == edit.mode && main_win->isSpecialPanelShown())
+#else
+    if (new_mode == edit.mode)
+#endif
+    {
         edit.error_mode = false;
+    }
 
     edit.mode = new_mode;
 
@@ -354,7 +374,9 @@ void Editor_ChangeMode(char mode_char)
     {
         Selection_Push();
 
+#ifdef _FLTK_DISABLED
         main_win->NewEditMode(edit.mode);
+#endif
 
         // convert the selection
         selection_c *prev_sel = edit.Selected;
@@ -363,11 +385,13 @@ void Editor_ChangeMode(char mode_char)
         ConvertSelection(prev_sel, edit.Selected);
         delete prev_sel;
     }
+#ifdef _FLTK_DISABLED
     else if (main_win->isSpecialPanelShown())
     {
         // same mode, but this removes the special panel
         main_win->NewEditMode(edit.mode);
     }
+#endif
     // -AJA- Yadex (DEU?) would clear the selection if the mode didn't
     //       change.  We optionally emulate that behavior here.
     else if (same_mode_clears_selection)
@@ -516,9 +540,10 @@ void ObjectBox_NotifyInsert(obj_type_e type, int objnum)
     if (type != edit.mode)
         return;
 
+#ifdef _FLTK_DISABLED        
     if (objnum > main_win->GetPanelObjNum())
         return;
-
+#endif
     invalidated_panel_obj = true;
 }
 
@@ -529,8 +554,10 @@ void ObjectBox_NotifyDelete(obj_type_e type, int objnum)
     if (type != edit.mode)
         return;
 
+#ifdef _FLTK_DISABLED
     if (objnum > main_win->GetPanelObjNum())
         return;
+#endif
 
     invalidated_panel_obj = true;
 }
@@ -540,14 +567,17 @@ void ObjectBox_NotifyChange(obj_type_e type, int objnum, int field)
     if (type != edit.mode)
         return;
 
+#ifdef _FLTK_DISABLED
     if (objnum != main_win->GetPanelObjNum())
         return;
+#endif
 
     changed_panel_obj = true;
 }
 
 void ObjectBox_NotifyEnd()
 {
+#ifdef _FLTK_DISABLED
     if (invalidated_totals)
         main_win->UpdateTotals();
 
@@ -562,6 +592,7 @@ void ObjectBox_NotifyEnd()
 
     if (changed_recent_list)
         main_win->browser->RecentUpdate();
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -955,8 +986,10 @@ void Selection_Clear(bool no_save)
 
     edit.error_mode = false;
 
+#ifdef _FLTK_DISABLED
     if (main_win)
         main_win->UnselectPics();
+#endif
 
     RedrawMap();
 }
@@ -1063,7 +1096,10 @@ void CMD_LastSelection()
     {
         changed_mode = true;
         Editor_ChangeMode_Raw(last_Sel->what_type());
+
+#ifdef _FLTK_DISABLED
         main_win->NewEditMode(edit.mode);
+#endif
     }
 
     std::swap(last_Sel, edit.Selected);
@@ -1201,8 +1237,10 @@ void RecUsed_ClearAll()
     recent_flats.clear();
     recent_things.clear();
 
+#ifdef _FLTK_DISABLED
     if (main_win)
         main_win->browser->RecentUpdate();
+#endif        
 }
 
 /* --- Save and Restore --- */
@@ -1259,8 +1297,10 @@ bool RecUsed_ParseUser(const char **tokens, int num_tok)
         break;
     }
 
+#ifdef _FLTK_DISABLED    
     if (main_win)
         main_win->browser->RecentUpdate();
+#endif
 
     return true;
 }

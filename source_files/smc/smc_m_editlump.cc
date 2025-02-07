@@ -22,8 +22,6 @@
 #include "smc_m_editlump.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-
 namespace smc
 {
 
@@ -112,7 +110,7 @@ static bool ValidLumpToEdit(const char *p)
 
 //------------------------------------------------------------------------
 
-class UI_ChooseTextLump : public UI_Escapable_Window
+class UI_ChooseTextLump /*: public UI_Escapable_Window */
 {
   private:
 #ifdef _FLTK_DISABLED
@@ -155,7 +153,7 @@ class UI_ChooseTextLump : public UI_Escapable_Window
 #endif
 };
 
-UI_ChooseTextLump::UI_ChooseTextLump() : UI_Escapable_Window(420, 385, "Choose Text Lump"), action(ACT_none)
+UI_ChooseTextLump::UI_ChooseTextLump() /* : UI_Escapable_Window(420, 385, "Choose Text Lump"), action(ACT_none) */
 {
 #ifdef _FLTK_DISABLED
     resizable(NULL);
@@ -419,6 +417,7 @@ void CMD_EditLump()
 
     Wad_file *wad = edit_wad ? edit_wad : game_wad;
 
+#ifdef _FLTK_DISABLED    
     // create the editor window
     UI_TextEditor *editor = new UI_TextEditor();
 
@@ -474,6 +473,7 @@ void CMD_EditLump()
     }
 
     delete editor;
+#endif
 }
 
 //------------------------------------------------------------------------

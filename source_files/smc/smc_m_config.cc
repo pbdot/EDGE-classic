@@ -36,10 +36,8 @@
 #include "smc_m_loadsave.h"
 #include "smc_r_grid.h"
 #include "smc_r_render.h"
-#include "smc_e_main.h"    // RecUsed_xxx
+#include "smc_e_main.h" // RecUsed_xxx
 #include "smc_w_wad.h"
-
-#include "smc_ui_window.h" // Browser_xxx, Props_xxx
 
 namespace smc
 {
@@ -1032,6 +1030,7 @@ bool M_LoadUserState()
             continue;
         }
 
+#ifdef _FLTK_DISABLED
         if (Editor_ParseUser(tokens, num_tok) || Grid_ParseUser(tokens, num_tok) ||
             Render3D_ParseUser(tokens, num_tok) || Browser_ParseUser(tokens, num_tok) ||
             Props_ParseUser(tokens, num_tok) || RecUsed_ParseUser(tokens, num_tok))
@@ -1042,11 +1041,14 @@ bool M_LoadUserState()
         {
             LogPrintf("Unknown persistent data: %s\n", line);
         }
+#endif
     }
 
     fclose(fp);
 
+#ifdef _FLTK_DISABLED
     Props_LoadValues();
+#endif
 
     return true;
 }
@@ -1072,8 +1074,10 @@ bool M_SaveUserState()
     Editor_WriteUser(fp);
     Grid_WriteUser(fp);
     Render3D_WriteUser(fp);
+#ifdef _FLTK_DISABLED    
     Browser_WriteUser(fp);
     Props_WriteUser(fp);
+#endif    
     RecUsed_WriteUser(fp);
 
     fclose(fp);

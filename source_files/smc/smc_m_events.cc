@@ -31,10 +31,8 @@
 #include "smc_m_files.h"
 #include "smc_e_main.h"
 #include "smc_e_hover.h"
+#include "smc_r_grid.h"
 #include "smc_r_render.h"
-
-#include "smc_ui_window.h"
-#include "smc_ui_misc.h"
 
 namespace smc
 {
@@ -99,6 +97,7 @@ void Editor_SetAction(editor_action_e new_action)
 
 void Editor_Zoom(int delta, int mid_x, int mid_y)
 {
+
     float S1 = grid.Scale;
 
     grid.AdjustScale(delta);
@@ -147,6 +146,7 @@ void Editor_ScrollMap(int mode, int dx, int dy, keycode_t mod)
         double delta_y = ((double)dy * speed);
 
         grid.Scroll(delta_x, delta_y);
+
     }
 }
 
@@ -449,9 +449,9 @@ static void EV_EnterWindow()
 
     edit.pointer_in_window = true;
 
+#ifdef _FLTK_DISABLED
     main_win->canvas->PointerPos(true /* in_event */);
 
-#ifdef _FLTK_DISABLED
     // restore keyboard focus to the canvas
     Fl_Widget *foc = main_win->canvas;
 
@@ -501,7 +501,9 @@ void EV_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
     // unless the mouse is in the 2D/3D view (or began a drag there).
     edit.pointer_in_window = true;
 
+#ifdef _FLTK_DISABLED    
     main_win->canvas->PointerPos(true /* in_event */);
+#endif
 
     //  fprintf(stderr, "MOUSE MOTION: (%d %d)  map: (%1.2f %1.2f)\n", x, y,
     //  edit.map_x, edit.map_y);
@@ -512,8 +514,9 @@ void EV_MouseMotion(int x, int y, keycode_t mod, int dx, int dy)
         return;
     }
 
+#ifdef _FLTK_DISABLED
     main_win->info_bar->SetMouse(edit.map_x, edit.map_y);
-
+#endif
     if (edit.action == ACT_TRANSFORM)
     {
         Transform_Update();
@@ -704,8 +707,10 @@ int EV_RawWheel(int event)
 {
     ClearStickyMod();
 
-    // ensure we zoom from correct place
+#ifdef _FLTK_DISABLED    
+    // ensure we zoom from correct place    
     main_win->canvas->PointerPos(true /* in_event */);
+#endif
 
 #ifdef _FLTK_DISABLED
     wheel_dx = Fl::event_dx();
@@ -729,7 +734,9 @@ int EV_RawButton(int event)
 {
     ClearStickyMod();
 
+#ifdef _FLTK_DISABLED    
     main_win->canvas->PointerPos(true /* in_event */);
+#endif
 
     // Hack Alert : this is required to support pressing two buttons at the
     // same time.  Without this, FLTK does not send us the second button

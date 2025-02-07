@@ -23,8 +23,6 @@
 #include "smc_e_main.h"
 #include "smc_w_wad.h"
 
-#include "smc_ui_window.h"
-
 #include "smc_bsp.h"
 
 namespace smc

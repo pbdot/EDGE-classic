@@ -34,7 +34,10 @@ static bool log_window_open;
 static std::vector<const char *> kept_messages;
 
 // hack here to avoid bringing in ui_window.h and FLTK headers
+
+#ifdef _FLTK_DISABLED    
 extern void LogViewer_AddLine(const char *str);
+#endif
 
 void LogOpenFile(const char *filename)
 {
@@ -57,8 +60,10 @@ void LogOpenWindow()
 
     // retrieve all messages saved so far
 
+#ifdef _FLTK_DISABLED        
     for (unsigned int i = 0; i < kept_messages.size(); i++)
         LogViewer_AddLine(kept_messages[i]);
+#endif
 }
 
 void LogClose()
@@ -93,10 +98,12 @@ void LogPrintf(const char *str, ...)
         fflush(log_fp);
     }
 
+#ifdef _FLTK_DISABLED        
     if (log_window_open && !in_fatal_error)
         LogViewer_AddLine(buffer);
     else
         kept_messages.push_back(StringDup(buffer));
+#endif
 
     if (!Quiet)
     {
