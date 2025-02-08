@@ -84,8 +84,6 @@ class SokolRenderBackend : public RenderBackend
 
         FinalizeDeletedImages();
 
-        sgl_set_context(context_);
-
         sg_pass_action pass_action;
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
         pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
@@ -150,7 +148,7 @@ class SokolRenderBackend : public RenderBackend
                 int32_t base_layer = kRenderLayerSky + i * 4 + 1;
                 for (int32_t j = 0; j < 4; j++)
                 {
-                    sgl_context_draw_layer(context_, base_layer + j);
+                    sgl_draw_layer(base_layer + j);
                 }
             }
         }
@@ -158,13 +156,13 @@ class SokolRenderBackend : public RenderBackend
         {
             EDGE_ZoneNamedN(ZoneDrawHud, "DrawHud", true);
             // Hud
-            sgl_context_draw_layer(context_, kRenderLayerHUD + 1);
+            sgl_draw_layer(kRenderLayerHUD + 1);
         }
 
         {
             EDGE_ZoneNamedN(ZoneDrawDefaultLayer, "DrawDefaultLayer", true);
             // default layer
-            sgl_context_draw_layer(context_, 0);
+            sgl_draw_layer(0);
         }
 
         {
@@ -288,20 +286,9 @@ class SokolRenderBackend : public RenderBackend
         sgl_desc.sample_count       = 1;
         sgl_desc.pipeline_pool_size = 512;
         sgl_desc.logger.func        = slog_func;
+        sgl_desc.max_commands       = 256 * 1024;
+        sgl_desc.max_vertices       = 1024 * 1024;
         sgl_setup(&sgl_desc);
-
-        // 2D
-        sgl_context_desc_t context_desc_2d;
-        EPI_CLEAR_MEMORY(&context_desc_2d, sgl_context_desc_t, 1);
-        context_desc_2d.color_format = SG_PIXELFORMAT_RGBA8;
-        context_desc_2d.depth_format = SG_PIXELFORMAT_DEPTH;
-        context_desc_2d.sample_count = 1;
-        context_desc_2d.max_commands = 256 * 1024;
-        context_desc_2d.max_vertices = 1024 * 1024;
-
-        context_ = sgl_make_context(&context_desc_2d);
-
-        sgl_set_context(context_);
 
         // IMGUI
         simgui_desc_t imgui_desc = {0};
@@ -434,8 +421,6 @@ class SokolRenderBackend : public RenderBackend
     sgimgui_t           sg_imgui_;
 
     RGBAColor clear_color_ = kRGBABlack;
-
-    sgl_context context_;
 
     RenderState render_state_;
 
