@@ -264,7 +264,7 @@ void RenderCurrentUnits(void)
         std::sort(local_unit_map.begin(), local_unit_map.begin() + current_render_unit, Compare_Unit_pred());
     }
 
-    RenderLayer render_layer = render_backend->GetRenderLayer();
+    RenderLayerType render_layer = render_backend->GetRenderLayer();
 
     bool no_fog = (render_layer == kRenderLayerHUD) || (render_layer == kRenderLayerWeapon);
 

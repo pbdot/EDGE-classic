@@ -20,6 +20,7 @@ void                   BSPStartThread();
 void                   BSPStopThread();
 
 constexpr int32_t kWorldStateInvalid = -1;
+constexpr int32_t kRenderContextPoolSize = 256;
 
 class SokolRenderBackend : public RenderBackend
 {
@@ -328,7 +329,7 @@ class SokolRenderBackend : public RenderBackend
         return kRenderLayerHUD;
     }
 
-    virtual void SetRenderLayer(RenderLayer layer, bool clear_depth = false)
+    virtual void SetRenderLayer(RenderLayerType layer, bool clear_depth = false)
     {
         render_state_.layer_ = layer;
 
@@ -349,7 +350,7 @@ class SokolRenderBackend : public RenderBackend
         }
     }
 
-    RenderLayer GetRenderLayer()
+    RenderLayerType GetRenderLayer()
     {
         return render_state_.layer_;
     }
@@ -412,9 +413,16 @@ class SokolRenderBackend : public RenderBackend
 
     struct RenderState
     {
-        RenderLayer layer_;
+        RenderLayerType layer_;
         int32_t     sokol_layer_;
         int32_t     world_state_;
+    };
+
+    struct RenderContext
+    {
+        sgl_context sgl_context_;
+        int32_t max_commands_;
+        int32_t max_vertices_;
     };
 
     simgui_frame_desc_t imgui_frame_desc_;
@@ -427,6 +435,8 @@ class SokolRenderBackend : public RenderBackend
     sg_pass pass_;
 
     WorldState world_state_[kRenderWorldMax];
+
+    RenderContext context_pools_[kRenderContextPoolSize];
 
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;

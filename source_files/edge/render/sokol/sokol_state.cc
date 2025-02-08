@@ -168,11 +168,11 @@ class SokolRenderState : public RenderState
         // FIXME: This applies a scissor to every layer globally
         // instead having a pending scissor for passes, and if they get a draw
         // command apply scissor first?
-        RenderLayer current_layer = render_backend->GetRenderLayer();
+        RenderLayerType current_layer = render_backend->GetRenderLayer();
 
         for (int32_t i = 0; i < kRenderLayerMax; i++)
         {
-            render_backend->SetRenderLayer((RenderLayer)i);
+            render_backend->SetRenderLayer((RenderLayerType)i);
             sgl_scissor_rect(x, y, width, height, false);
         }
 

@@ -10,9 +10,10 @@ struct PassInfo
     int32_t width_;
     int32_t height_;
 };
+
 constexpr int32_t kRenderWorldMax = 8;
 
-enum RenderLayer
+enum RenderLayerType
 {
     kRenderLayerHUD = 0,
     kRenderLayerSky,
@@ -55,9 +56,9 @@ class RenderBackend
 
     virtual void FinishWorldRender() = 0;
 
-    virtual void SetRenderLayer(RenderLayer layer, bool clear_depth = false) = 0;
+    virtual void SetRenderLayer(RenderLayerType layer, bool clear_depth = false) = 0;
 
-    virtual RenderLayer GetRenderLayer() = 0;
+    virtual RenderLayerType GetRenderLayer() = 0;
 
     void LockRenderUnits(bool locked)
     {
