@@ -256,6 +256,9 @@ void RenderCurrentUnits(void)
     if (current_render_unit == 0)
         return;
 
+    // TODO: need actual metrics
+    render_backend->Flush(current_render_unit, current_render_unit * 3);        
+
     for (int i = 0; i < current_render_unit; i++)
         local_unit_map[i] = &local_units[i];
 

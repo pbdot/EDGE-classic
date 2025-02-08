@@ -70,6 +70,8 @@ class RenderBackend
         return units_locked_;
     }
 
+    virtual void Flush(int32_t commands, int32_t vertices) = 0;
+
     virtual void Resize(int32_t width, int32_t height) = 0;
 
     virtual void Shutdown() = 0;

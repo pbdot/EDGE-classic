@@ -2082,6 +2082,7 @@ void RenderTrueBsp(void)
     // draw all sprites and masked/translucent walls/planes
     solid_mode = false;
     render_backend->SetRenderLayer(kRenderLayerTransparent, false);
+    render_backend->SetupMatrices3D();
 
     StartUnitBatch(solid_mode);
 
