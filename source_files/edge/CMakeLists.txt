@@ -127,6 +127,7 @@ set (EDGE_SOKOL_SOURCE_FILES
   render/sokol/sokol_md2.cc
   render/sokol/sokol_mdl.cc
   render/sokol/sokol_pipeline.cc
+  render/sokol/sokol_render_thread.cc
   render/sokol/sokol_sky.cc
   render/sokol/sokol_state.cc
   render/sokol/sokol_units.cc

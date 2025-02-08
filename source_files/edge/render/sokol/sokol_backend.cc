@@ -18,6 +18,9 @@
 extern ConsoleVariable vsync;
 void                   BSPStartThread();
 void                   BSPStopThread();
+void                   RenderStartThread();
+void                   RenderStopThread();
+void RenderQueueDrawContext(sgl_context context);
 
 constexpr int32_t kWorldStateInvalid     = -1;
 constexpr int32_t kRenderContextPoolSize = 256;
@@ -26,7 +29,7 @@ constexpr int32_t kRenderLayerSky_MaxCommands = 32 * 1024;
 constexpr int32_t kRenderLayerSky_MaxVertices = 128 * 1024;
 
 constexpr int32_t kRenderLayerSolid_MaxCommands = 8 * 1024;
-constexpr int32_t kRenderLayerSolid_MaxVertices = 32 * 1024;
+constexpr int32_t kRenderLayerSolid_MaxVertices = 16 * 1024;
 
 constexpr int32_t kRenderLayerTransparent_MaxCommands = 128 * 1024;
 constexpr int32_t kRenderLayerTransparent_MaxVertices = 256 * 1024;
@@ -251,6 +254,10 @@ class SokolRenderBackend : public RenderBackend
             (num_commands + commands) >= kRenderLayerSolid_MaxCommands)
         {
             RenderContext *current = render_state_.render_layer_->context_;
+            if (current)
+            {
+                RenderQueueDrawContext(current->sgl_context_);
+            }
             EPI_ASSERT(current->active_);
             render_state_.render_layer_->context_ = nullptr;
 
@@ -262,7 +269,7 @@ class SokolRenderBackend : public RenderBackend
 
                     context_pool_[i].active_                     = true;
                     render_state_.render_layer_->context_        = &context_pool_[i];
-                    render_state_.render_layer_->context_->next_ = current;
+                    //render_state_.render_layer_->context_->next_ = current;                    
 
                     EPI_ASSERT(render_state_.render_layer_->context_ != current);
                     break;
@@ -294,6 +301,7 @@ class SokolRenderBackend : public RenderBackend
         sapp_d3d11_destroy_device_and_swapchain();
 #endif
 
+        RenderStopThread();
         BSPStopThread();
     }
 
@@ -472,6 +480,7 @@ class SokolRenderBackend : public RenderBackend
         RenderBackend::Init();
 
         BSPStartThread();
+        RenderStartThread();
     }
 
     // FIXME: go away!
