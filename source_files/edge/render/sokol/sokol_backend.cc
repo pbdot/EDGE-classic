@@ -25,8 +25,8 @@ constexpr int32_t kRenderContextPoolSize = 256;
 constexpr int32_t kRenderLayerSky_MaxCommands = 32 * 1024;
 constexpr int32_t kRenderLayerSky_MaxVertices = 128 * 1024;
 
-constexpr int32_t kRenderLayerSolid_MaxCommands = 32 * 1024;
-constexpr int32_t kRenderLayerSolid_MaxVertices = 128 * 1024;
+constexpr int32_t kRenderLayerSolid_MaxCommands = 8 * 1024;
+constexpr int32_t kRenderLayerSolid_MaxVertices = 32 * 1024;
 
 constexpr int32_t kRenderLayerTransparent_MaxCommands = 128 * 1024;
 constexpr int32_t kRenderLayerTransparent_MaxVertices = 256 * 1024;
@@ -247,8 +247,8 @@ class SokolRenderBackend : public RenderBackend
         int num_commands = sgl_num_commands();
         int num_vertices = sgl_num_vertices();
 
-        if ((num_vertices + vertices) > kRenderLayerSolid_MaxVertices ||
-            (num_commands + commands) > kRenderLayerSolid_MaxCommands)
+        if ((num_vertices + vertices) >= kRenderLayerSolid_MaxVertices ||
+            (num_commands + commands) >= kRenderLayerSolid_MaxCommands)
         {
             RenderContext *current = render_state_.render_layer_->context_;
             EPI_ASSERT(current->active_);
@@ -272,6 +272,7 @@ class SokolRenderBackend : public RenderBackend
             EPI_ASSERT(render_state_.render_layer_->context_ && render_state_.render_layer_->context_->active_);
 
             sgl_set_context(render_state_.render_layer_->context_->sgl_context_);
+            SetupMatrices3D();
         }
     }
 
