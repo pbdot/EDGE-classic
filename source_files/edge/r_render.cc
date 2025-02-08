@@ -2027,7 +2027,8 @@ void RenderTrueBsp(void)
     // handle powerup effects and BOOM colormaps
     RendererRainbowEffect(v_player);
 
-    render_backend->SetRenderLayer(kRenderLayerSky);
+    //render_backend->SetRenderLayer(kRenderLayerSky);
+    render_backend->SetRenderLayer(kRenderLayerSolid);
 
     render_backend->SetupMatrices3D();
 
@@ -2037,7 +2038,7 @@ void RenderTrueBsp(void)
 #ifdef EDGE_SOKOL
 
     // needed for drawing the sky
-    BeginSky();
+    // BeginSky();
 
     // draw all solid walls and planes
 
@@ -2100,6 +2101,7 @@ void RenderTrueBsp(void)
     }
 
     FinishUnitBatch();
+    /*
     render_backend->SetRenderLayer(kRenderLayerSky);
 
     std::list<RenderItem *>::iterator I;
@@ -2118,6 +2120,7 @@ void RenderTrueBsp(void)
     }
 
     FinishSky();
+    */
 
 #else
     // needed for drawing the sky

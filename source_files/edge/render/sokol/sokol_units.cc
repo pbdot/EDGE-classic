@@ -43,7 +43,7 @@
 #include "sokol_images.h"
 #include "sokol_pipeline.h"
 
-EDGE_DEFINE_CONSOLE_VARIABLE(renderer_dumb_sky, "0", kConsoleVariableFlagArchive)
+EDGE_DEFINE_CONSOLE_VARIABLE(renderer_dumb_sky, "1", kConsoleVariableFlagReadOnly)
 #ifdef APPLE_SILICON
 EDGE_DEFINE_CONSOLE_VARIABLE(renderer_dumb_clamp, "1", kConsoleVariableFlagNone)
 #else

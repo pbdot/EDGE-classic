@@ -19,8 +19,23 @@ extern ConsoleVariable vsync;
 void                   BSPStartThread();
 void                   BSPStopThread();
 
-constexpr int32_t kWorldStateInvalid = -1;
+constexpr int32_t kWorldStateInvalid     = -1;
 constexpr int32_t kRenderContextPoolSize = 256;
+
+constexpr int32_t kRenderLayerSky_MaxCommands = 32 * 1024;
+constexpr int32_t kRenderLayerSky_MaxVertices = 128 * 1024;
+
+constexpr int32_t kRenderLayerSolid_MaxCommands = 16 * 1024;
+constexpr int32_t kRenderLayerSolid_MaxVertices = 64 * 1024;
+
+constexpr int32_t kRenderLayerTransparent_MaxCommands = 128 * 1024;
+constexpr int32_t kRenderLayerTransparent_MaxVertices = 256 * 1024;
+
+constexpr int32_t kRenderLayerHUD_MaxCommands = 32 * 1024;
+constexpr int32_t kRenderLayerHUD_MaxVertices = 128 * 1024;
+
+constexpr int32_t kRenderLayerWeapon_MaxCommands = 32 * 1024;
+constexpr int32_t kRenderLayerWeapon_MaxVertices = 128 * 1024;
 
 class SokolRenderBackend : public RenderBackend
 {
@@ -120,6 +135,11 @@ class SokolRenderBackend : public RenderBackend
         EPI_CLEAR_MEMORY(&render_state_, RenderState, 1);
         render_state_.world_state_ = kWorldStateInvalid;
 
+        for (int32_t i = 0; i < kRenderContextPoolSize; i++)
+        {
+            context_pool_[i].active_ = false;
+        }
+
         SetRenderLayer(kRenderLayerHUD);
 
         sg_begin_pass(&pass_);
@@ -141,15 +161,19 @@ class SokolRenderBackend : public RenderBackend
             // World
             for (int32_t i = 0; i < kRenderWorldMax; i++)
             {
-                if (!world_state_[i].used_)
+                const WorldState *state = &world_state_[i];
+
+                if (!state->used_)
                 {
                     break;
                 }
 
-                int32_t base_layer = kRenderLayerSky + i * 4 + 1;
-                for (int32_t j = 0; j < 4; j++)
+                for (int32_t j = 0; j < kRenderLayerMax; j++)
                 {
-                    sgl_draw_layer(base_layer + j);
+                    if (state->layers_[j].context_)
+                    {
+                        sgl_context_draw(state->layers_[j].context_->sgl_context_);
+                    }
                 }
             }
         }
@@ -157,13 +181,13 @@ class SokolRenderBackend : public RenderBackend
         {
             EDGE_ZoneNamedN(ZoneDrawHud, "DrawHud", true);
             // Hud
-            sgl_draw_layer(kRenderLayerHUD + 1);
+            sgl_context_draw(context_pool_[0].sgl_context_);
         }
 
         {
             EDGE_ZoneNamedN(ZoneDrawDefaultLayer, "DrawDefaultLayer", true);
             // default layer
-            sgl_draw_layer(0);
+            // sgl_draw_layer(0);
         }
 
         {
@@ -270,7 +294,8 @@ class SokolRenderBackend : public RenderBackend
         EPI_CLEAR_MEMORY(&desc, sg_desc, 1);
         desc.environment        = env;
         desc.logger.func        = slog_func;
-        desc.pipeline_pool_size = 512;
+        desc.pipeline_pool_size = 512 * 8;
+        desc.buffer_pool_size   = 512;
         desc.image_pool_size    = 8192;
 
         sg_setup(&desc);
@@ -285,11 +310,87 @@ class SokolRenderBackend : public RenderBackend
         sgl_desc.color_format       = SG_PIXELFORMAT_RGBA8;
         sgl_desc.depth_format       = SG_PIXELFORMAT_DEPTH;
         sgl_desc.sample_count       = 1;
-        sgl_desc.pipeline_pool_size = 512;
+        sgl_desc.pipeline_pool_size = 512 * 8;
         sgl_desc.logger.func        = slog_func;
-        sgl_desc.max_commands       = 256 * 1024;
-        sgl_desc.max_vertices       = 1024 * 1024;
+        sgl_desc.context_pool_size  = kRenderContextPoolSize;
         sgl_setup(&sgl_desc);
+
+        // Base context
+        sgl_context_desc_t context_desc_2d;
+        EPI_CLEAR_MEMORY(&context_desc_2d, sgl_context_desc_t, 1);
+        context_desc_2d.color_format = SG_PIXELFORMAT_RGBA8;
+        context_desc_2d.depth_format = SG_PIXELFORMAT_DEPTH;
+        context_desc_2d.sample_count = 1;
+
+        EPI_CLEAR_MEMORY(context_pool_, RenderContext, kRenderContextPoolSize);
+
+        int32_t current_context = 0;
+
+        // HUD
+        int32_t max_commands         = kRenderLayerHUD_MaxCommands;
+        int32_t max_vertices         = kRenderLayerHUD_MaxVertices;
+        context_desc_2d.max_commands = max_commands;
+        context_desc_2d.max_vertices = max_vertices;
+
+        context_pool_[current_context].layer_type_   = kRenderLayerHUD;
+        context_pool_[current_context].max_commands_ = max_commands;
+        context_pool_[current_context].max_vertices_ = max_vertices;
+        context_pool_[current_context].sgl_context_  = sgl_make_context(&context_desc_2d);
+        current_context++;
+
+        // Player Weapon
+        max_commands                 = kRenderLayerWeapon_MaxCommands;
+        max_vertices                 = kRenderLayerWeapon_MaxVertices;
+        context_desc_2d.max_commands = max_commands;
+        context_desc_2d.max_vertices = max_vertices;
+
+        context_pool_[current_context].layer_type_   = kRenderLayerWeapon;
+        context_pool_[current_context].max_commands_ = max_commands;
+        context_pool_[current_context].max_vertices_ = max_vertices;
+        context_pool_[current_context].sgl_context_  = sgl_make_context(&context_desc_2d);
+        current_context++;
+
+        for (int32_t i = 0; i < kRenderWorldMax; ++i)
+        {
+            // Solid batches
+            max_commands                 = kRenderLayerSolid_MaxCommands;
+            max_vertices                 = kRenderLayerSolid_MaxVertices;
+            context_desc_2d.max_commands = max_commands;
+            context_desc_2d.max_vertices = max_vertices;
+
+            for (int32_t j = 0; j < 1; j++)
+            {
+                context_pool_[current_context].layer_type_   = kRenderLayerSolid;
+                context_pool_[current_context].max_commands_ = max_commands;
+                context_pool_[current_context].max_vertices_ = max_vertices;
+                context_pool_[current_context].sgl_context_  = sgl_make_context(&context_desc_2d);
+                current_context++;
+            }
+
+            // Transparent
+            max_commands                 = kRenderLayerTransparent_MaxCommands;
+            max_vertices                 = kRenderLayerTransparent_MaxVertices;
+            context_desc_2d.max_commands = max_commands;
+            context_desc_2d.max_vertices = max_vertices;
+
+            context_pool_[current_context].layer_type_   = kRenderLayerTransparent;
+            context_pool_[current_context].max_commands_ = max_commands;
+            context_pool_[current_context].max_vertices_ = max_vertices;
+            context_pool_[current_context].sgl_context_  = sgl_make_context(&context_desc_2d);
+            current_context++;
+
+            // Sky
+            max_commands                 = kRenderLayerSky_MaxCommands;
+            max_vertices                 = kRenderLayerSky_MaxVertices;
+            context_desc_2d.max_commands = max_commands;
+            context_desc_2d.max_vertices = max_vertices;
+
+            context_pool_[current_context].layer_type_   = kRenderLayerSky;
+            context_pool_[current_context].max_commands_ = max_commands;
+            context_pool_[current_context].max_vertices_ = max_vertices;
+            context_pool_[current_context].sgl_context_  = sgl_make_context(&context_desc_2d);
+            current_context++;
+        }
 
         // IMGUI
         simgui_desc_t imgui_desc = {0};
@@ -331,18 +432,31 @@ class SokolRenderBackend : public RenderBackend
 
     virtual void SetRenderLayer(RenderLayerType layer, bool clear_depth = false)
     {
-        render_state_.layer_ = layer;
-
-        if (layer == kRenderLayerHUD)
+        if (layer == kRenderLayerHUD || layer == kRenderLayerWeapon || render_state_.world_state_ == kWorldStateInvalid)
         {
-            render_state_.sokol_layer_ = 1;
+            render_state_.render_layer_ = &global_layers_[layer];
         }
         else
         {
-            render_state_.sokol_layer_ = layer + render_state_.world_state_ * 4 + 1;
+            render_state_.render_layer_ = &world_state_[render_state_.world_state_].layers_[layer];
         }
 
-        sgl_layer(render_state_.sokol_layer_);
+        if (!render_state_.render_layer_->context_)
+        {
+            for (int32_t i = 0; i < kRenderContextPoolSize; i++)
+            {
+                if (context_pool_[i].layer_type_ == layer && !context_pool_[i].active_ && context_pool_->max_commands_)
+                {
+                    context_pool_[i].active_              = true;
+                    render_state_.render_layer_->context_ = &context_pool_[i];
+                    break;
+                }
+            }
+
+            EPI_ASSERT(render_state_.render_layer_->context_);
+        }
+
+        sgl_set_context(render_state_.render_layer_->context_->sgl_context_);
 
         if (clear_depth)
         {
@@ -352,7 +466,14 @@ class SokolRenderBackend : public RenderBackend
 
     RenderLayerType GetRenderLayer()
     {
-        return render_state_.layer_;
+        // TODO: check that we're not in a frame
+        if (!render_state_.render_layer_)
+        {
+            sgl_set_context(context_pool_[0].sgl_context_);
+            return kRenderLayerHUD;
+        }
+
+        return render_state_.render_layer_->type_;
     }
 
     void BeginWorldRender()
@@ -405,25 +526,35 @@ class SokolRenderBackend : public RenderBackend
     }
 
   private:
-    struct WorldState
+    struct RenderContext
     {
-        bool active_;
-        bool used_;
+        RenderLayerType layer_type_;
+        sgl_context     sgl_context_;
+        int32_t         max_commands_;
+        int32_t         max_vertices_;
+        bool            active_;
+    };
+
+    struct RenderLayer
+    {
+        RenderLayerType type_;
+        RenderContext  *context_;
     };
 
     struct RenderState
     {
-        RenderLayerType layer_;
-        int32_t     sokol_layer_;
-        int32_t     world_state_;
+        RenderLayer *render_layer_;
+        int32_t      world_state_;
     };
 
-    struct RenderContext
+    struct WorldState
     {
-        sgl_context sgl_context_;
-        int32_t max_commands_;
-        int32_t max_vertices_;
+        bool        active_;
+        bool        used_;
+        RenderLayer layers_[kRenderLayerMax];
     };
+
+    RenderLayer global_layers_[kRenderLayerMax];
 
     simgui_frame_desc_t imgui_frame_desc_;
     sgimgui_t           sg_imgui_;
@@ -436,7 +567,7 @@ class SokolRenderBackend : public RenderBackend
 
     WorldState world_state_[kRenderWorldMax];
 
-    RenderContext context_pools_[kRenderContextPoolSize];
+    RenderContext context_pool_[kRenderContextPoolSize];
 
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;
