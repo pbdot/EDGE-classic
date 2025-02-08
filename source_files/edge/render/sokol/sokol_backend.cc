@@ -29,7 +29,7 @@ constexpr int32_t kRenderLayerSky_MaxCommands = 32 * 1024;
 constexpr int32_t kRenderLayerSky_MaxVertices = 128 * 1024;
 
 constexpr int32_t kRenderLayerSolid_MaxCommands = 8 * 1024;
-constexpr int32_t kRenderLayerSolid_MaxVertices = 16 * 1024;
+constexpr int32_t kRenderLayerSolid_MaxVertices = 32 * 1024;
 
 constexpr int32_t kRenderLayerTransparent_MaxCommands = 128 * 1024;
 constexpr int32_t kRenderLayerTransparent_MaxVertices = 256 * 1024;
@@ -187,7 +187,7 @@ class SokolRenderBackend : public RenderBackend
                     RenderContext *context = state->layers_[j].context_;
                     while (context)
                     {
-                        sgl_context_draw(context->sgl_context_);
+                        RenderQueueDrawContext(context->sgl_context_);
                         // TODO: this reverses draw order
                         context = context->next_;
                     }
@@ -198,7 +198,8 @@ class SokolRenderBackend : public RenderBackend
         {
             EDGE_ZoneNamedN(ZoneDrawHud, "DrawHud", true);
             // Hud
-            sgl_context_draw(context_pool_[0].sgl_context_);
+            RenderQueueDrawContext(context_pool_[0].sgl_context_);
+            //sgl_context_draw(context_pool_[0].sgl_context_);
         }
 
         {
@@ -206,6 +207,8 @@ class SokolRenderBackend : public RenderBackend
             // default layer
             // sgl_draw_layer(0);
         }
+
+        // need to wait until render done
 
         {
             EDGE_ZoneNamedN(ZoneDrawImGui, "DrawImGui", true);

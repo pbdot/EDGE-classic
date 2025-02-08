@@ -51,10 +51,13 @@ static int32_t RenderProc(void *thread_data)
 
 void RenderQueueDrawContext(sgl_context context)
 {
+    sgl_context_draw(context);
+    /*
     sgl_context* c = new sgl_context;
     c->id = context.id;
 
     thread_queue_produce(&render_thread.queue_, c, 100);
+    */
 }
 
 void RenderStartThread()
