@@ -102,5 +102,8 @@ void RendererStartup(void);
 // Called by shutdown code
 void RendererShutdown(void);
 
+// Clears Render Data at level shutdown
+void RendererLevelClear();
+
 //--- editor settings ---
 // vi:ts=4:sw=4:noexpandtab

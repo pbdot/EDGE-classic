@@ -21,11 +21,22 @@ void                   BSPStopThread();
 
 constexpr int32_t kWorldStateInvalid = -1;
 
+constexpr int32_t kContextPoolSize   = 32;
+constexpr int32_t kContextMaxVertex  = 32 * 1024;
+constexpr int32_t kContextMaxCommand = 2 * 1024;
+
 class SokolRenderBackend : public RenderBackend
 {
   public:
     void SetupMatrices2D()
     {
+        if (matrix_mode_ == kMatrixMode2D)
+        {
+            return;
+        }
+
+        matrix_mode_ = kMatrixMode2D;
+
         sgl_viewport(0, 0, current_screen_width, current_screen_height, false);
 
         sgl_matrix_mode_projection();
@@ -38,6 +49,13 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupWorldMatrices2D()
     {
+        if (matrix_mode_ == kMatrixModeWorld2D)
+        {
+            return;
+        }
+
+        matrix_mode_ = kMatrixModeWorld2D;
+
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         sgl_matrix_mode_projection();
@@ -51,6 +69,13 @@ class SokolRenderBackend : public RenderBackend
 
     void SetupMatrices3D()
     {
+        if (matrix_mode_ == kMatrixMode3D)
+        {
+            return;
+        }
+
+        matrix_mode_ = kMatrixMode3D;
+
         sgl_viewport(view_window_x, view_window_y, view_window_width, view_window_height, false);
 
         // calculate perspective matrix
@@ -84,7 +109,11 @@ class SokolRenderBackend : public RenderBackend
 
         FinalizeDeletedImages();
 
-        sgl_set_context(context_);
+        matrix_mode_ = kMatrixModeUndefined;
+
+        current_context_ = 0;
+
+        sgl_set_context(context_pool_[current_context_]);
 
         sg_pass_action pass_action;
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
@@ -126,6 +155,33 @@ class SokolRenderBackend : public RenderBackend
         sg_begin_pass(&pass_);
     }
 
+    void Flush(int32_t commands, int32_t vertices)
+    {
+        if (GetRenderLayer() == kRenderLayerSky)
+        {
+            return;            
+        }
+
+        int num_commands = sgl_num_commands();
+        int num_vertices = sgl_num_vertices();
+
+        if ((num_vertices + vertices) >= kContextMaxVertex || (num_commands + commands) >= kContextMaxCommand)
+        {
+            sgl_context_draw(context_pool_[current_context_++]);
+            EPI_ASSERT(current_context_ < kContextPoolSize);
+            sgl_set_context(context_pool_[current_context_]);
+            matrix_mode_ = kMatrixModeUndefined;
+            if (GetRenderLayer() == kRenderLayerHUD)
+            {
+                SetupMatrices2D();
+            }
+            else
+            {
+                SetupMatrices3D();
+            }
+        }
+    }
+
     void SwapBuffers()
     {
 #ifdef SOKOL_D3D11
@@ -136,6 +192,8 @@ class SokolRenderBackend : public RenderBackend
     void FinishFrame()
     {
         EDGE_ZoneNamedN(ZoneFinishFrame, "BackendFinishFrame", true);
+
+        /*
 
         {
             EDGE_ZoneNamedN(ZoneDrawWorlds, "DrawWorlds", true);
@@ -166,6 +224,9 @@ class SokolRenderBackend : public RenderBackend
             // default layer
             sgl_context_draw_layer(context_, 0);
         }
+            */
+
+        sgl_context_draw(context_pool_[current_context_]);
 
         {
             EDGE_ZoneNamedN(ZoneDrawImGui, "DrawImGui", true);
@@ -271,7 +332,8 @@ class SokolRenderBackend : public RenderBackend
         EPI_CLEAR_MEMORY(&desc, sg_desc, 1);
         desc.environment        = env;
         desc.logger.func        = slog_func;
-        desc.pipeline_pool_size = 512;
+        desc.pipeline_pool_size = 512 * 8;
+        desc.buffer_pool_size   = 512;
         desc.image_pool_size    = 8192;
 
         sg_setup(&desc);
@@ -283,10 +345,12 @@ class SokolRenderBackend : public RenderBackend
 
         sgl_desc_t sgl_desc;
         EPI_CLEAR_MEMORY(&sgl_desc, sgl_desc_t, 1);
-        sgl_desc.color_format       = SG_PIXELFORMAT_RGBA8;
-        sgl_desc.depth_format       = SG_PIXELFORMAT_DEPTH;
-        sgl_desc.sample_count       = 1;
-        sgl_desc.pipeline_pool_size = 512;
+        sgl_desc.color_format = SG_PIXELFORMAT_RGBA8;
+        sgl_desc.depth_format = SG_PIXELFORMAT_DEPTH;
+        sgl_desc.sample_count = 1;
+        // +2, default. and sky context
+        sgl_desc.context_pool_size  = kContextPoolSize + 2;
+        sgl_desc.pipeline_pool_size = 512 * 8;
         sgl_desc.logger.func        = slog_func;
         sgl_setup(&sgl_desc);
 
@@ -296,12 +360,19 @@ class SokolRenderBackend : public RenderBackend
         context_desc_2d.color_format = SG_PIXELFORMAT_RGBA8;
         context_desc_2d.depth_format = SG_PIXELFORMAT_DEPTH;
         context_desc_2d.sample_count = 1;
-        context_desc_2d.max_commands = 256 * 1024;
-        context_desc_2d.max_vertices = 1024 * 1024;
+        context_desc_2d.max_commands = kContextMaxCommand;
+        context_desc_2d.max_vertices = kContextMaxVertex;
 
-        context_ = sgl_make_context(&context_desc_2d);
+        for (int32_t i = 0; i < kContextPoolSize; i++)
+        {
+            context_pool_[i] = sgl_make_context(&context_desc_2d);
+        }
 
-        sgl_set_context(context_);
+        context_desc_2d.max_commands = 2048;
+        context_desc_2d.max_vertices = 128 * 1024;
+        sky_context_                 = sgl_make_context(&context_desc_2d);
+
+        sgl_set_context(context_pool_[0]);
 
         // IMGUI
         simgui_desc_t imgui_desc = {0};
@@ -345,16 +416,31 @@ class SokolRenderBackend : public RenderBackend
     {
         render_state_.layer_ = layer;
 
-        if (layer == kRenderLayerHUD)
+        if (layer != kRenderLayerSky && sgl_get_context().id == sky_context_.id)
         {
-            render_state_.sokol_layer_ = 1;
+            sgl_context_draw(sky_context_);
+            sgl_set_context(context_pool_[current_context_]);
+            matrix_mode_ = kMatrixModeUndefined;
+            SetupMatrices3D();
+        }        
+        else if (layer == kRenderLayerHUD)
+        {
+            SetupMatrices2D();
+        }
+        else if (layer == kRenderLayerSky)
+        {
+            sgl_set_context(sky_context_);
+        }
+        else if (layer == kRenderLayerWeapon)
+        {
+            SetupWorldMatrices2D();
         }
         else
         {
-            render_state_.sokol_layer_ = layer + render_state_.world_state_ * 4 + 1;
+            SetupMatrices3D();
         }
 
-        sgl_layer(render_state_.sokol_layer_);
+        // sgl_layer(render_state_.sokol_layer_);
 
         if (clear_depth)
         {
@@ -413,10 +499,17 @@ class SokolRenderBackend : public RenderBackend
         }
 
         SetRenderLayer(kRenderLayerHUD);
-        SetupMatrices2D();
     }
 
   private:
+    enum MatrixMode
+    {
+        kMatrixModeUndefined,
+        kMatrixMode2D,
+        kMatrixModeWorld2D,
+        kMatrixMode3D
+    };
+
     struct WorldState
     {
         bool active_;
@@ -426,16 +519,20 @@ class SokolRenderBackend : public RenderBackend
     struct RenderState
     {
         RenderLayer layer_;
-        int32_t     sokol_layer_;
         int32_t     world_state_;
     };
+
+    MatrixMode matrix_mode_;
 
     simgui_frame_desc_t imgui_frame_desc_;
     sgimgui_t           sg_imgui_;
 
     RGBAColor clear_color_ = kRGBABlack;
 
-    sgl_context context_;
+    sgl_context sky_context_;
+
+    sgl_context context_pool_[kContextPoolSize];
+    int32_t     current_context_;
 
     RenderState render_state_;
 

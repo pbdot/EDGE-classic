@@ -3356,6 +3356,8 @@ void ShutdownLevel(void)
 
     level_active = false;
 
+    RendererLevelClear();
+
     ClearRespawnQueue();
 
     P_RemoveSectorStuff();
