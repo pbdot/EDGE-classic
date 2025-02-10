@@ -196,8 +196,11 @@ class SokolRenderBackend : public RenderBackend
         void RendererEndFrame();
         RendererEndFrame();
 
-        sgl_context_draw(context_pool_[current_context_]);
-
+        if (sgl_num_vertices())
+        {
+            sgl_context_draw(context_pool_[current_context_]);
+        }
+        
         {
             EDGE_ZoneNamedN(ZoneDrawImGui, "DrawImGui", true);
             sg_imgui_.caps_window.open        = false;
@@ -400,13 +403,20 @@ class SokolRenderBackend : public RenderBackend
         {
             if (layer == kRenderLayerSky && render_state_.layer_ != kRenderLayerSky)
             {
-                sgl_context_draw(context_pool_[current_context_++]);
+                if (sgl_num_vertices())
+                {
+                    sgl_context_draw(context_pool_[current_context_++]);
+                }                
                 sgl_set_context(sky_context_[render_state_.world_state_]);
             }
 
             if (layer != kRenderLayerSky && sgl_get_context().id == sky_context_[render_state_.world_state_].id)
-            {
-                sgl_context_draw(sky_context_[render_state_.world_state_]);
+            {                
+                if (sgl_num_vertices())
+                {
+                    sgl_context_draw(sky_context_[render_state_.world_state_]);
+                }
+                
                 sgl_set_context(context_pool_[current_context_]);
                 matrix_mode_ = kMatrixModeUndefined;
             }
