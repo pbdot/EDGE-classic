@@ -2009,6 +2009,11 @@ void    RendererEndFrame()
     render_world_index = 0;
 }
 
+void    RendererShutdownLevel()
+{
+    deferred_sky_items.clear();
+}
+
 //
 // RenderTrueBsp
 //
