@@ -11,6 +11,8 @@
 #include "epi.h"
 #include "i_video.h"
 
+#include "shaders/shader_screen.h"
+
 // clang-format on
 
 extern ConsoleVariable vsync;
@@ -31,8 +33,12 @@ constexpr int32_t kContextPoolSize   = 32;
 constexpr int32_t kContextMaxVertex  = 32 * 1024;
 constexpr int32_t kContextMaxCommand = 2 * 1024;
 
+EDGE_DEFINE_CONSOLE_VARIABLE(r_ssao, "1", kConsoleVariableFlagArchive)
+
 class SokolRenderBackend : public RenderBackend
 {
+    struct WorldRender;
+
   public:
     void SetupMatrices2D()
     {
@@ -111,50 +117,12 @@ class SokolRenderBackend : public RenderBackend
 
         render_state->Reset();
 
-        current_context_ = 0;
-
-        sgl_set_context(context_pool_[current_context_]);
-
-        sg_pass_action pass_action;
-        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
-                                             epi::GetRGBAGreen(clear_color_) / 255.0f,
-                                             epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
-
-        pass_action.depth.load_action = SG_LOADACTION_CLEAR;
-        pass_action.depth.clear_value = 1.0f;
-        pass_action.stencil           = {SG_LOADACTION_CLEAR, SG_STOREACTION_DONTCARE, 0};
-
-        EPI_CLEAR_MEMORY(&pass_, sg_pass, 1);
-        pass_.action                   = pass_action;
-        pass_.swapchain.width          = width;
-        pass_.swapchain.height         = height;
-        pass_.swapchain.color_format   = SG_PIXELFORMAT_RGBA8;
-        pass_.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
-        pass_.swapchain.gl.framebuffer = 0;
-
-#ifdef SOKOL_D3D11
-        pass_.swapchain.d3d11.render_view        = sapp_d3d11_get_render_view();
-        pass_.swapchain.d3d11.resolve_view       = sapp_d3d11_get_resolve_view();
-        pass_.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
-#endif
-
-        /*
-        imgui_frame_desc_            = {0};
-        imgui_frame_desc_.width      = width;
-        imgui_frame_desc_.height     = height;
-        imgui_frame_desc_.delta_time = 100;
-        imgui_frame_desc_.dpi_scale  = 1;
-        */
-
         EPI_CLEAR_MEMORY(world_state_, WorldState, kRenderWorldMax);
 
         EPI_CLEAR_MEMORY(&render_state_, RenderState, 1);
         render_state_.world_state_ = kWorldStateInvalid;
 
         SetRenderLayer(kRenderLayerHUD);
-
-        sg_begin_pass(&pass_);
     }
 
     void Flush(int32_t commands, int32_t vertices)
@@ -185,38 +153,49 @@ class SokolRenderBackend : public RenderBackend
 #endif
     }
 
+    void RenderWorldToScreen(WorldRender *render)
+    {
+        sg_apply_pipeline(screen_pipeline_);
+
+        sg_bindings bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->color_target_;
+        bind.samplers[0]       = render->color_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        sg_draw(0, 6, 1);
+    }
+
+    void RenderHud()
+    {
+        sg_begin_pass(&hud_pass_);
+
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
+        {
+            if (world_state_[i].used_)
+            {
+                RenderWorldToScreen(&world_render_[i]);
+            }
+        }
+
+        sgl_set_context(hud_context_);
+        if (sgl_num_vertices())
+        {
+            sgl_context_draw(hud_context_);
+        }
+        sg_end_pass();
+    }
+
     void FinishFrame()
     {
         EDGE_ZoneNamedN(ZoneFinishFrame, "BackendFinishFrame", true);
 
         RendererEndFrame();
 
-        if (sgl_num_vertices())
-        {
-            sgl_context_draw(context_pool_[current_context_]);
-        }
-
-        /*
-        {
-            EDGE_ZoneNamedN(ZoneDrawImGui, "DrawImGui", true);
-            sg_imgui_.caps_window.open        = false;
-            sg_imgui_.buffer_window.open      = false;
-            sg_imgui_.pipeline_window.open    = false;
-            sg_imgui_.attachments_window.open = false;
-            // NOTE: debug_fps controls stat gathering
-            sg_imgui_.frame_stats_window.open = false;
-
-            simgui_new_frame(&imgui_frame_desc_);
-            sgimgui_draw(&sg_imgui_);
-
-            simgui_render();
-        }
-            */
-
-        {
-            EDGE_ZoneNamedN(ZoneDrawEndPass, "DrawEndPass", true);
-            sg_end_pass();
-        }
+        // HUD
+        RenderHud();
 
         {
             EDGE_ZoneNamedN(ZoneDrawCommit, "DrawCommit", true);
@@ -287,6 +266,8 @@ class SokolRenderBackend : public RenderBackend
         // TODO: should be able to query from sokol?
         max_texture_size_ = 4096;
 
+        EPI_CLEAR_MEMORY(world_render_, WorldRender, kRenderWorldMax);
+
         sg_environment env;
         EPI_CLEAR_MEMORY(&env, sg_environment, 1);
         env.defaults.color_format = SG_PIXELFORMAT_RGBA8;
@@ -319,40 +300,62 @@ class SokolRenderBackend : public RenderBackend
         sgl_desc.color_format = SG_PIXELFORMAT_RGBA8;
         sgl_desc.depth_format = SG_PIXELFORMAT_DEPTH;
         sgl_desc.sample_count = 1;
-        // +1 default
-        sgl_desc.context_pool_size  = kContextPoolSize + 1;
+        // +1 default, +1 HUD + World Pools
+        sgl_desc.context_pool_size  = kContextPoolSize * kRenderWorldMax + 2;
         sgl_desc.pipeline_pool_size = 512 * 8;
         sgl_desc.logger.func        = slog_func;
         sgl_setup(&sgl_desc);
 
+        // HUD
+        sg_pass_action pass_action;
+        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
+                                             epi::GetRGBAGreen(clear_color_) / 255.0f,
+                                             epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
+
+        pass_action.depth.load_action = SG_LOADACTION_CLEAR;
+        pass_action.depth.clear_value = 1.0f;
+        pass_action.stencil           = {SG_LOADACTION_CLEAR, SG_STOREACTION_DONTCARE, 0};
+
+        EPI_CLEAR_MEMORY(&hud_pass_, sg_pass, 1);
+        hud_pass_.action                   = pass_action;
+        hud_pass_.swapchain.width          = current_screen_width;
+        hud_pass_.swapchain.height         = current_screen_height;
+        hud_pass_.swapchain.color_format   = SG_PIXELFORMAT_RGBA8;
+        hud_pass_.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
+        hud_pass_.swapchain.gl.framebuffer = 0;
+
+#ifdef SOKOL_D3D11
+        hud_pass_.swapchain.d3d11.render_view        = sapp_d3d11_get_render_view();
+        hud_pass_.swapchain.d3d11.resolve_view       = sapp_d3d11_get_resolve_view();
+        hud_pass_.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
+#endif
+
+        sgl_context_desc_t hud_context_desc;
+        EPI_CLEAR_MEMORY(&hud_context_desc, sgl_context_desc_t, 1);
+        hud_context_desc.color_format = SG_PIXELFORMAT_RGBA8;
+        hud_context_desc.depth_format = SG_PIXELFORMAT_DEPTH;
+        hud_context_desc.sample_count = 1;
+        hud_context_desc.max_commands = 16384;
+        hud_context_desc.max_vertices = 64 * 1024;
+        hud_context_                  = sgl_make_context(&hud_context_desc);
+
         // 2D
-        sgl_context_desc_t context_desc_2d;
-        EPI_CLEAR_MEMORY(&context_desc_2d, sgl_context_desc_t, 1);
-        context_desc_2d.color_format = SG_PIXELFORMAT_RGBA8;
-        context_desc_2d.depth_format = SG_PIXELFORMAT_DEPTH;
-        context_desc_2d.sample_count = 1;
-        context_desc_2d.max_commands = kContextMaxCommand;
-        context_desc_2d.max_vertices = kContextMaxVertex;
+        sgl_context_desc_t world_context_desc;
+        EPI_CLEAR_MEMORY(&world_context_desc, sgl_context_desc_t, 1);
+        world_context_desc.color_format = SG_PIXELFORMAT_RGBA8;
+        world_context_desc.depth_format = SG_PIXELFORMAT_DEPTH;
+        world_context_desc.sample_count = 1;
+        world_context_desc.max_commands = kContextMaxCommand;
+        world_context_desc.max_vertices = kContextMaxVertex;
 
-        for (int32_t i = 0; i < kContextPoolSize; i++)
+        for (int32_t i = 0; i < kRenderWorldMax; i++)
         {
-            context_pool_[i] = sgl_make_context(&context_desc_2d);
+            for (int32_t j = 0; j < kContextPoolSize; j++)
+            {
+                world_render_[i].context_pool_[j] = sgl_make_context(&world_context_desc);
+            }
         }
-
-        context_desc_2d.max_commands = 4096;
-        context_desc_2d.max_vertices = 256 * 1024;
-
-        sgl_set_context(context_pool_[0]);
-
-        // IMGUI
-        /*
-        simgui_desc_t imgui_desc = {0};
-        imgui_desc.logger.func   = slog_func;
-        simgui_setup(&imgui_desc);
-
-        const sgimgui_desc_t sg_imgui_desc = {0};
-        sgimgui_init(&sg_imgui_, &sg_imgui_desc);
-        */
 
         InitPipelines();
         InitImages();
@@ -364,14 +367,48 @@ class SokolRenderBackend : public RenderBackend
 
         RenderBackend::Init();
 
+        
+        // clang-format off
+
+        // Quad (Inverted for GL)
+        float quad_vertices_uvs[] = {-1.0f, -1.0f, 0.0f, 0, 0, 1.0f, -1.0f, 0.0f, 1, 0, 1.0f,  1.0f, 0.0f, 1, 1,
+                                     -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
+
+        // clang-format on
+
+        sg_buffer_desc quad_desc = {0};
+        quad_desc.data           = SG_RANGE(quad_vertices_uvs);
+        quad_desc.usage          = SG_USAGE_IMMUTABLE;
+        quad_buffer_             = sg_make_buffer(&quad_desc);
+
+        // Screen
+        sg_pipeline_desc pip_desc = {0};
+        pip_desc.shader           = sg_make_shader(screen_shader_desc(sg_query_backend()));
+
+        pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+
+        screen_pipeline_ = sg_make_pipeline(&pip_desc);
+
         BSPStartThread();
     }
 
     // FIXME: go away!
     void GetPassInfo(PassInfo &info)
     {
-        info.width_  = pass_.swapchain.width;
-        info.height_ = pass_.swapchain.height;
+        RenderLayer layer = GetRenderLayer();
+
+        if (layer == kRenderLayerHUD)
+        {
+            info.width_  = hud_pass_.swapchain.width;
+            info.height_ = hud_pass_.swapchain.height;
+        }
+        else
+        {
+            // TODO
+            info.width_  = view_window_width;
+            info.height_ = view_window_width;
+        }
     }
 
     void SetClearColor(RGBAColor color)
@@ -402,15 +439,20 @@ class SokolRenderBackend : public RenderBackend
 
     void FlushContext()
     {
-        if (sgl_num_vertices())
+        if (GetRenderLayer() == kRenderLayerHUD || !render_state_.world_render_)
         {
-            sgl_context_draw(context_pool_[current_context_]);
+            return;
         }
 
-        current_context_++;
-        EPI_ASSERT(current_context_ < kContextPoolSize);
+        if (sgl_num_vertices())
+        {
+            sgl_context_draw(world_render_->context_pool_[world_render_->current_context_]);
+        }
 
-        sgl_set_context(context_pool_[current_context_]);
+        world_render_->current_context_++;
+        EPI_ASSERT(world_render_->current_context_ < kContextPoolSize);
+
+        sgl_set_context(world_render_->context_pool_[world_render_->current_context_]);
         render_state->OnContextSwitch();
 
         SetupMatrices(render_state_.layer_, true);
@@ -419,6 +461,15 @@ class SokolRenderBackend : public RenderBackend
     virtual void SetRenderLayer(RenderLayer layer, bool clear_depth = false)
     {
         render_state_.layer_ = layer;
+
+        if (layer == kRenderLayerHUD)
+        {
+            sgl_set_context(hud_context_);
+        }
+        else
+        {
+            EPI_ASSERT(render_state_.world_render_);
+        }
 
         SetupMatrices(layer);
 
@@ -431,6 +482,59 @@ class SokolRenderBackend : public RenderBackend
     RenderLayer GetRenderLayer()
     {
         return render_state_.layer_;
+    }
+
+    void InitWorldRender(WorldRender *render)
+    {
+        if (render->color_target_.id != SG_INVALID_ID)
+        {
+            return;
+        }
+
+        sg_sampler_desc smp_desc = {0};
+        smp_desc.min_filter      = SG_FILTER_LINEAR;
+        smp_desc.mag_filter      = SG_FILTER_LINEAR;
+
+        sg_image_desc img_color_desc = {0};
+        img_color_desc.render_target = true;
+        img_color_desc.width         = current_screen_width;
+        img_color_desc.height        = current_screen_height;
+        img_color_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+        img_color_desc.sample_count  = 1;
+        img_color_desc.label         = "Color Target";
+
+        render->color_target_  = sg_make_image(&img_color_desc);
+        render->color_sampler_ = sg_make_sampler(&smp_desc);
+
+        sg_image_desc img_depth_desc = {0};
+        img_depth_desc.render_target = true;
+        img_depth_desc.width         = current_screen_width;
+        img_depth_desc.height        = current_screen_height;
+        img_depth_desc.pixel_format  = SG_PIXELFORMAT_DEPTH;
+        img_depth_desc.sample_count  = 1;
+        img_depth_desc.label         = "Depth Target";
+
+        render->depth_target_  = sg_make_image(&img_depth_desc);
+        render->depth_sampler_ = sg_make_sampler(&smp_desc);
+
+        sg_attachments_desc attachments = {0};
+        attachments.colors[0].image     = render->color_target_;
+        attachments.depth_stencil.image = render->depth_target_;
+        attachments.label               = "World Attachments";
+
+        render->world_pass_ = {0};
+
+        sg_pass_action pass_action;
+        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f, 0.0f,
+                                             epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
+
+        pass_action.depth.load_action = SG_LOADACTION_CLEAR;
+        pass_action.depth.clear_value = 1.0f;
+        pass_action.stencil           = {SG_LOADACTION_CLEAR, SG_STOREACTION_DONTCARE, 0};
+
+        render->world_pass_.action      = pass_action;
+        render->world_pass_.attachments = sg_make_attachments(&attachments);
     }
 
     void BeginWorldRender()
@@ -457,11 +561,23 @@ class SokolRenderBackend : public RenderBackend
         world_state_[i].active_    = true;
         world_state_[i].used_      = true;
         render_state_.world_state_ = i;
+
+        WorldRender *render = &world_render_[i];
+
+        render_state_.world_render_ = render;
+
+        InitWorldRender(render);
+
+        render->current_context_ = 0;
+        sg_begin_pass(render->world_pass_);
+        sgl_set_context(render->context_pool_[0]);
     }
 
     void FinishWorldRender()
     {
-        render_state_.world_state_ = kWorldStateInvalid;
+        WorldRender *render         = render_state_.world_render_;
+        render_state_.world_state_  = kWorldStateInvalid;
+        render_state_.world_render_ = nullptr;
 
         int32_t i = 0;
         for (; i < kRenderWorldMax; i++)
@@ -477,6 +593,13 @@ class SokolRenderBackend : public RenderBackend
         {
             FatalError("SokolRenderBackend: FinishWorldState called with no active world render");
         }
+
+        if (sgl_num_vertices())
+        {
+            sgl_context_draw(render->context_pool_[world_render_->current_context_]);
+        }
+
+        sg_end_pass();
 
         SetRenderLayer(kRenderLayerHUD);
     }
@@ -498,33 +621,52 @@ class SokolRenderBackend : public RenderBackend
     }
 
   private:
+    struct RenderState
+    {
+        RenderLayer  layer_;
+        int32_t      world_state_;
+        WorldRender *world_render_;
+    };
+
+    struct WorldRender
+    {
+        sg_pass world_pass_;
+
+        sg_image   color_target_;
+        sg_sampler color_sampler_;
+        sg_image   depth_target_;
+        sg_sampler depth_sampler_;
+
+        sgl_context context_pool_[kContextPoolSize];
+        int32_t     current_context_;
+
+        sg_pass     gbuffer_pass_;
+        sg_image    gbuffer_target_;
+        sg_pipeline gbuffer_pipeline_;
+
+        sgl_context gbuffer_context_;
+    };
+
     struct WorldState
     {
         bool active_;
         bool used_;
     };
 
-    struct RenderState
-    {
-        RenderLayer layer_;
-        int32_t     world_state_;
-    };
-
-    /*
-    simgui_frame_desc_t imgui_frame_desc_;
-    sgimgui_t           sg_imgui_;
-    */
-
     RGBAColor clear_color_ = kRGBABlack;
-
-    sgl_context context_pool_[kContextPoolSize];
-    int32_t     current_context_;
 
     RenderState render_state_;
 
-    sg_pass pass_;
+    sg_pass     hud_pass_;
+    sgl_context hud_context_;
 
-    WorldState world_state_[kRenderWorldMax];
+    // Screen
+
+    sg_pipeline screen_pipeline_;
+    sg_buffer   quad_buffer_;
+
+    WorldState  world_state_[kRenderWorldMax];
+    WorldRender world_render_[kRenderWorldMax];
 
 #ifdef SOKOL_D3D11
     bool    deferred_resize        = false;

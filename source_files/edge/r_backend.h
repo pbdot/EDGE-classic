@@ -10,7 +10,7 @@ struct PassInfo
     int32_t width_;
     int32_t height_;
 };
-constexpr int32_t kRenderWorldMax = 8;
+constexpr int32_t kRenderWorldMax = 4;
 
 enum RenderLayer
 {
