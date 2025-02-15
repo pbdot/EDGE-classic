@@ -138,8 +138,7 @@ void main()
 	vec3 viewNormal = FetchNormal(TexCoord);
 	float occlusion = viewNormal != vec3(0.0) ? ComputeAO(viewPosition, viewNormal) * AOStrength + (1.0 - AOStrength) : 1.0;
 
-	FragColor = vec4(occlusion, viewPosition.z, 0.0, 1.0);
-    //FragColor = vec4(viewPosition, 1.0);
+	FragColor = vec4(occlusion, viewPosition.z, 0.0, 1.0);    
 }
 @end
 

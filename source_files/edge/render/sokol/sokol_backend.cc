@@ -14,6 +14,8 @@
 #include "shaders/shader_screen.h"
 #include "shaders/shader_linear_depth.h"
 #include "shaders/shader_ssao.h"
+#include "shaders/shader_depthblur.h"
+#include "shaders/shader_ssao_combine.h"
 
 // clang-format on
 
@@ -303,10 +305,9 @@ class SokolRenderBackend : public RenderBackend
         ssao_params_t ssao_params;
 
         // cvars
-        float bias     = 0.2;
-        float aoRadius = 80.0f;
-        // const float blurAmount = 15.0f;
-        float aoStrength = 0.7f;        
+        float bias       = 0.2;
+        float aoRadius   = 80.0f;
+        float aoStrength = 0.7f;
 
         HMM_Mat4 proj;
 
@@ -343,7 +344,7 @@ class SokolRenderBackend : public RenderBackend
         proj.Columns[3][3] = 0.0f;
 
         // TODO!: m5 = VPUniforms.mProjectionMatrix.get()[5]
-        float m5           = ((float*)&proj)[5];
+        float m5           = ((float *)&proj)[5];
         float tanHalfFovy  = 1.0f / m5;
         float invFocalLenX = tanHalfFovy * ((float)current_screen_width / (float)current_screen_height);
         float invFocalLenY = tanHalfFovy;
@@ -378,6 +379,78 @@ class SokolRenderBackend : public RenderBackend
 
         sg_end_pass();
 
+        // Blur
+        depthblur_params_t depthblur_params;
+        const float        blurAmount       = 15.0f;
+        const float        gl_ssao_exponent = 1.8f; // can be set in console, mark the other that can be too
+
+        // Horizontal
+        sg_begin_pass(&render->depthblur_horizontal_pass_);
+        sg_apply_pipeline(depthblur_pipeline_);
+
+        bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->ambient0_target_;
+        bind.samplers[0]       = render->ambient0_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        depthblur_params.direction     = 0;
+        depthblur_params.BlurSharpness = 1.0f / blurAmount;
+        depthblur_params.PowExponent   = gl_ssao_exponent;
+
+        range = SG_RANGE(depthblur_params);
+        sg_apply_uniforms(UB_depthblur_params, &range);
+
+        sg_draw(0, 6, 1);
+
+        sg_end_pass();
+
+        // Vertical
+        sg_begin_pass(&render->depthblur_vertical_pass_);
+        sg_apply_pipeline(depthblur_pipeline_);
+
+        bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->ambient1_target_;
+        bind.samplers[0]       = render->ambient1_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        depthblur_params.direction     = 1;
+        depthblur_params.BlurSharpness = 1.0f / blurAmount;
+        depthblur_params.PowExponent   = gl_ssao_exponent;
+
+        range = SG_RANGE(depthblur_params);
+        sg_apply_uniforms(UB_depthblur_params, &range);
+
+        sg_draw(0, 6, 1);
+
+        sg_end_pass();
+
+        // SSAO Combine
+        
+        sg_begin_pass(&render->ssao_combine_pass_);
+        sg_apply_pipeline(ssao_combine_pipeline_);
+
+        bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->ambient0_target_;
+        bind.samplers[0]       = render->ambient0_sampler_;
+
+        // this is supposed to be fog
+        bind.images[1]         = render->color_target_;
+        bind.samplers[1]       = render->color_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        sg_draw(0, 6, 1);
+
+        sg_end_pass();
+
         // Screen
 
         sg_begin_pass(&screen_pass_);
@@ -387,8 +460,8 @@ class SokolRenderBackend : public RenderBackend
         bind = {0};
 
         bind.vertex_buffers[0] = quad_buffer_;
-        bind.images[0]         = render->color_target_;
-        bind.samplers[0]       = render->color_sampler_;
+        bind.images[0]         = render->normal_target_;
+        bind.samplers[0]       = render->normal_sampler_;
 
         sg_apply_bindings(&bind);
 
@@ -658,6 +731,34 @@ class SokolRenderBackend : public RenderBackend
 
         ssao_pipeline_ = sg_make_pipeline(&ssao_pip_desc);
 
+        // Blur
+
+        sg_pipeline_desc depthblur_pip_desc       = {0};
+        depthblur_pip_desc.colors[0].pixel_format = SG_PIXELFORMAT_RG16F;
+        depthblur_pip_desc.color_count            = 1;
+        depthblur_pip_desc.depth.pixel_format     = SG_PIXELFORMAT_NONE;
+
+        depthblur_pip_desc.shader = sg_make_shader(depthblur_shader_desc(sg_query_backend()));
+
+        depthblur_pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        depthblur_pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+
+        depthblur_pipeline_ = sg_make_pipeline(&depthblur_pip_desc);
+
+        // SSAO Combine
+
+        sg_pipeline_desc ssao_combine_pip_desc       = {0};
+        ssao_combine_pip_desc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
+        ssao_combine_pip_desc.color_count            = 1;
+        ssao_combine_pip_desc.depth.pixel_format     = SG_PIXELFORMAT_NONE;
+
+        ssao_combine_pip_desc.shader = sg_make_shader(ssao_combine_shader_desc(sg_query_backend()));
+
+        ssao_combine_pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        ssao_combine_pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+
+        ssao_combine_pipeline_ = sg_make_pipeline(&ssao_combine_pip_desc);
+
         BSPStartThread();
     }
 
@@ -861,9 +962,12 @@ class SokolRenderBackend : public RenderBackend
         ssao_desc.sample_count  = 1;
         ssao_desc.label         = "SSAO Target";
 
-        render->ambient0_target_          = sg_make_image(&ssao_desc);
         sg_sampler_desc ambient0_smp_desc = {0};
+        render->ambient0_target_          = sg_make_image(&ssao_desc);
         render->ambient0_sampler_         = sg_make_sampler(&ambient0_smp_desc);
+        // for blur
+        render->ambient1_target_  = sg_make_image(&ssao_desc);
+        render->ambient1_sampler_ = sg_make_sampler(&ambient0_smp_desc);
 
         sg_attachments_desc ssao_attachments = {0};
         ssao_attachments.colors[0].image     = render->ambient0_target_;
@@ -876,6 +980,47 @@ class SokolRenderBackend : public RenderBackend
 
         render->ssao_pass_.action      = pass_action;
         render->ssao_pass_.attachments = sg_make_attachments(&ssao_attachments);
+
+        // Blur
+
+        // Horizontal
+        sg_attachments_desc depthblur_horizontal_attachments = {0};
+        depthblur_horizontal_attachments.colors[0].image     = render->ambient1_target_;
+        depthblur_horizontal_attachments.label               = "Blur Horizontal Attachments";
+
+        render->depthblur_horizontal_pass_ = {0};
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+
+        render->depthblur_horizontal_pass_.action      = pass_action;
+        render->depthblur_horizontal_pass_.attachments = sg_make_attachments(&depthblur_horizontal_attachments);
+
+        // Vertical
+        render->depthblur_vertical_pass_ = {0};
+
+        sg_attachments_desc depthblur_vertical_attachments = {0};
+        depthblur_vertical_attachments.colors[0].image     = render->ambient0_target_;
+        depthblur_vertical_attachments.label               = "Blur Horizontal Attachments";
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+
+        render->depthblur_vertical_pass_.action      = pass_action;
+        render->depthblur_vertical_pass_.attachments = sg_make_attachments(&depthblur_vertical_attachments);
+
+        // SSAO Combine
+        sg_attachments_desc ssao_combine_attachments = {0};
+        ssao_combine_attachments.colors[0].image     = render->normal_target_;
+        ssao_combine_attachments.label               = "SSAO Combine Attachments";
+
+        render->ssao_combine_pass_ = {0};
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+
+        render->ssao_combine_pass_.action      = pass_action;
+        render->ssao_combine_pass_.attachments = sg_make_attachments(&ssao_combine_attachments);
     }
 
     void BeginWorldRender()
@@ -986,6 +1131,14 @@ class SokolRenderBackend : public RenderBackend
         sg_pass    ssao_pass_;
         sg_image   ambient0_target_;
         sg_sampler ambient0_sampler_;
+        // for blur
+        sg_image   ambient1_target_;
+        sg_sampler ambient1_sampler_;
+
+        sg_pass depthblur_horizontal_pass_;
+        sg_pass depthblur_vertical_pass_;
+
+        sg_pass ssao_combine_pass_;
 
         sgl_context context_pool_[kContextPoolSize];
         int32_t     current_context_;
@@ -1010,6 +1163,8 @@ class SokolRenderBackend : public RenderBackend
     sg_pipeline screen_pipeline_;
     sg_pipeline linear_depth_pipeline_;
     sg_pipeline ssao_pipeline_;
+    sg_pipeline depthblur_pipeline_;
+    sg_pipeline ssao_combine_pipeline_;
     sg_buffer   quad_buffer_;
 
     WorldState  world_state_[kRenderWorldMax];
