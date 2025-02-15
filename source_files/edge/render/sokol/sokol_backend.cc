@@ -1,4 +1,7 @@
 // clang-format off
+
+#include <random>
+
 #include "../../r_backend.h"
 #include "sokol_local.h"
 #include "sokol_pipeline.h"
@@ -299,6 +302,8 @@ class SokolRenderBackend : public RenderBackend
         bind.samplers[0]       = render->linear_depth_sampler_;
         bind.images[1]         = render->normal_target_;
         bind.samplers[1]       = render->normal_sampler_;
+        bind.images[2]         = random_texture_;
+        bind.samplers[2]       = random_sampler_;
 
         sg_apply_bindings(&bind);
 
@@ -431,7 +436,7 @@ class SokolRenderBackend : public RenderBackend
         sg_end_pass();
 
         // SSAO Combine
-        
+
         sg_begin_pass(&render->ssao_combine_pass_);
         sg_apply_pipeline(ssao_combine_pipeline_);
 
@@ -442,8 +447,8 @@ class SokolRenderBackend : public RenderBackend
         bind.samplers[0]       = render->ambient0_sampler_;
 
         // this is supposed to be fog
-        bind.images[1]         = render->color_target_;
-        bind.samplers[1]       = render->color_sampler_;
+        bind.images[1]   = render->color_target_;
+        bind.samplers[1] = render->color_sampler_;
 
         sg_apply_bindings(&bind);
 
@@ -981,6 +986,8 @@ class SokolRenderBackend : public RenderBackend
         render->ssao_pass_.action      = pass_action;
         render->ssao_pass_.attachments = sg_make_attachments(&ssao_attachments);
 
+        CreateRandomTexture();
+
         // Blur
 
         // Horizontal
@@ -1021,6 +1028,56 @@ class SokolRenderBackend : public RenderBackend
 
         render->ssao_combine_pass_.action      = pass_action;
         render->ssao_combine_pass_.attachments = sg_make_attachments(&ssao_combine_attachments);
+    }
+
+    void CreateRandomTexture()
+    {
+        // Must match quality enum in PPAmbientOcclusion::DeclareShaders
+        double numDirections = 8;
+
+        std::mt19937                           generator(1337);
+        std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        std::shared_ptr<void>                  data(new int16_t[16 * 4], [](void *p) { delete[] (int16_t *)p; });
+        int16_t                               *randomValues = (int16_t *)data.get();
+
+        for (int i = 0; i < 16; i++)
+        {
+            double angle = 2.0 * M_PI * distribution(generator) / numDirections;
+            double x     = cos(angle);
+            double y     = sin(angle);
+            double z     = distribution(generator);
+            double w     = distribution(generator);
+
+            randomValues[i * 4 + 0] = (int16_t)HMM_Clamp(x * 32767.0, -32768.0, 32767.0);
+            randomValues[i * 4 + 1] = (int16_t)HMM_Clamp(y * 32767.0, -32768.0, 32767.0);
+            randomValues[i * 4 + 2] = (int16_t)HMM_Clamp(z * 32767.0, -32768.0, 32767.0);
+            randomValues[i * 4 + 3] = (int16_t)HMM_Clamp(w * 32767.0, -32768.0, 32767.0);
+        }
+
+        sg_image_desc img_desc;
+        EPI_CLEAR_MEMORY(&img_desc, sg_image_desc, 1);
+        img_desc.usage        = SG_USAGE_IMMUTABLE;
+        img_desc.width        = 4;
+        img_desc.height       = 4;
+        img_desc.pixel_format = SG_PIXELFORMAT_RGBA16SN;
+        img_desc.num_mipmaps  = 1;
+
+        sg_image_data img_data;
+        EPI_CLEAR_MEMORY(&img_data, sg_image_data, 1);
+
+        sg_range range;
+        range.ptr               = data.get();
+        range.size              = 16 * 4 * 2;
+        img_data.subimage[0][0] = range;
+
+        img_desc.data = img_data;
+
+        random_texture_ = sg_make_image(&img_desc);
+
+        sg_sampler_desc random_smp_desc = {0};
+
+        random_sampler_ = sg_make_sampler(&random_smp_desc);
+
     }
 
     void BeginWorldRender()
@@ -1165,6 +1222,8 @@ class SokolRenderBackend : public RenderBackend
     sg_pipeline ssao_pipeline_;
     sg_pipeline depthblur_pipeline_;
     sg_pipeline ssao_combine_pipeline_;
+    sg_image    random_texture_;
+    sg_sampler  random_sampler_;
     sg_buffer   quad_buffer_;
 
     WorldState  world_state_[kRenderWorldMax];

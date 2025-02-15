@@ -21,9 +21,8 @@ layout(binding=0) uniform sampler DepthSampler;
 layout(binding=1) uniform texture2D NormalTexture;
 layout(binding=1) uniform sampler NormalSampler;
 
-//#if defined(USE_RANDOM_TEXTURE)
-//layout(binding=2) uniform sampler2D RandomTexture;
-//#endif
+layout(binding=2) uniform texture2D RandomTexture;
+layout(binding=2) uniform sampler RandomSampler;
 
 layout(binding=0) uniform ssao_params {
     vec2 UVToViewA;
@@ -80,16 +79,11 @@ vec2 RotateDirection(vec2 dir, vec2 cossin)
     return vec2(dir.x * cossin.x - dir.y * cossin.y, dir.x * cossin.y + dir.y * cossin.x);
 }
 
+#define RANDOM_TEXTURE_WIDTH 4.0
+
 vec4 GetJitter()
 {
-//#if !defined(USE_RANDOM_TEXTURE)
-    return vec4(1,0,1,1);
-	//vec3 rand = noise3(TexCoord.x + TexCoord.y);
-	//float angle = 2.0 * PI * rand.x / NUM_DIRECTIONS;
-	//return vec4(cos(angle), sin(angle), rand.y, rand.z);
-//#else
- //   return texture(RandomTexture, gl_FragCoord.xy / RANDOM_TEXTURE_WIDTH);
-//#endif
+    return texture(sampler2D(RandomTexture, RandomSampler), gl_FragCoord.xy / RANDOM_TEXTURE_WIDTH);
 }
 
 // Calculates the ambient occlusion of a sample
