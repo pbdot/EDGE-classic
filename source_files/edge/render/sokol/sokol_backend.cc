@@ -946,12 +946,15 @@ class SokolRenderBackend : public RenderBackend
         render->world_pass_.action      = pass_action;
         render->world_pass_.attachments = sg_make_attachments(&world_attachments);
 
+        int32_t AmbientWidth = (current_screen_width + 1) / 2;
+        int32_t AmbientHeight = (current_screen_height + 1) / 2;
+    
         // Linear Depth Pass
         sg_image_desc linear_depth_desc = {0};
         linear_depth_desc;
         linear_depth_desc.render_target = true;
-        linear_depth_desc.width         = current_screen_width;
-        linear_depth_desc.height        = current_screen_height;
+        linear_depth_desc.width         = AmbientWidth;
+        linear_depth_desc.height        = AmbientHeight;
         linear_depth_desc.pixel_format  = SG_PIXELFORMAT_R32F;
         linear_depth_desc.sample_count  = 1;
         linear_depth_desc.label         = "Linear Depth Target";
@@ -976,8 +979,8 @@ class SokolRenderBackend : public RenderBackend
         sg_image_desc ssao_desc = {0};
         ssao_desc;
         ssao_desc.render_target = true;
-        ssao_desc.width         = current_screen_width;
-        ssao_desc.height        = current_screen_height;
+        ssao_desc.width         = AmbientWidth;
+        ssao_desc.height        = AmbientHeight;
         ssao_desc.pixel_format  = SG_PIXELFORMAT_RG16F;
         ssao_desc.sample_count  = 1;
         ssao_desc.label         = "SSAO Target";
@@ -1090,6 +1093,8 @@ class SokolRenderBackend : public RenderBackend
         random_texture_ = sg_make_image(&img_desc);
 
         sg_sampler_desc random_smp_desc = {0};
+        random_smp_desc.min_filter = SG_FILTER_LINEAR;
+        random_smp_desc.mag_filter = SG_FILTER_LINEAR;
 
         random_sampler_ = sg_make_sampler(&random_smp_desc);
     }
