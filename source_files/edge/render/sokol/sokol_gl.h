@@ -957,6 +957,7 @@ SOKOL_GL_API_DECL void sgl_v3f_t2f_c4f(float x, float y, float z, float u, float
 SOKOL_GL_API_DECL void sgl_v3f_t2f_c4b(float x, float y, float z, float u, float v, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 SOKOL_GL_API_DECL void sgl_v3f_t2f_c1i(float x, float y, float z, float u, float v, uint32_t rgba);
 SOKOL_GL_API_DECL void sgl_v3f_t4f_c4b(float x, float y, float z, float u0, float v0, float u1, float v1, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+SOKOL_GL_API_DECL void sgl_v3f_n3f_t4f_c4b(float x, float y, float z, float nx, float ny, float nz, float u0, float v0, float u1, float v1, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 SOKOL_GL_API_DECL void sgl_end(void);
 
 #ifdef __cplusplus
@@ -2783,6 +2784,7 @@ typedef enum {
 
 typedef struct {
     float pos[3];
+    float normal[3];
     float uv[4];
     uint32_t rgba;
     float psize;
@@ -3192,17 +3194,22 @@ static void _sgl_init_pipeline(sgl_pipeline pip_id, const sg_pipeline_desc* in_d
         pos->format = SG_VERTEXFORMAT_FLOAT3;
     }
     {
-        sg_vertex_attr_state* uv = &desc.layout.attrs[1];
+        sg_vertex_attr_state* pos = &desc.layout.attrs[1];
+        pos->offset = offsetof(_sgl_vertex_t, normal);
+        pos->format = SG_VERTEXFORMAT_FLOAT3;
+    }
+    {
+        sg_vertex_attr_state* uv = &desc.layout.attrs[2];
         uv->offset = offsetof(_sgl_vertex_t, uv);
         uv->format = SG_VERTEXFORMAT_FLOAT4;
     }
     {
-        sg_vertex_attr_state* rgba = &desc.layout.attrs[2];
+        sg_vertex_attr_state* rgba = &desc.layout.attrs[3];
         rgba->offset = offsetof(_sgl_vertex_t, rgba);
         rgba->format = SG_VERTEXFORMAT_UBYTE4N;
     }
     {
-        sg_vertex_attr_state* psize = &desc.layout.attrs[3];
+        sg_vertex_attr_state* psize = &desc.layout.attrs[4];
         psize->offset = offsetof(_sgl_vertex_t, psize);
         psize->format = SG_VERTEXFORMAT_FLOAT;
     }
@@ -3588,7 +3595,7 @@ static uint32_t _sgl_pack_rgbaf(float r, float g, float b, float a) {
     return _sgl_pack_rgbab(r_u8, g_u8, b_u8, a_u8);
 }
 
-static void _sgl_vtx(_sgl_context_t* ctx, float x, float y, float z, float u0, float v0, float u1, float v1, uint32_t rgba) {
+static void _sgl_vtx(_sgl_context_t* ctx, float x, float y, float z, float nx, float ny, float nz, float u0, float v0, float u1, float v1, uint32_t rgba) {
     SOKOL_ASSERT(ctx->in_begin);
     _sgl_vertex_t* vtx;
     /* handle non-native primitive types */
@@ -3604,6 +3611,7 @@ static void _sgl_vtx(_sgl_context_t* ctx, float x, float y, float z, float u0, f
     vtx = _sgl_next_vertex(ctx);
     if (vtx) {
         vtx->pos[0] = x; vtx->pos[1] = y; vtx->pos[2] = z;
+        vtx->normal[0] = nx; vtx->normal[1] = ny; vtx->normal[2] = nz;
         vtx->uv[0] = u0; vtx->uv[1] = v0;
         vtx->uv[2] = u1; vtx->uv[3] = v1;
         vtx->rgba = rgba;
@@ -4724,175 +4732,182 @@ SOKOL_API_IMPL void sgl_c1i(uint32_t rgba) {
 SOKOL_API_IMPL void sgl_v2f(float x, float y) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, ctx->rgba);
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, ctx->rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f(float x, float y, float z) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, ctx->rgba);
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, ctx->rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f(float x, float y, float u, float v) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, ctx->rgba);
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, ctx->rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f(float x, float y, float z, float u, float v) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u, v, ctx->u1, ctx->v1, ctx->rgba);
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, ctx->rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_c3f(float x, float y, float r, float g, float b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_c3b(float x, float y, uint8_t r, uint8_t g, uint8_t b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_c4f(float x, float y, float r, float g, float b, float a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_c4b(float x, float y, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_c1i(float x, float y, uint32_t rgba) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, rgba);
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_c3f(float x, float y, float z, float r, float g, float b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_c3b(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_c4f(float x, float y, float z, float r, float g, float b, float a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_c4b(float x, float y, float z, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_c1i(float x, float y, float z, uint32_t rgba) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, ctx->u0, ctx->v0, ctx->u1, ctx->v1, rgba);
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, ctx->u0, ctx->v0, ctx->u1, ctx->v1, rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f_c3f(float x, float y, float u, float v, float r, float g, float b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f_c3b(float x, float y, float u, float v, uint8_t r, uint8_t g, uint8_t b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f_c4f(float x, float y, float u, float v, float r, float g, float b, float a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f_c4b(float x, float y, float u, float v, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v2f_t2f_c1i(float x, float y, float u, float v, uint32_t rgba) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, 0.0f, u, v, ctx->u1, ctx->v1, rgba);
+        _sgl_vtx(ctx, x, y, 0.0f, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, rgba);
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f_c3f(float x, float y, float z, float u, float v, float r, float g, float b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, 1.0f));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f_c3b(float x, float y, float z, float u, float v, uint8_t r, uint8_t g, uint8_t b) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, 255));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f_c4f(float x, float y, float z, float u, float v, float r, float g, float b, float a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbaf(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f_c4b(float x, float y, float z, float u, float v, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, _sgl_pack_rgbab(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t4f_c4b(float x, float y, float z, float u0, float v0, float u1, float v1, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx, x, y, z, u0, v0, u1, v1, _sgl_pack_rgbab(r, g, b, a));
+        _sgl_vtx(ctx, x, y, z, 0.0f, 0.0f, 0.0f, u0, v0, u1, v1, _sgl_pack_rgbab(r, g, b, a));
+    }
+}
+
+SOKOL_API_IMPL void sgl_v3f_n3f_t4f_c4b(float x, float y, float z, float nx, float ny, float nz, float u0, float v0, float u1, float v1, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    _sgl_context_t* ctx = _sgl.cur_ctx;
+    if (ctx) {
+        _sgl_vtx(ctx, x, y, z, nx, ny, nz, u0, v0, u1, v1, _sgl_pack_rgbab(r, g, b, a));
     }
 }
 
 SOKOL_API_IMPL void sgl_v3f_t2f_c1i(float x, float y, float z, float u, float v, uint32_t rgba) {
     _sgl_context_t* ctx = _sgl.cur_ctx;
     if (ctx) {
-        _sgl_vtx(ctx,x, y, z, u, v, ctx->u1, ctx->v1, rgba);
+        _sgl_vtx(ctx,x, y, z, 0.0f, 0.0f, 0.0f, u, v, ctx->u1, ctx->v1, rgba);
     }
 }
 

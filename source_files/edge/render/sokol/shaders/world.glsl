@@ -17,18 +17,21 @@ layout(binding=0) uniform vs_params {
     vec4 clipplane5;
 };
 layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 texcoords;
-layout(location = 2) in vec4 color0;
-layout(location = 3) in float psize;
+layout(location = 1) in vec4 normal;
+layout(location = 2) in vec4 texcoords;
+layout(location = 3) in vec4 color0;
+layout(location = 4) in float psize;
 layout(location = 0) out vec4 uv;
 layout(location = 1) out vec4 color;
 layout(location = 2) out vec3  vpos;
-layout(location = 3) out float clipvertex0;
-layout(location = 4) out float clipvertex1;
-layout(location = 5) out float clipvertex2;
-layout(location = 6) out float clipvertex3;
-layout(location = 7) out float clipvertex4;
-layout(location = 8) out float clipvertex5;
+layout(location = 3) out vec3  vnormal;
+layout(location = 4) out vec4  veye_normal;
+layout(location = 5) out float clipvertex0;
+layout(location = 6) out float clipvertex1;
+layout(location = 7) out float clipvertex2;
+layout(location = 8) out float clipvertex3;
+layout(location = 9) out float clipvertex4;
+layout(location = 10) out float clipvertex5;
 
 void main()
 {
@@ -48,6 +51,9 @@ void main()
     clipvertex5 = dot(vertex, clipplane5);
 
     vpos = vertex.xyz;
+    vnormal = normalize(normal.xyz);
+    veye_normal = tm * vec4(vnormal, 1);
+
 }
 @end
 
@@ -76,16 +82,19 @@ layout(binding=1) uniform texture2D tex1;
 layout(binding=1) uniform sampler smp1;
 
 layout(location = 0) out vec4 frag_color;
+layout(location = 1) out vec4 frag_normal;
 
 layout(location = 0) in vec4 uv;
 layout(location = 1) in vec4 color;
 layout(location = 2) in vec3 vpos;
-layout(location = 3) in float clipvertex0;
-layout(location = 4) in float clipvertex1;
-layout(location = 5) in float clipvertex2;
-layout(location = 6) in float clipvertex3;
-layout(location = 7) in float clipvertex4;
-layout(location = 8) in float clipvertex5;
+layout(location = 3) in vec3 vnormal;
+layout(location = 4) in vec4  veye_normal;
+layout(location = 5) in float clipvertex0;
+layout(location = 6) in float clipvertex1;
+layout(location = 7) in float clipvertex2;
+layout(location = 8) in float clipvertex3;
+layout(location = 9) in float clipvertex4;
+layout(location = 10) in float clipvertex5;
 
 void main()
 {
@@ -183,6 +192,7 @@ void main()
     }
 
     frag_color = fcolor;
+    frag_normal = vec4(veye_normal.xyz * 0.5 + 0.5, 1.0);    
 }
 @end
 

@@ -1,5 +1,5 @@
 #include "sokol_pipeline.h"
-
+#include "r_backend.h"
 #include "epi.h"
 
 typedef std::unordered_map<uint32_t, std::unordered_map<uint32_t, uint32_t>> PipelineMap;
@@ -123,6 +123,12 @@ sgl_pipeline GetPipeline(sgl_context context, uint32_t pipeline_flags, GLenum sr
 
             pipeline_desc.colors[0].blend.src_factor_rgb = src_factor;
             pipeline_desc.colors[0].blend.dst_factor_rgb = dst_factor;
+        }
+
+        RenderLayer layer = render_backend->GetRenderLayer();
+        if (layer != kRenderLayerHUD)
+        {
+            pipeline_desc.color_count = 2;
         }
 
         pipeline_id = sgl_context_make_pipeline(context, &pipeline_desc).id;

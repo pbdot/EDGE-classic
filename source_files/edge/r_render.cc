@@ -2189,6 +2189,7 @@ void RenderTrueBsp(void)
 
 #endif
 
+/*
     // Lobo 2022:
     // Allow changing the order of weapon model rendering to be
     // after RenderWeaponSprites() so that FLASH states are
@@ -2233,6 +2234,7 @@ void RenderTrueBsp(void)
         render_state->Disable(GL_DEPTH_TEST);
         render_backend->SetupMatrices2D();
     }
+*/
 
 #if (DEBUG >= 3)
     LogDebug("\n\n");

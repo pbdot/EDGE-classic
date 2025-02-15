@@ -308,6 +308,11 @@ void RenderCurrentUnits(void)
 
     bool no_fog = (render_layer == kRenderLayerHUD) || (render_layer == kRenderLayerWeapon);
 
+    if (render_layer != kRenderLayerHUD)
+    {
+        no_fog = no_fog;
+    }
+
     bool culling = draw_culling.d_ && !no_fog;
 
     if (culling)
@@ -516,20 +521,22 @@ void RenderCurrentUnits(void)
                 const RendererVertex *V1 = &V[k + 1];
                 const RendererVertex *V2 = &V[((k + 2) % unit->count)];
 
-                sgl_v3f_t4f_c4b(V->position.X, V->position.Y, V->position.Z, V->texture_coordinates[0].X,
-                                V->texture_coordinates[0].Y, V->texture_coordinates[1].X, V->texture_coordinates[1].Y,
-                                epi::GetRGBARed(V->rgba), epi::GetRGBAGreen(V->rgba), epi::GetRGBABlue(V->rgba),
-                                epi::GetRGBAAlpha(V->rgba));
+                sgl_v3f_n3f_t4f_c4b(V->position.X, V->position.Y, V->position.Z, V->normal.X, V->normal.Y, V->normal.Z,
+                                    V->texture_coordinates[0].X, V->texture_coordinates[0].Y,
+                                    V->texture_coordinates[1].X, V->texture_coordinates[1].Y, epi::GetRGBARed(V->rgba),
+                                    epi::GetRGBAGreen(V->rgba), epi::GetRGBABlue(V->rgba), epi::GetRGBAAlpha(V->rgba));
 
-                sgl_v3f_t4f_c4b(V1->position.X, V1->position.Y, V1->position.Z, V1->texture_coordinates[0].X,
-                                V1->texture_coordinates[0].Y, V1->texture_coordinates[1].X,
-                                V1->texture_coordinates[1].Y, epi::GetRGBARed(V1->rgba), epi::GetRGBAGreen(V1->rgba),
-                                epi::GetRGBABlue(V1->rgba), epi::GetRGBAAlpha(V1->rgba));
+                sgl_v3f_n3f_t4f_c4b(V1->position.X, V1->position.Y, V1->position.Z, V->normal.X, V->normal.Y,
+                                    V->normal.Z, V1->texture_coordinates[0].X, V1->texture_coordinates[0].Y,
+                                    V1->texture_coordinates[1].X, V1->texture_coordinates[1].Y,
+                                    epi::GetRGBARed(V1->rgba), epi::GetRGBAGreen(V1->rgba), epi::GetRGBABlue(V1->rgba),
+                                    epi::GetRGBAAlpha(V1->rgba));
 
-                sgl_v3f_t4f_c4b(V2->position.X, V2->position.Y, V2->position.Z, V2->texture_coordinates[0].X,
-                                V2->texture_coordinates[0].Y, V2->texture_coordinates[1].X,
-                                V2->texture_coordinates[1].Y, epi::GetRGBARed(V2->rgba), epi::GetRGBAGreen(V2->rgba),
-                                epi::GetRGBABlue(V2->rgba), epi::GetRGBAAlpha(V2->rgba));
+                sgl_v3f_n3f_t4f_c4b(V2->position.X, V2->position.Y, V2->position.Z, V->normal.X, V->normal.Y,
+                                    V->normal.Z, V2->texture_coordinates[0].X, V2->texture_coordinates[0].Y,
+                                    V2->texture_coordinates[1].X, V2->texture_coordinates[1].Y,
+                                    epi::GetRGBARed(V2->rgba), epi::GetRGBAGreen(V2->rgba), epi::GetRGBABlue(V2->rgba),
+                                    epi::GetRGBAAlpha(V2->rgba));
             }
 
             sgl_end();

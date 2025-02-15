@@ -12,6 +12,8 @@
 #include "i_video.h"
 
 #include "shaders/shader_screen.h"
+#include "shaders/shader_linear_depth.h"
+#include "shaders/shader_ssao.h"
 
 // clang-format on
 
@@ -34,6 +36,50 @@ constexpr int32_t kContextMaxVertex  = 32 * 1024;
 constexpr int32_t kContextMaxCommand = 2 * 1024;
 
 EDGE_DEFINE_CONSOLE_VARIABLE(r_ssao, "1", kConsoleVariableFlagArchive)
+
+// computes the derived normal matrix for the view matrix
+static void ComputeNormalMatrix(float *matrix_out, const float *view_matrix)
+{
+
+    double matrix_3x3[9];
+
+    matrix_3x3[0] = view_matrix[0];
+    matrix_3x3[1] = view_matrix[1];
+    matrix_3x3[2] = view_matrix[2];
+
+    matrix_3x3[3] = view_matrix[4];
+    matrix_3x3[4] = view_matrix[5];
+    matrix_3x3[5] = view_matrix[6];
+
+    matrix_3x3[6] = view_matrix[8];
+    matrix_3x3[7] = view_matrix[9];
+    matrix_3x3[8] = view_matrix[10];
+
+    double det, invDet;
+
+    det = matrix_3x3[0] * (matrix_3x3[4] * matrix_3x3[8] - matrix_3x3[5] * matrix_3x3[7]) +
+          matrix_3x3[1] * (matrix_3x3[5] * matrix_3x3[6] - matrix_3x3[8] * matrix_3x3[3]) +
+          matrix_3x3[2] * (matrix_3x3[3] * matrix_3x3[7] - matrix_3x3[4] * matrix_3x3[6]);
+
+    invDet = 1.0 / det;
+
+    matrix_out[0]  = (matrix_3x3[4] * matrix_3x3[8] - matrix_3x3[5] * matrix_3x3[7]) * invDet;
+    matrix_out[1]  = (matrix_3x3[5] * matrix_3x3[6] - matrix_3x3[8] * matrix_3x3[3]) * invDet;
+    matrix_out[2]  = (matrix_3x3[3] * matrix_3x3[7] - matrix_3x3[4] * matrix_3x3[6]) * invDet;
+    matrix_out[3]  = 0.0f;
+    matrix_out[4]  = (matrix_3x3[2] * matrix_3x3[7] - matrix_3x3[1] * matrix_3x3[8]) * invDet;
+    matrix_out[5]  = (matrix_3x3[0] * matrix_3x3[8] - matrix_3x3[2] * matrix_3x3[6]) * invDet;
+    matrix_out[6]  = (matrix_3x3[1] * matrix_3x3[6] - matrix_3x3[7] * matrix_3x3[0]) * invDet;
+    matrix_out[7]  = 0.0f;
+    matrix_out[8]  = (matrix_3x3[1] * matrix_3x3[5] - matrix_3x3[4] * matrix_3x3[2]) * invDet;
+    matrix_out[9]  = (matrix_3x3[2] * matrix_3x3[3] - matrix_3x3[0] * matrix_3x3[5]) * invDet;
+    matrix_out[10] = (matrix_3x3[0] * matrix_3x3[4] - matrix_3x3[3] * matrix_3x3[1]) * invDet;
+    matrix_out[11] = 0.0;
+    matrix_out[12] = 0.0;
+    matrix_out[13] = 0.0;
+    matrix_out[14] = 0.0;
+    matrix_out[15] = 1.0;
+}
 
 class SokolRenderBackend : public RenderBackend
 {
@@ -74,16 +120,71 @@ class SokolRenderBackend : public RenderBackend
         sgl_matrix_mode_projection();
         sgl_load_identity();
 
+        HMM_Mat4 proj;
+
+        float left   = -view_x_slope * renderer_near_clip.f_;
+        float right  = view_x_slope * renderer_near_clip.f_;
+        float bottom = -view_y_slope * renderer_near_clip.f_;
+        float top    = view_y_slope * renderer_near_clip.f_;
+        float fnear  = renderer_near_clip.f_;
+        float ffar   = renderer_far_clip.f_;
+
+        float A = (right + left) / (right - left);
+        float B = (top + bottom) / (top - bottom);
+        float C = (-(ffar + fnear)) / (ffar - fnear);
+        float D = (-(2 * ffar * fnear)) / (ffar - fnear);
+
+        proj.Columns[0][0] = (2 * fnear) / (right - left);
+        proj.Columns[0][1] = 0.0f;
+        proj.Columns[0][2] = 0.0f;
+        proj.Columns[0][3] = 0.0f;
+
+        proj.Columns[1][0] = 0.0f;
+        proj.Columns[1][1] = (2 * fnear) / (top - bottom);
+        proj.Columns[1][2] = 0.0f;
+        proj.Columns[1][3] = 0.0f;
+
+        proj.Columns[2][0] = A;
+        proj.Columns[2][1] = B;
+        proj.Columns[2][2] = C;
+        proj.Columns[2][3] = -1.0f;
+
+        proj.Columns[3][0] = 0.0f;
+        proj.Columns[3][1] = 0.0f;
+        proj.Columns[3][2] = D;
+        proj.Columns[3][3] = 0.0f;
+
+        // sgl_load_matrix((float *)&proj.Elements[0][0]);
+
         sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
                     -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
                     renderer_far_clip.f_);
 
+        sgl_load_matrix(proj.Elements[0]);
+
         // calculate look-at matrix
         sgl_matrix_mode_modelview();
+        /*
         sgl_load_identity();
         sgl_rotate(sgl_rad(270.0f) - epi::RadiansFromBAM(view_vertical_angle), 1.0f, 0.0f, 0.0f);
         sgl_rotate(sgl_rad(90.0f) - epi::RadiansFromBAM(view_angle), 0.0f, 0.0f, 1.0f);
         sgl_translate(-view_x, -view_y, -view_z);
+        */
+
+        HMM_Mat4 view = HMM_M4D(1.0f);
+        view          = HMM_Mul(view, HMM_Rotate_RH(HMM_AngleDeg(270.0f) - epi::RadiansFromBAM(view_vertical_angle),
+                                                    HMM_V3(1.0f, 0.0f, 0.0f)));
+        view          = HMM_Mul(view,
+                                HMM_Rotate_RH(HMM_AngleDeg(90.0f) - epi::RadiansFromBAM(view_angle), HMM_V3(0.0f, 0.0f, 1.0f)));
+        view          = HMM_Mul(view, HMM_Translate(HMM_V3(-view_x, -view_y, -view_z)));
+
+        sgl_load_matrix(view.Elements[0]);
+
+        HMM_Mat4 normal_matrix;
+        ComputeNormalMatrix((float *)&normal_matrix, (float *)&view);
+
+        sgl_matrix_mode_texture();
+        sgl_load_matrix(normal_matrix.Elements[0]);
     }
 
     void StartFrame(int32_t width, int32_t height)
@@ -155,9 +256,135 @@ class SokolRenderBackend : public RenderBackend
 
     void RenderWorldToScreen(WorldRender *render)
     {
-        sg_apply_pipeline(screen_pipeline_);
+        sg_begin_pass(&render->linear_depth_pass_);
+
+        // Linear Depth
+        sg_apply_pipeline(linear_depth_pipeline_);
 
         sg_bindings bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->depth_target_;
+        bind.samplers[0]       = render->depth_sampler_;
+        bind.images[1]         = render->color_target_;
+        bind.samplers[1]       = render->color_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        linear_depth_params_t fs_params;
+        fs_params.linearize_depth_a     = 1.0f / renderer_far_clip.f_ - 1.0f / renderer_near_clip.f_;
+        fs_params.linearize_depth_b     = HMM_MAX(1.0f / renderer_near_clip.f_, 1.e-8f);
+        fs_params.inverse_depth_range_a = 1.0f;
+        fs_params.inverse_depth_range_b = 0.0f;
+
+        sg_range range = SG_RANGE(fs_params);
+        sg_apply_uniforms(UB_linear_depth_params, &range);
+
+        sg_draw(0, 6, 1);
+
+        sg_end_pass();
+
+        // SSAO
+
+        sg_begin_pass(&render->ssao_pass_);
+
+        sg_apply_pipeline(ssao_pipeline_);
+
+        bind = {0};
+
+        bind.vertex_buffers[0] = quad_buffer_;
+        bind.images[0]         = render->linear_depth_target_;
+        bind.samplers[0]       = render->linear_depth_sampler_;
+        bind.images[1]         = render->normal_target_;
+        bind.samplers[1]       = render->normal_sampler_;
+
+        sg_apply_bindings(&bind);
+
+        ssao_params_t ssao_params;
+
+        // cvars
+        float bias     = 0.2;
+        float aoRadius = 80.0f;
+        // const float blurAmount = 15.0f;
+        float aoStrength = 0.7f;        
+
+        HMM_Mat4 proj;
+
+        float left   = -view_x_slope * renderer_near_clip.f_;
+        float right  = view_x_slope * renderer_near_clip.f_;
+        float bottom = -view_y_slope * renderer_near_clip.f_;
+        float top    = view_y_slope * renderer_near_clip.f_;
+        float fnear  = renderer_near_clip.f_;
+        float ffar   = renderer_far_clip.f_;
+
+        float A = (right + left) / (right - left);
+        float B = (top + bottom) / (top - bottom);
+        float C = (-(ffar + fnear)) / (ffar - fnear);
+        float D = (-(2 * ffar * fnear)) / (ffar - fnear);
+
+        proj.Columns[0][0] = (2 * fnear) / (right - left);
+        proj.Columns[0][1] = 0.0f;
+        proj.Columns[0][2] = 0.0f;
+        proj.Columns[0][3] = 0.0f;
+
+        proj.Columns[1][0] = 0.0f;
+        proj.Columns[1][1] = (2 * fnear) / (top - bottom);
+        proj.Columns[1][2] = 0.0f;
+        proj.Columns[1][3] = 0.0f;
+
+        proj.Columns[2][0] = A;
+        proj.Columns[2][1] = B;
+        proj.Columns[2][2] = C;
+        proj.Columns[2][3] = -1.0f;
+
+        proj.Columns[3][0] = 0.0f;
+        proj.Columns[3][1] = 0.0f;
+        proj.Columns[3][2] = D;
+        proj.Columns[3][3] = 0.0f;
+
+        // TODO!: m5 = VPUniforms.mProjectionMatrix.get()[5]
+        float m5           = ((float*)&proj)[5];
+        float tanHalfFovy  = 1.0f / m5;
+        float invFocalLenX = tanHalfFovy * ((float)current_screen_width / (float)current_screen_height);
+        float invFocalLenY = tanHalfFovy;
+        float nDotVBias    = HMM_Clamp(bias, 0.0f, 1.0f);
+        float r2           = aoRadius * aoRadius;
+
+        // TODO: this should be 1/2 width and 1/2 height
+        float AmbientWidth  = current_screen_width;
+        float AmbientHeight = current_screen_height;
+
+        ssao_params.SampleIndex          = 0;
+        ssao_params.UVToViewA[0]         = 2.0f * invFocalLenX;
+        ssao_params.UVToViewA[1]         = 2.0f * invFocalLenY;
+        ssao_params.UVToViewB[0]         = -invFocalLenX;
+        ssao_params.UVToViewB[1]         = -invFocalLenY;
+        ssao_params.InvFullResolution[0] = 1.0f / AmbientWidth;
+        ssao_params.InvFullResolution[1] = 1.0f / AmbientHeight;
+        ssao_params.NDotVBias            = nDotVBias;
+        ssao_params.NegInvR2             = -1.0f / r2;
+        ssao_params.RadiusToScreen       = aoRadius * 0.5f / tanHalfFovy * AmbientHeight;
+        ssao_params.AOMultiplier         = 1.0f / (1.0f - nDotVBias);
+        ssao_params.AOStrength           = aoStrength;
+        ssao_params.Scale[0]             = 1.0f;
+        ssao_params.Scale[1]             = 1.0f;
+        ssao_params.Offset[0]            = 0.0f;
+        ssao_params.Offset[1]            = 0.0f;
+
+        range = SG_RANGE(ssao_params);
+        sg_apply_uniforms(UB_ssao_params, &range);
+
+        sg_draw(0, 6, 1);
+
+        sg_end_pass();
+
+        // Screen
+
+        sg_begin_pass(&screen_pass_);
+
+        sg_apply_pipeline(screen_pipeline_);
+
+        bind = {0};
 
         bind.vertex_buffers[0] = quad_buffer_;
         bind.images[0]         = render->color_target_;
@@ -166,12 +393,12 @@ class SokolRenderBackend : public RenderBackend
         sg_apply_bindings(&bind);
 
         sg_draw(0, 6, 1);
+
+        sg_end_pass();
     }
 
     void RenderHud()
     {
-        sg_begin_pass(&hud_pass_);
-
         for (int32_t i = 0; i < kRenderWorldMax; i++)
         {
             if (world_state_[i].used_)
@@ -179,6 +406,8 @@ class SokolRenderBackend : public RenderBackend
                 RenderWorldToScreen(&world_render_[i]);
             }
         }
+
+        sg_begin_pass(&hud_pass_);
 
         sgl_set_context(hud_context_);
         if (sgl_num_vertices())
@@ -308,10 +537,10 @@ class SokolRenderBackend : public RenderBackend
 
         // HUD
         sg_pass_action pass_action;
-        pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
-                                             epi::GetRGBAGreen(clear_color_) / 255.0f,
-                                             epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+        // pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
+        //                                      epi::GetRGBAGreen(clear_color_) / 255.0f,
+        //                                      epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
 
         pass_action.depth.load_action = SG_LOADACTION_CLEAR;
         pass_action.depth.clear_value = 1.0f;
@@ -367,7 +596,6 @@ class SokolRenderBackend : public RenderBackend
 
         RenderBackend::Init();
 
-        
         // clang-format off
 
         // Quad (Inverted for GL)
@@ -382,13 +610,53 @@ class SokolRenderBackend : public RenderBackend
         quad_buffer_             = sg_make_buffer(&quad_desc);
 
         // Screen
-        sg_pipeline_desc pip_desc = {0};
-        pip_desc.shader           = sg_make_shader(screen_shader_desc(sg_query_backend()));
+        sg_pipeline_desc screen_pip_desc = {0};
+        screen_pip_desc.shader           = sg_make_shader(screen_shader_desc(sg_query_backend()));
 
-        pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
-        pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+        screen_pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        screen_pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
 
-        screen_pipeline_ = sg_make_pipeline(&pip_desc);
+        screen_pipeline_ = sg_make_pipeline(&screen_pip_desc);
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+        pass_action.depth.load_action     = SG_LOADACTION_DONTCARE;
+
+        EPI_CLEAR_MEMORY(&screen_pass_, sg_pass, 1);
+        screen_pass_.action = pass_action;
+
+        screen_pass_.swapchain.width          = current_screen_width;
+        screen_pass_.swapchain.height         = current_screen_height;
+        screen_pass_.swapchain.color_format   = SG_PIXELFORMAT_RGBA8;
+        screen_pass_.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
+        screen_pass_.swapchain.gl.framebuffer = 0;
+
+        // Linear Depth
+        sg_pipeline_desc linear_depth_pip_desc       = {0};
+        linear_depth_pip_desc.colors[0].pixel_format = SG_PIXELFORMAT_R32F;
+        linear_depth_pip_desc.color_count            = 1;
+        linear_depth_pip_desc.depth.pixel_format     = SG_PIXELFORMAT_NONE;
+
+        linear_depth_pip_desc.shader = sg_make_shader(linear_depth_shader_desc(sg_query_backend()));
+
+        linear_depth_pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        linear_depth_pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+
+        linear_depth_pipeline_ = sg_make_pipeline(&linear_depth_pip_desc);
+
+        // SSAO
+
+        sg_pipeline_desc ssao_pip_desc       = {0};
+        ssao_pip_desc.colors[0].pixel_format = SG_PIXELFORMAT_RG16F;
+        ssao_pip_desc.color_count            = 1;
+        ssao_pip_desc.depth.pixel_format     = SG_PIXELFORMAT_NONE;
+
+        ssao_pip_desc.shader = sg_make_shader(ssao_shader_desc(sg_query_backend()));
+
+        ssao_pip_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3;
+        ssao_pip_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT2;
+
+        ssao_pipeline_ = sg_make_pipeline(&ssao_pip_desc);
 
         BSPStartThread();
     }
@@ -495,6 +763,8 @@ class SokolRenderBackend : public RenderBackend
         smp_desc.min_filter      = SG_FILTER_LINEAR;
         smp_desc.mag_filter      = SG_FILTER_LINEAR;
 
+        // World Pass
+
         sg_image_desc img_color_desc = {0};
         img_color_desc.render_target = true;
         img_color_desc.width         = current_screen_width;
@@ -506,6 +776,17 @@ class SokolRenderBackend : public RenderBackend
         render->color_target_  = sg_make_image(&img_color_desc);
         render->color_sampler_ = sg_make_sampler(&smp_desc);
 
+        sg_image_desc img_normal_desc = {0};
+        img_normal_desc.render_target = true;
+        img_normal_desc.width         = current_screen_width;
+        img_normal_desc.height        = current_screen_height;
+        img_normal_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+        img_normal_desc.sample_count  = 1;
+        img_normal_desc.label         = "Normal Target";
+
+        render->normal_target_  = sg_make_image(&img_normal_desc);
+        render->normal_sampler_ = sg_make_sampler(&smp_desc);
+
         sg_image_desc img_depth_desc = {0};
         img_depth_desc.render_target = true;
         img_depth_desc.width         = current_screen_width;
@@ -514,27 +795,87 @@ class SokolRenderBackend : public RenderBackend
         img_depth_desc.sample_count  = 1;
         img_depth_desc.label         = "Depth Target";
 
-        render->depth_target_  = sg_make_image(&img_depth_desc);
-        render->depth_sampler_ = sg_make_sampler(&smp_desc);
+        sg_sampler_desc depth_smp_desc = {0};
 
-        sg_attachments_desc attachments = {0};
-        attachments.colors[0].image     = render->color_target_;
-        attachments.depth_stencil.image = render->depth_target_;
-        attachments.label               = "World Attachments";
+        render->depth_target_  = sg_make_image(&img_depth_desc);
+        render->depth_sampler_ = sg_make_sampler(&depth_smp_desc);
+
+        sg_attachments_desc world_attachments = {0};
+        world_attachments.colors[0].image     = render->color_target_;
+        world_attachments.colors[1].image     = render->normal_target_;
+        world_attachments.depth_stencil.image = render->depth_target_;
+        world_attachments.label               = "World Attachments";
 
         render->world_pass_ = {0};
 
         sg_pass_action pass_action;
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
         pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f, 0.0f,
                                              epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
+
+        pass_action.colors[1].load_action = SG_LOADACTION_CLEAR;
+        pass_action.colors[1].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f, 255.0f, 255.0f, 1.0f};
 
         pass_action.depth.load_action = SG_LOADACTION_CLEAR;
         pass_action.depth.clear_value = 1.0f;
         pass_action.stencil           = {SG_LOADACTION_CLEAR, SG_STOREACTION_DONTCARE, 0};
 
         render->world_pass_.action      = pass_action;
-        render->world_pass_.attachments = sg_make_attachments(&attachments);
+        render->world_pass_.attachments = sg_make_attachments(&world_attachments);
+
+        // Linear Depth Pass
+        sg_image_desc linear_depth_desc = {0};
+        linear_depth_desc;
+        linear_depth_desc.render_target = true;
+        linear_depth_desc.width         = current_screen_width;
+        linear_depth_desc.height        = current_screen_height;
+        linear_depth_desc.pixel_format  = SG_PIXELFORMAT_R32F;
+        linear_depth_desc.sample_count  = 1;
+        linear_depth_desc.label         = "Linear Depth Target";
+
+        render->linear_depth_target_          = sg_make_image(&linear_depth_desc);
+        sg_sampler_desc linear_depth_smp_desc = {0};
+        render->linear_depth_sampler_         = sg_make_sampler(&linear_depth_smp_desc);
+
+        sg_attachments_desc linear_depth_attachments = {0};
+        linear_depth_attachments.colors[0].image     = render->linear_depth_target_;
+        linear_depth_attachments.label               = "Linear Depth Attachments";
+
+        render->linear_depth_pass_ = {0};
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+
+        render->linear_depth_pass_.action      = pass_action;
+        render->linear_depth_pass_.attachments = sg_make_attachments(&linear_depth_attachments);
+
+        // SSAO
+        sg_image_desc ssao_desc = {0};
+        ssao_desc;
+        ssao_desc.render_target = true;
+        ssao_desc.width         = current_screen_width;
+        ssao_desc.height        = current_screen_height;
+        ssao_desc.pixel_format  = SG_PIXELFORMAT_RG16F;
+        ssao_desc.sample_count  = 1;
+        ssao_desc.label         = "SSAO Target";
+
+        render->ambient0_target_          = sg_make_image(&ssao_desc);
+        sg_sampler_desc ambient0_smp_desc = {0};
+        render->ambient0_sampler_         = sg_make_sampler(&ambient0_smp_desc);
+
+        sg_attachments_desc ssao_attachments = {0};
+        ssao_attachments.colors[0].image     = render->ambient0_target_;
+        ssao_attachments.label               = "SSAO Attachments";
+
+        render->ssao_pass_ = {0};
+
+        EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
+        pass_action.colors[0].load_action = SG_LOADACTION_DONTCARE;
+
+        render->ssao_pass_.action      = pass_action;
+        render->ssao_pass_.attachments = sg_make_attachments(&ssao_attachments);
     }
 
     void BeginWorldRender()
@@ -630,21 +971,24 @@ class SokolRenderBackend : public RenderBackend
 
     struct WorldRender
     {
-        sg_pass world_pass_;
-
+        sg_pass    world_pass_;
         sg_image   color_target_;
         sg_sampler color_sampler_;
         sg_image   depth_target_;
         sg_sampler depth_sampler_;
+        sg_image   normal_target_;
+        sg_sampler normal_sampler_;
+
+        sg_pass    linear_depth_pass_;
+        sg_image   linear_depth_target_;
+        sg_sampler linear_depth_sampler_;
+
+        sg_pass    ssao_pass_;
+        sg_image   ambient0_target_;
+        sg_sampler ambient0_sampler_;
 
         sgl_context context_pool_[kContextPoolSize];
         int32_t     current_context_;
-
-        sg_pass     gbuffer_pass_;
-        sg_image    gbuffer_target_;
-        sg_pipeline gbuffer_pipeline_;
-
-        sgl_context gbuffer_context_;
     };
 
     struct WorldState
@@ -662,7 +1006,10 @@ class SokolRenderBackend : public RenderBackend
 
     // Screen
 
+    sg_pass     screen_pass_;
     sg_pipeline screen_pipeline_;
+    sg_pipeline linear_depth_pipeline_;
+    sg_pipeline ssao_pipeline_;
     sg_buffer   quad_buffer_;
 
     WorldState  world_state_[kRenderWorldMax];
