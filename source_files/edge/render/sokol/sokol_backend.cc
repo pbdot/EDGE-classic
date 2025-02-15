@@ -675,10 +675,19 @@ class SokolRenderBackend : public RenderBackend
         RenderBackend::Init();
 
         // clang-format off
-
-        // Quad (Inverted for GL)
+        
+#ifdef SOKOL_D3D11
+        float quad_vertices_uvs[] = {-1.0f, 1.0f, 0.0f, 0, 0, 
+                                      1.0f, 1.0f, 0.0f, 1, 0, 
+                                      1.0f, - 1.0f, 0.0f, 1, 1,
+                                     -1.0f, 1.0f, 0.0f, 0, 0, 
+                                      1.0f, -1.0f,  0.0f, 1, 1, 
+                                     -1.0f, -1.0f, 0.0f, 0, 1};
+#else
+        // Inverted for GL
         float quad_vertices_uvs[] = {-1.0f, -1.0f, 0.0f, 0, 0, 1.0f, -1.0f, 0.0f, 1, 0, 1.0f,  1.0f, 0.0f, 1, 1,
-                                     -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
+            -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
+#endif
 
         // clang-format on
 
@@ -708,6 +717,12 @@ class SokolRenderBackend : public RenderBackend
         screen_pass_.swapchain.color_format   = SG_PIXELFORMAT_RGBA8;
         screen_pass_.swapchain.depth_format   = SG_PIXELFORMAT_DEPTH;
         screen_pass_.swapchain.gl.framebuffer = 0;
+
+#ifdef SOKOL_D3D11
+        screen_pass_.swapchain.d3d11.render_view        = sapp_d3d11_get_render_view();
+        screen_pass_.swapchain.d3d11.resolve_view       = sapp_d3d11_get_resolve_view();
+        screen_pass_.swapchain.d3d11.depth_stencil_view = sapp_d3d11_get_depth_stencil_view();
+#endif
 
         // Linear Depth
         sg_pipeline_desc linear_depth_pip_desc       = {0};
@@ -1077,7 +1092,6 @@ class SokolRenderBackend : public RenderBackend
         sg_sampler_desc random_smp_desc = {0};
 
         random_sampler_ = sg_make_sampler(&random_smp_desc);
-
     }
 
     void BeginWorldRender()
