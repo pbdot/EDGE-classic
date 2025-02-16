@@ -127,12 +127,13 @@ class SokolRenderBackend : public RenderBackend
 
         HMM_Mat4 proj;
 
-        float left   = -view_x_slope * renderer_near_clip.f_;
-        float right  = view_x_slope * renderer_near_clip.f_;
-        float bottom = -view_y_slope * renderer_near_clip.f_;
-        float top    = view_y_slope * renderer_near_clip.f_;
-        float fnear  = renderer_near_clip.f_;
-        float ffar   = renderer_far_clip.f_;
+        float fnear = 5.0f;     // renderer_near_clip.f_;
+        float ffar  = 65536.0f; // renderer_far_clip.f_;
+
+        float left   = -view_x_slope * fnear;
+        float right  = view_x_slope * fnear;
+        float bottom = -view_y_slope * fnear;
+        float top    = view_y_slope * fnear;
 
         float A = (right + left) / (right - left);
         float B = (top + bottom) / (top - bottom);
@@ -161,9 +162,9 @@ class SokolRenderBackend : public RenderBackend
 
         // sgl_load_matrix((float *)&proj.Elements[0][0]);
 
-        sgl_frustum(-view_x_slope * renderer_near_clip.f_, view_x_slope * renderer_near_clip.f_,
-                    -view_y_slope * renderer_near_clip.f_, view_y_slope * renderer_near_clip.f_, renderer_near_clip.f_,
-                    renderer_far_clip.f_);
+        sgl_frustum(-view_x_slope * 5.0f /*renderer_near_clip.f_*/, view_x_slope * 5.0f /*renderer_near_clip.f_*/,
+                    -view_y_slope * 5.0f /*renderer_near_clip.f_*/, view_y_slope * 5.0f /*renderer_near_clip.f_*/,
+                    5.0f /*renderer_near_clip.f_*/, 65536.0f /*renderer_far_clip.f_*/);
 
         sgl_load_matrix(proj.Elements[0]);
 
@@ -277,8 +278,8 @@ class SokolRenderBackend : public RenderBackend
         sg_apply_bindings(&bind);
 
         linear_depth_params_t fs_params;
-        fs_params.linearize_depth_a     = 1.0f / renderer_far_clip.f_ - 1.0f / renderer_near_clip.f_;
-        fs_params.linearize_depth_b     = HMM_MAX(1.0f / renderer_near_clip.f_, 1.e-8f);
+        fs_params.linearize_depth_a = 1.0f / /*renderer_far_clip.f_*/ 65536.0f - 1.0f / 5.0f /*renderer_near_clip.f_*/;
+        fs_params.linearize_depth_b = HMM_MAX(1.0f / 5.0f /*renderer_near_clip.f_*/, 1.e-8f);
         fs_params.inverse_depth_range_a = 1.0f;
         fs_params.inverse_depth_range_b = 0.0f;
 
@@ -316,12 +317,13 @@ class SokolRenderBackend : public RenderBackend
 
         HMM_Mat4 proj;
 
-        float left   = -view_x_slope * renderer_near_clip.f_;
-        float right  = view_x_slope * renderer_near_clip.f_;
-        float bottom = -view_y_slope * renderer_near_clip.f_;
-        float top    = view_y_slope * renderer_near_clip.f_;
-        float fnear  = renderer_near_clip.f_;
-        float ffar   = renderer_far_clip.f_;
+        float fnear = 5.0f;     // renderer_near_clip.f_;
+        float ffar  = 65536.0f; // renderer_far_clip.f_;
+
+        float left   = -view_x_slope * fnear;
+        float right  = view_x_slope * fnear;
+        float bottom = -view_y_slope * fnear;
+        float top    = view_y_slope * fnear;
 
         float A = (right + left) / (right - left);
         float B = (top + bottom) / (top - bottom);
@@ -348,17 +350,19 @@ class SokolRenderBackend : public RenderBackend
         proj.Columns[3][2] = D;
         proj.Columns[3][3] = 0.0f;
 
+        int32_t AmbientWidth  = (current_screen_width + 1) / 2;
+        int32_t AmbientHeight = (current_screen_height + 1) / 2;
+
         // TODO!: m5 = VPUniforms.mProjectionMatrix.get()[5]
-        float m5           = ((float *)&proj)[5];
+        // float m5           = ((float *)&proj)[5];
+
+        float m5 = proj.Columns[1][1];
+
         float tanHalfFovy  = 1.0f / m5;
-        float invFocalLenX = tanHalfFovy * ((float)current_screen_width / (float)current_screen_height);
+        float invFocalLenX = tanHalfFovy * ((float)AmbientWidth / (float)AmbientHeight);
         float invFocalLenY = tanHalfFovy;
         float nDotVBias    = HMM_Clamp(bias, 0.0f, 1.0f);
         float r2           = aoRadius * aoRadius;
-
-        // TODO: this should be 1/2 width and 1/2 height
-        float AmbientWidth  = current_screen_width;
-        float AmbientHeight = current_screen_height;
 
         ssao_params.SampleIndex          = 0;
         ssao_params.UVToViewA[0]         = 2.0f * invFocalLenX;
@@ -372,10 +376,25 @@ class SokolRenderBackend : public RenderBackend
         ssao_params.RadiusToScreen       = aoRadius * 0.5f / tanHalfFovy * AmbientHeight;
         ssao_params.AOMultiplier         = 1.0f / (1.0f - nDotVBias);
         ssao_params.AOStrength           = aoStrength;
-        ssao_params.Scale[0]             = 1.0f;
-        ssao_params.Scale[1]             = 1.0f;
-        ssao_params.Offset[0]            = 0.0f;
-        ssao_params.Offset[1]            = 0.0f;
+
+        /*
+            FVector2 SceneScale() const
+            {
+                return { mSceneViewport.width / (float)mScreenViewport.width, mSceneViewport.height /
+           (float)mScreenViewport.height };
+            }
+
+            FVector2 SceneOffset() const
+            {
+                return { mSceneViewport.left / (float)mScreenViewport.width, mSceneViewport.top /
+           (float)mScreenViewport.height };
+            }
+
+        */
+        ssao_params.Scale[0]  = 1.0f;
+        ssao_params.Scale[1]  = 1.0f;
+        ssao_params.Offset[0] = 0.0f;
+        ssao_params.Offset[1] = 0.0f;
 
         range = SG_RANGE(ssao_params);
         sg_apply_uniforms(UB_ssao_params, &range);
@@ -465,8 +484,8 @@ class SokolRenderBackend : public RenderBackend
         bind = {0};
 
         bind.vertex_buffers[0] = quad_buffer_;
-        bind.images[0]         = render->normal_target_;
-        bind.samplers[0]       = render->normal_sampler_;
+        bind.images[0]         = render->final_target_;
+        bind.samplers[0]       = render->final_sampler_;
 
         sg_apply_bindings(&bind);
 
@@ -687,6 +706,7 @@ class SokolRenderBackend : public RenderBackend
         // Inverted for GL
         float quad_vertices_uvs[] = {-1.0f, -1.0f, 0.0f, 0, 0, 1.0f, -1.0f, 0.0f, 1, 0, 1.0f,  1.0f, 0.0f, 1, 1,
             -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
+
 #endif
 
         // clang-format on
@@ -883,6 +903,8 @@ class SokolRenderBackend : public RenderBackend
         sg_sampler_desc smp_desc = {0};
         smp_desc.min_filter      = SG_FILTER_LINEAR;
         smp_desc.mag_filter      = SG_FILTER_LINEAR;
+        smp_desc.wrap_u          = SG_WRAP_CLAMP_TO_EDGE;
+        smp_desc.wrap_v          = SG_WRAP_CLAMP_TO_EDGE;
 
         // World Pass
 
@@ -897,11 +919,14 @@ class SokolRenderBackend : public RenderBackend
         render->color_target_  = sg_make_image(&img_color_desc);
         render->color_sampler_ = sg_make_sampler(&smp_desc);
 
+        render->final_target_  = sg_make_image(&img_color_desc);
+        render->final_sampler_ = sg_make_sampler(&smp_desc);
+
         sg_image_desc img_normal_desc = {0};
         img_normal_desc.render_target = true;
         img_normal_desc.width         = current_screen_width;
         img_normal_desc.height        = current_screen_height;
-        img_normal_desc.pixel_format  = SG_PIXELFORMAT_RGBA8;
+        img_normal_desc.pixel_format  = SG_PIXELFORMAT_RGB10A2; // GL_RGB10_A2
         img_normal_desc.sample_count  = 1;
         img_normal_desc.label         = "Normal Target";
 
@@ -917,6 +942,8 @@ class SokolRenderBackend : public RenderBackend
         img_depth_desc.label         = "Depth Target";
 
         sg_sampler_desc depth_smp_desc = {0};
+        depth_smp_desc.wrap_u          = SG_WRAP_CLAMP_TO_EDGE;
+        depth_smp_desc.wrap_v          = SG_WRAP_CLAMP_TO_EDGE;
 
         render->depth_target_  = sg_make_image(&img_depth_desc);
         render->depth_sampler_ = sg_make_sampler(&depth_smp_desc);
@@ -946,9 +973,9 @@ class SokolRenderBackend : public RenderBackend
         render->world_pass_.action      = pass_action;
         render->world_pass_.attachments = sg_make_attachments(&world_attachments);
 
-        int32_t AmbientWidth = (current_screen_width + 1) / 2;
+        int32_t AmbientWidth  = (current_screen_width + 1) / 2;
         int32_t AmbientHeight = (current_screen_height + 1) / 2;
-    
+
         // Linear Depth Pass
         sg_image_desc linear_depth_desc = {0};
         linear_depth_desc;
@@ -961,6 +988,8 @@ class SokolRenderBackend : public RenderBackend
 
         render->linear_depth_target_          = sg_make_image(&linear_depth_desc);
         sg_sampler_desc linear_depth_smp_desc = {0};
+        linear_depth_smp_desc.wrap_u          = SG_WRAP_CLAMP_TO_EDGE;
+        linear_depth_smp_desc.wrap_v          = SG_WRAP_CLAMP_TO_EDGE;
         render->linear_depth_sampler_         = sg_make_sampler(&linear_depth_smp_desc);
 
         sg_attachments_desc linear_depth_attachments = {0};
@@ -986,8 +1015,11 @@ class SokolRenderBackend : public RenderBackend
         ssao_desc.label         = "SSAO Target";
 
         sg_sampler_desc ambient0_smp_desc = {0};
-        render->ambient0_target_          = sg_make_image(&ssao_desc);
-        render->ambient0_sampler_         = sg_make_sampler(&ambient0_smp_desc);
+        ambient0_smp_desc.wrap_u          = SG_WRAP_CLAMP_TO_EDGE;
+        ambient0_smp_desc.wrap_v          = SG_WRAP_CLAMP_TO_EDGE;
+
+        render->ambient0_target_  = sg_make_image(&ssao_desc);
+        render->ambient0_sampler_ = sg_make_sampler(&ambient0_smp_desc);
         // for blur
         render->ambient1_target_  = sg_make_image(&ssao_desc);
         render->ambient1_sampler_ = sg_make_sampler(&ambient0_smp_desc);
@@ -1036,7 +1068,7 @@ class SokolRenderBackend : public RenderBackend
 
         // SSAO Combine
         sg_attachments_desc ssao_combine_attachments = {0};
-        ssao_combine_attachments.colors[0].image     = render->normal_target_;
+        ssao_combine_attachments.colors[0].image     = render->final_target_;
         ssao_combine_attachments.label               = "SSAO Combine Attachments";
 
         render->ssao_combine_pass_ = {0};
@@ -1079,6 +1111,7 @@ class SokolRenderBackend : public RenderBackend
         img_desc.height       = 4;
         img_desc.pixel_format = SG_PIXELFORMAT_RGBA16SN;
         img_desc.num_mipmaps  = 1;
+        img_desc.sample_count = 1;
 
         sg_image_data img_data;
         EPI_CLEAR_MEMORY(&img_data, sg_image_data, 1);
@@ -1093,8 +1126,11 @@ class SokolRenderBackend : public RenderBackend
         random_texture_ = sg_make_image(&img_desc);
 
         sg_sampler_desc random_smp_desc = {0};
-        random_smp_desc.min_filter = SG_FILTER_LINEAR;
-        random_smp_desc.mag_filter = SG_FILTER_LINEAR;
+
+        random_smp_desc.wrap_u     = SG_WRAP_REPEAT;
+        random_smp_desc.wrap_v     = SG_WRAP_REPEAT;
+        random_smp_desc.min_filter = SG_FILTER_NEAREST;
+        random_smp_desc.mag_filter = SG_FILTER_NEAREST;
 
         random_sampler_ = sg_make_sampler(&random_smp_desc);
     }
@@ -1215,6 +1251,9 @@ class SokolRenderBackend : public RenderBackend
         sg_pass depthblur_vertical_pass_;
 
         sg_pass ssao_combine_pass_;
+
+        sg_image   final_target_;
+        sg_sampler final_sampler_;
 
         sgl_context context_pool_[kContextPoolSize];
         int32_t     current_context_;

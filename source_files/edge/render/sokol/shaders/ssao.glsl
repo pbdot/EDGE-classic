@@ -48,7 +48,7 @@ layout(binding=0) uniform ssao_params {
 // Calculate eye space position for the specified texture coordinate
 vec3 FetchViewPos(vec2 uv)
 {
-	float z = texture(sampler2D(DepthTexture, DepthSampler), uv).x;
+	float z = textureLod(sampler2D(DepthTexture, DepthSampler), uv, 0.0).x;
     return vec3((UVToViewA * uv + UVToViewB) * z, z);
 }
 

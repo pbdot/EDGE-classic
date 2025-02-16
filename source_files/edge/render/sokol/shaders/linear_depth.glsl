@@ -42,7 +42,10 @@ float normalizeDepth(float depth)
 void main()
 {
 	//float depth = normalizeDepth(texelFetch(color_texture, ipos, 0).a != 0.0 ? texelFetch(depth_texture, ipos, 0).x : 1.0);
-    float depth = normalizeDepth(texture(sampler2D(color_texture, color_sampler), uv, 0).a != 0.0 ? texture(sampler2D(depth_texture, depth_sampler), uv, 0).x : 1.0);    
+
+  vec2 uvpos = max(uv, vec2(0.0));
+
+    float depth = normalizeDepth(texture(sampler2D(color_texture, color_sampler), uvpos, 0).a != 0.0 ? texture(sampler2D(depth_texture, depth_sampler), uvpos, 0).x : 1.0);    
 	frag_color = vec4(depth, 0.0, 0.0, 1.0);
 }
 @end

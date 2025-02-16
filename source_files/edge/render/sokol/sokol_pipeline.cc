@@ -129,6 +129,7 @@ sgl_pipeline GetPipeline(sgl_context context, uint32_t pipeline_flags, GLenum sr
         if (layer != kRenderLayerHUD)
         {
             pipeline_desc.color_count = 2;
+            pipeline_desc.colors[1].pixel_format = SG_PIXELFORMAT_RGB10A2;
         }
 
         pipeline_id = sgl_context_make_pipeline(context, &pipeline_desc).id;

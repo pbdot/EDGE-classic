@@ -2088,7 +2088,7 @@ void RenderTrueBsp(void)
         else if (need_to_draw_sky)
         {
             render_backend->SetRenderLayer(kRenderLayerSky, true);
-            FinishSky();
+            //FinishSky();
         }
 
         deferred_sky_items.clear();
