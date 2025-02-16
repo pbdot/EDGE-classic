@@ -1,4 +1,6 @@
+
 @vs ssao_vs
+@hlsl_options fixup_clipspace flip_vert_y
 in vec4 v_position;
 in vec2 v_uv;
 out vec2 TexCoord;
@@ -82,8 +84,8 @@ vec2 RotateDirection(vec2 dir, vec2 cossin)
 #define RANDOM_TEXTURE_WIDTH 4.0
 
 vec4 GetJitter()
-{
-    return texture(sampler2D(RandomTexture, RandomSampler), gl_FragCoord.xy / RANDOM_TEXTURE_WIDTH);
+{    
+    return texture(sampler2D(RandomTexture, RandomSampler), gl_FragCoord.xy / RANDOM_TEXTURE_WIDTH, 0);
 }
 
 // Calculates the ambient occlusion of a sample

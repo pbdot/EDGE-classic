@@ -1,5 +1,6 @@
 
 @vs linear_depth_vs
+@hlsl_options fixup_clipspace flip_vert_y
 in vec4 v_position;
 in vec2 v_uv;
 out vec2 uv;

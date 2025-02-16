@@ -693,23 +693,8 @@ class SokolRenderBackend : public RenderBackend
 
         RenderBackend::Init();
 
-        // clang-format off
-        
-#ifdef SOKOL_D3D11
-        float quad_vertices_uvs[] = {-1.0f, 1.0f, 0.0f, 0, 0, 
-                                      1.0f, 1.0f, 0.0f, 1, 0, 
-                                      1.0f, - 1.0f, 0.0f, 1, 1,
-                                     -1.0f, 1.0f, 0.0f, 0, 0, 
-                                      1.0f, -1.0f,  0.0f, 1, 1, 
-                                     -1.0f, -1.0f, 0.0f, 0, 1};
-#else
-        // Inverted for GL
         float quad_vertices_uvs[] = {-1.0f, -1.0f, 0.0f, 0, 0, 1.0f, -1.0f, 0.0f, 1, 0, 1.0f,  1.0f, 0.0f, 1, 1,
-            -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
-
-#endif
-
-        // clang-format on
+                                     -1.0f, -1.0f, 0.0f, 0, 0, 1.0f, 1.0f,  0.0f, 1, 1, -1.0f, 1.0f, 0.0f, 0, 1};
 
         sg_buffer_desc quad_desc = {0};
         quad_desc.data           = SG_RANGE(quad_vertices_uvs);
