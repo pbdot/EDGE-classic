@@ -1221,6 +1221,8 @@ static bool RenderThing(DrawThing *dthing, bool solid)
         {
             return false;
         }
+
+        blending |= kBlendingSSAO;
     }
     else
     {
@@ -1228,6 +1230,11 @@ static bool RenderThing(DrawThing *dthing, bool solid)
         {
             return false;
         }
+    }
+
+    if (blending & kBlendingAlpha)
+    {
+        blending |= kBlendingNoZBuffer;
     }
 
     float h     = image->ScaledHeightActual();

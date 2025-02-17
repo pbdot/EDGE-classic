@@ -313,7 +313,7 @@ class SokolRenderBackend : public RenderBackend
         // cvars
         float bias       = 0.2;
         float aoRadius   = 80.0f;
-        float aoStrength = 0.7f;
+        float aoStrength = 0.85f;
 
         HMM_Mat4 proj;
 

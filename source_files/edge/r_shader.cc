@@ -323,6 +323,9 @@ class dynlight_shader_c : public AbstractShader
         float G = L * epi::GetRGBAGreen(col);
         float B = L * epi::GetRGBABlue(col);
 
+        blending &= ~kBlendingSSAO;
+        blending |= kBlendingNoZBuffer;
+
         RendererVertex *glvert =
             BeginRenderUnit(shape, num_vert,
                             (is_additive && masked) ? (GLuint)kTextureEnvironmentSkipRGB

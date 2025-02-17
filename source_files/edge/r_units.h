@@ -73,7 +73,8 @@ enum BlendingMode
 
     kBlendingInvert        = (1 << 12), // color inversion (simple invuln fx)
     kBlendingNegativeGamma = (1 << 13),
-    kBlendingPositiveGamma = (1 << 14)
+    kBlendingPositiveGamma = (1 << 14),
+    kBlendingSSAO          = (1 << 15)
 };
 
 enum CustomTextureEnvironment

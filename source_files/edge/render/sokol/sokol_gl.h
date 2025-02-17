@@ -832,7 +832,8 @@ typedef enum sgl_fog_mode_t {
 
 typedef enum sg_state_flag {
     SGL_STATE_MULTITEXTURE = 1,
-    SGL_STATE_LINE = 1 << 1
+    SGL_STATE_SSAO = 1 << 1,
+    SGL_STATE_LINE = 1 << 2
 } sg_state_flag;
 
 /* the default context handle */
@@ -882,6 +883,9 @@ SOKOL_GL_API_DECL void sgl_layer(int layer_id);
 
 SOKOL_GL_API_DECL void sgl_enable_line(void);
 SOKOL_GL_API_DECL void sgl_disable_line(void);
+
+SOKOL_GL_API_DECL void sgl_enable_ssao(void);
+SOKOL_GL_API_DECL void sgl_disable_ssao(void);
 
 SOKOL_GL_API_DECL void sgl_clear_depth(float value);
 
@@ -4536,6 +4540,41 @@ SOKOL_API_IMPL void sgl_disable_line(void) {
         ctx->fragment_uniforms_dirty = true;
     }    
 }
+
+SOKOL_API_IMPL void sgl_enable_ssao(void) {
+
+    SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
+    _sgl_context_t* ctx = _sgl.cur_ctx;
+    if (!ctx) {
+        return;
+    }
+
+    SOKOL_ASSERT(!ctx->in_begin);
+
+    _sgl_fragment_uniform_t *cf = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+    if (!(cf->flags & SGL_STATE_SSAO))
+    {   
+        cf->flags |= SGL_STATE_SSAO;
+        ctx->fragment_uniforms_dirty = true;
+    }    
+}
+
+SOKOL_API_IMPL void sgl_disable_ssao(void) {
+    SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);
+    _sgl_context_t* ctx = _sgl.cur_ctx;
+    if (!ctx) {
+        return;
+    }
+    SOKOL_ASSERT(!ctx->in_begin);
+
+    _sgl_fragment_uniform_t *cf = &ctx->fragment_uniforms.ptr[ctx->fragment_uniforms.next];
+    if ((cf->flags & SGL_STATE_SSAO))
+    {   
+        cf->flags &= ~SGL_STATE_SSAO;
+        ctx->fragment_uniforms_dirty = true;
+    }    
+}
+
 
 SOKOL_API_IMPL void sgl_begin_points(void) {
     SOKOL_ASSERT(_SGL_INIT_COOKIE == _sgl.init_cookie);

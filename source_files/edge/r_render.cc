@@ -512,6 +512,11 @@ static void DrawWallPart(DrawFloor *dfloor, float x1, float y1, float lz1, float
         return;
     }
 
+    if (solid_mode)
+    {
+        blending |= kBlendingSSAO;
+    }
+
     // must determine bbox _before_ mirror flipping
     float v_bbox[4];
 
@@ -905,6 +910,11 @@ static void DrawTile(Seg *seg, DrawFloor *dfloor, float lz1, float lz2, float rz
         if (surf->image)
             DrawSlidingDoor(dfloor, lz2, lz1, tex_top_h, surf, opaque, x_offset);
         return;
+    }
+
+    if (solid_mode)
+    {
+        blending |= kBlendingSSAO;
     }
 
     // check for breakable glass
@@ -1601,6 +1611,11 @@ static void RenderPlane(DrawFloor *dfloor, float h, MapSurface *surf, int face_d
         return;
     }
 
+    if (solid_mode)
+    {
+        blending |= kBlendingSSAO;
+    }
+
     // count number of actual vertices
     Seg *seg;
     for (seg = current_subsector->segs, num_vert = 0; seg; seg = seg->subsector_next, num_vert++)
@@ -2088,7 +2103,7 @@ void RenderTrueBsp(void)
         else if (need_to_draw_sky)
         {
             render_backend->SetRenderLayer(kRenderLayerSky, true);
-            //FinishSky();
+            FinishSky();
         }
 
         deferred_sky_items.clear();
@@ -2189,7 +2204,6 @@ void RenderTrueBsp(void)
 
 #endif
 
-/*
     // Lobo 2022:
     // Allow changing the order of weapon model rendering to be
     // after RenderWeaponSprites() so that FLASH states are
@@ -2208,10 +2222,11 @@ void RenderTrueBsp(void)
 
     if (FlashFirst == false)
     {
-        DoWeaponModel();
+    //    DoWeaponModel();
     }
 
     render_state->Disable(GL_DEPTH_TEST);
+    render_state->DepthMask(false);
 
     // now draw 2D stuff like psprites, and add effects
     render_backend->SetupWorldMatrices2D();
@@ -2234,7 +2249,6 @@ void RenderTrueBsp(void)
         render_state->Disable(GL_DEPTH_TEST);
         render_backend->SetupMatrices2D();
     }
-*/
 
 #if (DEBUG >= 3)
     LogDebug("\n\n");

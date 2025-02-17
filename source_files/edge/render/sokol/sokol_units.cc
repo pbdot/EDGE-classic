@@ -451,6 +451,11 @@ void RenderCurrentUnits(void)
 
         uint32_t pipeline_flags = 0;
 
+        if (unit->blending & kBlendingSSAO)
+        {
+            pipeline_flags |= kPipelineSSAO;
+        }
+        
         render_state->SetPipeline(pipeline_flags);
 
         // Map texture 1 to 0, which can happen with additive textures

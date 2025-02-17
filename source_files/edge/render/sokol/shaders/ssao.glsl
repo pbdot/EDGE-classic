@@ -54,15 +54,17 @@ vec3 FetchViewPos(vec2 uv)
     return vec3((UVToViewA * uv + UVToViewB) * z, z);
 }
 
-vec3 SampleNormal(vec2 uv)
-{
-	return texture(sampler2D(NormalTexture, NormalSampler) ,uv, 0).xyz * 2.0 - 1.0;
-}
-
 // Look up the eye space normal for the specified texture coordinate
 vec3 FetchNormal(vec2 uv)
 {
-	vec3 normal = SampleNormal(Offset + uv * Scale);
+	vec3 normal = texture(sampler2D(NormalTexture, NormalSampler) ,Offset + uv * Scale, 0).xyz; 
+
+    if (normal == vec3(0))
+    {
+        return normal;
+    }
+
+    normal = normal * 2.0 - 1.0;
 	if (length(normal) > 0.1)
 	{
 		normal = normalize(normal);
@@ -132,6 +134,11 @@ void main()
 {
     vec3 viewPosition = FetchViewPos(TexCoord);
 	vec3 viewNormal = FetchNormal(TexCoord);
+    if (viewNormal == vec3(0))
+    {
+        FragColor = vec4(1, viewPosition.z, 0.0, 1.0);        
+        return;
+    }
 	float occlusion = viewNormal != vec3(0.0) ? ComputeAO(viewPosition, viewNormal) * AOStrength + (1.0 - AOStrength) : 1.0;
 
 	FragColor = vec4(occlusion, viewPosition.z, 0.0, 1.0);    

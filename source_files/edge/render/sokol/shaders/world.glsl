@@ -130,7 +130,7 @@ void main()
     }
 
     // line drawing
-    if ((flags & 2) == 2)
+    if ((flags & 4) == 4)
     {
         float u = uv[0];
         float v = uv[1];
@@ -191,8 +191,17 @@ void main()
          }
     }
 
+    //frag_color = vec4(1, 1, 1, 1);//fcolor;
     frag_color = fcolor;
-    frag_normal = vec4(veye_normal.xyz * 0.5 + 0.5, 1.0);    
+    
+    if (!((flags & 2) == 2) || fogf > 0.0)
+    {
+        frag_normal = vec4(0, 0, 0, 1.0);    
+    }
+    else
+    {
+        frag_normal = vec4(veye_normal.xyz * 0.5 + 0.5, 1.0);    
+    }    
 }
 @end
 

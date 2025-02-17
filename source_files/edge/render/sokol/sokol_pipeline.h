@@ -17,7 +17,8 @@ enum PipelineFlags
     kPipelineBlendDst_SrcColor          = 1 << 10,
     kPipelineBlendDst_Zero              = 1 << 11,
     kPipelineCullFront                  = 1 << 12,
-    kPipelineCullBack                   = 1 << 13
+    kPipelineCullBack                   = 1 << 13,
+    kPipelineSSAO                       = 1 << 14
 };
 
 void InitPipelines();

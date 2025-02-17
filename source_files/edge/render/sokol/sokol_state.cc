@@ -709,6 +709,15 @@ class SokolRenderState : public RenderState
         float alpha_test = enable_alpha_test_ ? alpha_test_ : 0.0f;
         sgl_set_alpha_test(alpha_test);
 
+        if (pipeline_flags & kPipelineSSAO)
+        {
+            sgl_enable_ssao();
+        }
+        else
+        {
+            sgl_disable_ssao();
+        }
+
         if (scissor_.dirty_)
         {
             scissor_.dirty_ = false;

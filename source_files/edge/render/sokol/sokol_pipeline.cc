@@ -1,6 +1,7 @@
 #include "sokol_pipeline.h"
-#include "r_backend.h"
+
 #include "epi.h"
+#include "r_backend.h"
 
 typedef std::unordered_map<uint32_t, std::unordered_map<uint32_t, uint32_t>> PipelineMap;
 
@@ -124,12 +125,25 @@ sgl_pipeline GetPipeline(sgl_context context, uint32_t pipeline_flags, GLenum sr
             pipeline_desc.colors[0].blend.src_factor_rgb = src_factor;
             pipeline_desc.colors[0].blend.dst_factor_rgb = dst_factor;
         }
+        /*
+        else
+        {
+            pipeline_desc.colors[0].blend.enabled          = true;
+            pipeline_desc.colors[0].pixel_format           = SG_PIXELFORMAT_RGBA8;
+            pipeline_desc.colors[0].write_mask             = SG_COLORMASK_RGBA;
+            pipeline_desc.colors[0].blend.src_factor_rgb   = SG_BLENDFACTOR_ONE;
+            pipeline_desc.colors[0].blend.dst_factor_rgb   = SG_BLENDFACTOR_ZERO;
+            pipeline_desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+            pipeline_desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ZERO;
+        }
+        */
 
         RenderLayer layer = render_backend->GetRenderLayer();
         if (layer != kRenderLayerHUD)
         {
-            pipeline_desc.color_count = 2;
-            pipeline_desc.colors[1].pixel_format = SG_PIXELFORMAT_RGB10A2;
+            pipeline_desc.color_count             = 2;
+            pipeline_desc.colors[1].pixel_format  = SG_PIXELFORMAT_RGB10A2;
+            pipeline_desc.colors[1].blend.enabled = false;
         }
 
         pipeline_id = sgl_context_make_pipeline(context, &pipeline_desc).id;
