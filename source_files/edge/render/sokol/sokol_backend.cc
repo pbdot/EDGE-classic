@@ -945,11 +945,12 @@ class SokolRenderBackend : public RenderBackend
         EPI_CLEAR_MEMORY(&pass_action, sg_pass_action, 1);
 
         pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f, 0.0f,
+        pass_action.colors[0].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f,
+                                             epi::GetRGBAGreen(clear_color_) / 255.0f,
                                              epi::GetRGBABlue(clear_color_) / 255.0f, 1.0f};
 
         pass_action.colors[1].load_action = SG_LOADACTION_CLEAR;
-        pass_action.colors[1].clear_value = {epi::GetRGBARed(clear_color_) / 255.0f, 255.0f, 255.0f, 1.0f};
+        pass_action.colors[1].clear_value = {epi::GetRGBARed(clear_color_) / 0.0f, 0.0f, 0.0f, 1.0f};
 
         pass_action.depth.load_action = SG_LOADACTION_CLEAR;
         pass_action.depth.clear_value = 1.0f;

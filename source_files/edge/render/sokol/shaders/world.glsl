@@ -42,7 +42,7 @@ void main()
     // FIXME: texture matrix currently disabled
     //uv = tm * vec4(texcoords.xy, 0.0, 1.0);
     color = color0;
-    
+
     clipvertex0 = dot(vertex, clipplane0);
     clipvertex1 = dot(vertex, clipplane1);
     clipvertex2 = dot(vertex, clipplane2);
@@ -139,7 +139,7 @@ void main()
         float aa_radius = 1.0;
 
         float au = 1.0 - smoothstep( 1.0 - ((3.0*aa_radius) / line_width),  1.0, abs( u / line_width ) );
-        float av = 1.0 - smoothstep( 1.0 - ((3.0*aa_radius) / line_length), 1.0, abs( v / line_length ) );     
+        float av = 1.0 - smoothstep( 1.0 - ((3.0*aa_radius) / line_length), 1.0, abs( v / line_length ) );
         frag_color = color;
         frag_color.a *= min( au, av );
         return;
@@ -161,26 +161,26 @@ void main()
         if (fog_mode == FOG_LINEAR)
         {
             fogf = clamp(smoothstep(fog_start, fog_end, fog_dist), 0, 1);
-            
+
         }
         else
         {
             //fogf = 1.0f - clamp(exp(-fog_density * fog_dist), 0.0, 1.0);
             fogf = 1. - clamp(exp2(-fog_density * fog_density * fog_dist * fog_dist * LOG2), 0, 1);
-        }        
+        }
     }
 
     if ((flags & 1) == 1)
     {
-        fcolor *= c0;        
-        fcolor *= texture(sampler2D(tex1, smp1), uv.zw);                        
+        fcolor *= c0;
+        fcolor *= texture(sampler2D(tex1, smp1), uv.zw);
 
         if (fogf > 0.0)
-        {   
+        {
             fcolor = mix(fcolor, fog_color, fogf);
         }
 
-        
+
     }
     else
     {
@@ -193,15 +193,15 @@ void main()
 
     //frag_color = vec4(1, 1, 1, 1);//fcolor;
     frag_color = fcolor;
-    
-    if (!((flags & 2) == 2) || fogf > 0.0)
+
+    if ((flags & 2) == 2 && fogf < 0.01)
     {
-        frag_normal = vec4(0, 0, 0, 1.0);    
+        frag_normal = vec4(veye_normal.xyz * 0.5 + 0.5, 1.0);
     }
     else
     {
-        frag_normal = vec4(veye_normal.xyz * 0.5 + 0.5, 1.0);    
-    }    
+        frag_normal = vec4(0, 0, 0, 0.0);
+    }
 }
 @end
 
