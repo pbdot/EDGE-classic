@@ -496,8 +496,10 @@ class SokolRenderBackend : public RenderBackend
 
     void RenderHud()
     {
-        // hack for hud flip
+#ifdef SOKOL_D3D11        
+    // hack for hud flip
         sgl_point_size(1);
+#endif
         for (int32_t i = 0; i < kRenderWorldMax; i++)
         {
             if (world_state_[i].used_)
@@ -505,9 +507,10 @@ class SokolRenderBackend : public RenderBackend
                 RenderWorldToScreen(&world_render_[i]);
             }
         }
-
+#ifdef SOKOL_D3D11        
         // hack for hud flip
         sgl_point_size(0);
+#endif
         sg_begin_pass(&hud_pass_);
 
         sgl_set_context(hud_context_);
