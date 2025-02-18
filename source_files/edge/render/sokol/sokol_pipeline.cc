@@ -148,8 +148,7 @@ sgl_pipeline GetPipeline(sgl_context context, uint32_t pipeline_flags, GLenum sr
             pipeline_desc.colors[1].blend.src_factor_rgb   = SG_BLENDFACTOR_SRC_ALPHA;
             pipeline_desc.colors[1].blend.dst_factor_rgb   = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
             //pipeline_desc.colors[1].blend.src_factor_alpha = SG_BLENDFACTOR_SRC_ALPHA;
-            //pipeline_desc.colors[1].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
-
+            //pipeline_desc.colors[1].blend.dst_factor_alpha = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;            
         }
 
         pipeline_id = sgl_context_make_pipeline(context, &pipeline_desc).id;

@@ -34,7 +34,7 @@ layout(location = 9) out float clipvertex4;
 layout(location = 10) out float clipvertex5;
 
 void main()
-{
+{    
     vec4 vertex = mv * position;
     gl_Position = mvp * position;
     gl_PointSize = psize;
@@ -50,7 +50,10 @@ void main()
     clipvertex4 = dot(vertex, clipplane4);
     clipvertex5 = dot(vertex, clipplane5);
 
-    vpos = vertex.xyz;
+    if (psize == 0)
+        gl_Position.y = -gl_Position.y;
+
+    vpos = vertex.xyz;    
     vnormal = normalize(normal.xyz);
     veye_normal = tm * vec4(vnormal, 1);
 
@@ -97,7 +100,7 @@ layout(location = 9) in float clipvertex4;
 layout(location = 10) in float clipvertex5;
 
 void main()
-{
+{   
     float c = 0;
     if ((clipplanes & 1) == 1)
     {
